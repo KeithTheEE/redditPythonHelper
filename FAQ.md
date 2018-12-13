@@ -19,7 +19,7 @@ In that case scan the text of the title and the body, and break it into sentence
 After that, classify each sentence and see if a question is being asked. 
 If there's a question, the bot will probably comment. 
 But first it'll look through the top level comments to see if there's already someone else who mentioned r/learnpython. 
-If it's been mentioned it'll acknowledge that, and adjust its comment to focus on formatting the users question acording to the subreddit's rules. (Though if it was mentioned and the OP has already taken the advice, the bot will not comment.)
+If it's been mentioned it'll acknowledge that, and adjust its comment to focus on formatting the users question according to the subreddit's rules. (Though if it was mentioned and the OP has already taken the advice, the bot will not comment.)
 If no one has suggested r/learnpython, it'll suggest the subreddit, say why it's useful, and emphasize following the subreddit rules. 
 
 
@@ -45,7 +45,7 @@ Acknowledging these issues, the bot is set to have fewer false positives than fa
 
 
 #### Shouldn't the bot Direct Message the OP rather than commenting? 
-I thought about private messaging, but then you'll have multiple people (or bots) performing the same action without anyone being able to see. From the perspective of anyone on the recieving end, this could be a massive amount of spam.
+I thought about private messaging, but then you'll have multiple people (or bots) performing the same action without anyone being able to see. From the perspective of anyone on the receiving end, this could be a massive amount of spam.
 
 Beyond that (and more importantly), if the bot makes a mistake, it deserves downvotes, not to hide in obscurity. A comment creates ownership. Other redditors votes determine usefulness. Moderators are more easily able to step in if necessary and ban it. 
 
@@ -53,17 +53,17 @@ Beyond that (and more importantly), if the bot makes a mistake, it deserves down
 
 
 #### Why doesn't the bot delete its comment when it's clearly wrong
-It doesn't delete it's comments at any point because I feel like hiding from its mistakes is unethical and the bot deserves the downvotes. (Though I'm still torn between keeping the comment to own its mistakes, and deleting the comment to reduce clutter. I think owning the mistake is more important though, since it lets everyone, not just myself, see the bots success next to its failure rather than reweighting it so the bot looks like it performs better.)
+It doesn't delete it's comments at any point because I feel like hiding from its mistakes is unethical and the bot deserves the downvotes. (Though I'm still torn between keeping the comment to own its mistakes, and deleting the comment to reduce clutter. I think owning the mistake is more important though, since it lets everyone, not just myself, see the bots success next to its failure rather than reweighing it so the bot looks like it performs better.)
 
 
 
 
 #### Can chocolate be used in place of silicon in semiconductor materials?
-While that has little to do with the bot, I appericate the ingenuity of the question. 
+While that has little to do with the bot, I appreciate the ingenuity of the question. 
 
-Right of the bat I'd say probably not. Unpurified chocolate (Or would it be purified? After all, isn't chocolate in its most chocolate-y state purified chocolate? Though from the point of view of any semicoductor-canidate material, pure chocolate would make a very impure semicoductor) has a lot of chemicals that would act as impurities in any attempt to use it as a semiconductor. Your chocolate is probably best used as in insulator. 
+Right of the bat I'd say probably not. Unpurified chocolate (Or would it be purified? After all, isn't chocolate in its most chocolate-y state purified chocolate? Though from the point of view of any semiconductor-canidate material, pure chocolate would make a very impure semiconductor) has a lot of chemicals that would act as impurities in any attempt to use it as a semiconductor. Your chocolate is probably best used as in insulator. 
 
-If you purified it down to its base element, carbon, you might be able to make something useful out of it. [This paper](https://www.sciencedirect.com/science/article/pii/S025405840700675X) appears to describe a similar methodolgy, but used rice husk char instead of chocolate. If the methodolgy is robust enough to handle some front end changes to process the chocolate, you might be able to produce something functional. 
+If you purified it down to its base element, carbon, you might be able to make something useful out of it. [This paper](https://www.sciencedirect.com/science/article/pii/S025405840700675X) appears to describe a similar methodology, but used rice husk char instead of chocolate. If the methodology is robust enough to handle some front end changes to process the chocolate, you might be able to produce something functional. 
 
 The most important thing to consider here is the fact that I have no idea what I'm talking about, and shouldn't be listened to on the topic of material engineering. 
 
@@ -75,14 +75,14 @@ Even acknowledging that the submission was answered, the post probably should ha
 
 
 #### Why not use Deep Learning
-Before I can use deep learning in any form, I need a lot of infrastructure code built up. That infrastructure lets me interact with reddit easily, switch computers I'm running on without much headache, make changes to the code and hopefully see the impact before anyone else. Deep learning could help the bot make decisions, but it will still need to be able to enact whatever decision the 'artifically intelegent' portion of the code decides. A lot of this early stage of the bot is built to make sure the next (and more complex) stages can be built smoothly. It's much easier to fight one battle at a time, and the first battle I wanted to fight was just getting the bot to interact with posts. 
+Before I can use deep learning in any form, I need a lot of infrastructure code built up. That infrastructure lets me interact with reddit easily, switch computers I'm running on without much headache, make changes to the code and hopefully see the impact before anyone else. Deep learning could help the bot make decisions, but it will still need to be able to enact whatever decision the 'artificially intelligent' portion of the code decides. A lot of this early stage of the bot is built to make sure the next (and more complex) stages can be built smoothly. It's much easier to fight one battle at a time, and the first battle I wanted to fight was just getting the bot to interact with posts. 
 
 I'm still not done with what I've called my "pre alpha" version of the bot. There's a lot of interaction capacity I want to build out: most notably I want to search stack overflow for plausible answers to some of the redditors questions. This might not make it into the bot before the end of the pre alpha phase. But it's a key function the bot is intended to have.
 
 The final part is getting the bot and all of its infrastructure to run on a raspberry pi. 
 The raspberry pi is my target hardware because it's a functional computer that uses low amounts of power and is relatively small making it easy to leave running all the time. 
 
-Once a majority of the infrastructure for the bot has been dealt with, the various classification methods can be compared. Among them, deep learning will probably be looked at but just saying a program uses deep learning doesn't mean it's any good. Early on, I'm not sure whether or not there'll be enough training data for a neural net, or whether or not it'll be a significant improvement over simpler classification methods. There's also a lot of components to an 'ideally functioning' bot, and any individual component could be replaced with some form of NN, and each function will need plenty of training data, and then need to be evaluated. That in and of itself isn't too terribly difficult, but the infrastructure for the bot need(s/ed) to be built before that's something we can look at and even then it isn't a guarentee it'll be worth it. 
+Once a majority of the infrastructure for the bot has been dealt with, the various classification methods can be compared. Among them, deep learning will probably be looked at but just saying a program uses deep learning doesn't mean it's any good. Early on, I'm not sure whether or not there'll be enough training data for a neural net, or whether or not it'll be a significant improvement over simpler classification methods. There's also a lot of components to an 'ideally functioning' bot, and any individual component could be replaced with some form of NN, and each function will need plenty of training data, and then need to be evaluated. That in and of itself isn't too terribly difficult, but the infrastructure for the bot need(s/ed) to be built before that's something we can look at and even then it isn't a guarantee it'll be worth it. 
 
 Thinking about deep learning, it's important to be mindful that the primary purpose of the bot is to be helpful. Any deep learning will only be implemented if there is a measurable improvement in helpfulness. The second limitation is the target hardware: the raspberry pi is cheap and low power, so it's ideal for the long term hosting. It comes at the cost of computing power and memory, which will limit how fancy any advanced classifier gets.
 
@@ -94,21 +94,21 @@ Since the bot isn't in alpha yet, I'm probably not going to add features beyond 
 If you have a feature you think would really help, feel free to message me or open an issue explaining what the feature would do, how it would impact the bots behavior including as why it fits a python helper bot role, and what resources you anticipate the feature using (more api calls, ram for a deep neural net, a new library to process something, etc). That will help me prioritize what is possible, and look into how it could be made.
 
 #### When will you update the bot next?
-This is a hobby project, so when I have free time, I work on it. If I get swamped with work, or home life gets hetic, the bot takes a back seat. If I tried to adhere to a strict schedule, the bot would probably eat up all of my free time and stop becoming fun. Since the bot is a part of the larger reddit community, I want to enjoy the work I put into it. Building on that, I want to feel like a given update will improve the bot, and not just push an update because it's on an arbitrary schedule. 
+This is a hobby project, so when I have free time, I work on it. If I get swamped with work, or home life gets hectic, the bot takes a back seat. If I tried to adhere to a strict schedule, the bot would probably eat up all of my free time and stop becoming fun. Since the bot is a part of the larger reddit community, I want to enjoy the work I put into it. Building on that, I want to feel like a given update will improve the bot, and not just push an update because it's on an arbitrary schedule. 
 
 #### Aren't you tired of split ends in your carpet?
-No, I moisturize my carept so I never have to worry about walking over split ends. Dyson Carpet Moisturizing Cream is the best! 
+No, I moisturize my carpet so I never have to worry about walking over split ends. Dyson Carpet Moisturizing Cream is the best! 
 
 #### The question was already posted to r/learnpython
 This can get tricky. If the r/python post was made first, then someone suggested r/learnpython, then the r/learnpython post was made, the bot should be quiet. 
 
 That said, there are usually a few ways this can happen: 
-the posts were made at around the same time (usually less than 10 minutes of eachother) or 
+the posts were made at around the same time (usually less than 10 minutes of each other) or 
 the posts were made more than a few hours apart. 
 
 If the posts were made at about the same time, the bot should still comment.
 (though this is up for discussion: the driving ethic is don't be spammy, and the driving goal is be helpful) 
-The guiding principle here is if a user posts the same question in a lot of places, they should be told which places are not approprate and which are. 
+The guiding principle here is if a user posts the same question in a lot of places, they should be told which places are not appropriate and which are. 
 
 If the posts were a few hours apart or more, the bot guesses that they might be unique, unrelated posts. 
 

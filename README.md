@@ -21,7 +21,7 @@ In that case scan the text of the title and the body, and break it into sentence
 After that, classify each sentence and see if a question is being asked. 
 If there's a question, the bot will probably comment. 
 But first it'll look through the top level comments to see if there's already someone else who mentioned r/learnpython. 
-If it's been mentioned it'll acknowledge that, and adjust its comment to focus on formatting the users question acording to the subreddit's rules. (Though if it was mentioned and the OP has already taken the advice, the bot will not comment.)
+If it's been mentioned it'll acknowledge that, and adjust its comment to focus on formatting the users question according to the subreddit's rules. (Though if it was mentioned and the OP has already taken the advice, the bot will not comment.)
 If no one has suggested r/learnpython, it'll suggest the subreddit, say why it's useful, and emphasize following the subreddit rules. 
 
 
