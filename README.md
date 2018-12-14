@@ -4,6 +4,8 @@ pythonHelperBot is a reddit bot built to analyze r/python post and determine if
 they're better suited for the r/learnpython sub. 
 If they are it suggests that the user post to that sub rather than to r/python.
 
+- [FAQ](https://github.com/CrakeNotSnowman/redditPythonHelper/blob/master/FAQ.md)
+
 ## What is it doing? 
 
 
@@ -11,22 +13,21 @@ The bot currently runs on a simple algorithm.
 In short, it waits a bit then looks to see if the post is performing poorly and if the post is asking a question.
 If those two basic conditions are met, it'll probably comment. 
 
-A bit more in depth, it'll read the title of the post, if there's a keyphrase present, build a helpful comment. 
-If not, then wait a while.
-If a post is scoring poorly after a bit, check to see if there's a question in either
-the title or the body of the submission. 
-If the submission body is a url that is not the same as the url you'd get if you selected the comments on the thread, (ie if the submission is a 'link post') then the post is ignored.
-If not, then the post is a 'self post'.
-In that case scan the text of the title and the body, and break it into sentences. 
-After that, classify each sentence and see if a question is being asked. 
-If there's a question, the bot will probably comment. 
+ A bit more in depth,
+ -  it'll read the title of the post, if there's a keyphrase present, build a helpful comment. 
+ - If not, then wait a while.
+ - If a post is scoring poorly after a bit, check to see if there's a question in either the title or the body of the submission. 
+ - If the submission body is a url that is not the same as the url you'd get if you selected the comments on the thread, (ie if the submission is a 'link post') then the post is ignored. If not, then the post is a 'self post'.
+ - In that case scan the text of the title and the body, and break it into sentences. 
+ - After that, classify each sentence and see if a question is being asked. 
+ - If there's a question, the bot will probably comment. 
 But first it'll look through the top level comments to see if there's already someone else who mentioned r/learnpython. 
-If it's been mentioned it'll acknowledge that, and adjust its comment to focus on formatting the users question according to the subreddit's rules. (Though if it was mentioned and the OP has already taken the advice, the bot will not comment.)
-If no one has suggested r/learnpython, it'll suggest the subreddit, say why it's useful, and emphasize following the subreddit rules. 
+ - If it's been mentioned it'll acknowledge that, and adjust its comment to focus on formatting the users question according to the subreddit's rules. (Though if it was mentioned and the OP has already taken the advice, the bot will not comment.)
+ - If no one has suggested r/learnpython, it'll suggest the subreddit, say why it's useful, and emphasize following the subreddit rules. 
 
 
-## Where are the bot in its development?
-The bot is currently in a pre alpha stage. This means that the founding goals of the bot have not been met. Once they have been, the bot will enter alpha, where the simple classifier that is currently being used can be compared to more complex classifiers. 
+## Where is the bot in its development?
+The bot is currently in a pre alpha stage. This means that the founding goals of the bot have not been met. Once they have been, the bot will enter alpha, where the simple classifier that is currently being used can act as a performance baseline and be compared to more complex classifiers. Hopefully a better classifier will improve accuracy and response time a measurable amount.
 #### Pre Alpha Goals:
  - [X] Simply comment on redditors posts who look like they should post in r/learnpython
  - [X] Run on the raspberry pi
@@ -34,22 +35,28 @@ The bot is currently in a pre alpha stage. This means that the founding goals of
  - Use Stack Overflow to gauge the simplicity of a redditors question
  - Use Stack Overflow to implement a naive Question and Answer system
 
+
+
+## Other Aspects
+### License
+PythonHelperBot is open source [licensed under the MIT License](https://github.com/CrakeNotSnowman/redditPythonHelper/blob/master/LICENSE)
+
 ### Questions and Question and Answer Databases
 Not all are used, but they're a good starting point
 
-https://archive.org/details/stackexchange
-https://trec.nist.gov/data/qamain.html
-http://www.cs.cmu.edu/~ark/QA-data/
-https://webscope.sandbox.yahoo.com/catalog.php?datatype=l
-https://stackoverflow.blog/2009/06/04/stack-overflow-creative-commons-data-dump/
-https://rajpurkar.github.io/SQuAD-explorer/
-https://github.com/deepmind/rc-data
-http://jmcauley.ucsd.edu/data/amazon/qa/
+ - https://archive.org/details/stackexchange
+ - https://trec.nist.gov/data/qamain.html
+ - http://www.cs.cmu.edu/~ark/QA-data/
+ - https://webscope.sandbox.yahoo.com/catalog.php?datatype=l
+ - https://stackoverflow.blog/2009/06/04/stack-overflow-creative-commons-data-dump/
+ - https://rajpurkar.github.io/SQuAD-explorer/
+ - https://github.com/deepmind/rc-data
+ - http://jmcauley.ucsd.edu/data/amazon/qa/
 
 
 ##### Q&A Database found through
-https://www.quora.com/Datasets-How-can-I-get-corpus-of-a-question-answering-website-like-Quora-or-Yahoo-Answers-or-Stack-Overflow-for-analyzing-answer-quality
-https://machinelearningmastery.com/datasets-natural-language-processing/
+ - https://www.quora.com/Datasets-How-can-I-get-corpus-of-a-question-answering-website-like-Quora-or-Yahoo-Answers-or-Stack-Overflow-for-analyzing-answer-quality
+ - https://machinelearningmastery.com/datasets-natural-language-processing/
 
 
 
@@ -69,3 +76,4 @@ The bot is not currently allowed to remove a comment after it's clearly made a m
 ### Author Notes
 This bot is powered by coffee and the WestWorld Soundtrack. 
 
+If you're able, take some time to watch something amazing and beautiful: [the ISS live stream of Earth](https://eol.jsc.nasa.gov/ESRS/HDEV/). The Earth is pretty cool. 
