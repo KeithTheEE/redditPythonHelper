@@ -75,6 +75,8 @@ There will probably be a large update to move the bot to v0.2.00. Moving to v0.2
  - rpiMain.dontRunSwitchFlag(): 
  A function which polls one of the gpio pins to see if it's low (normally high) (or flipped levels). That pin will be tied to a jumper or switch. When set, the bot will not turn on at boot, allowing for simpler diagnostics, updates, etc. 
 
+ - Continue Documentation
+
 
 #### Change
  - [X] module folder structure. It's a mess, make it easy to work through. Each little module could use it's own readme, roadmap, and changelog. Especially the more generic and useful functions.

@@ -1,0 +1,14 @@
+ /r/cpp_questions
+ /r/javahelp
+ /r/LearnJavaScript
+ /r/learnpython
+ /r/learnmachinelearning
+ /r/MLQuestions
+ /r/learnprogramming
+ /r/AskCompSci
+ /r/cscareerquestions
+ /r/AskStatistics
+ /r/ITCareerQuestions
+ /r/linuxquestions
+ /r/AskProgramming
+ /r/learnmath
