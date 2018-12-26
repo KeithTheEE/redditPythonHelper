@@ -12,7 +12,8 @@ asecretplace/
 redditFeatureSet01.txt
 outlines.md
 testSummarizeText.py
-test/
+tests/
+misc/pyProgramTrainingLines.txt
 
 # Pre defined
 __pycache__/
