@@ -277,7 +277,7 @@ if __name__ == "__main__":
         os.makedirs(dirName)
     logFileName =   'LOG_'+ datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + '.log'
     filePath = os.path.join(dirName, logFileName)
-    logging.basicConfig(filename=filePath, level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+    logging.basicConfig(filename=filePath, level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(filename)s:%(funcName)s():%(lineno)s - %(message)s')
 
 
     # Importing here to prevent the "import logging"

@@ -33,14 +33,27 @@ This project is not currently looking for other contributors
 
 #### Big Picture: What happened, what was worked on
 
-Folder structure has been redone, most helper functions have been moved to the utils folder.
+Folder structure has been redone, most helper functions have been moved to the utils folder. The code for vA0.1.01 has been posted to github so it's easier to completely mess up the vA0.2.00 update and have the ability to undo it. 
 
 
 #### Added
  - The bot is now licensed under the MIT license
+ - Source code has been posted to github (it's a big deal: woo!)
+ - .gitignore file has been made
+ - associated personal libraries have also been posted github
+ - botHelperFunctions.coolPlacesToDonate(): a function (currently empty) that returns a website asking for donations. Ideally it's be sites that are non profit, and are for causes that either center around the bots actions, or center around my own favorite charities. 
+ - botHelperFunctions.ramCheck(): Currently empty function. will return how much ram is being used and how much is free. Hopefully this will help when the pi runs for months then suddenly stops working, giving me a chance to see if there was a slow and creeping memory error. 
+ - botHelperFunctions.load_autoreply_key_phrases(): rather than hard coding, key phrases can be loaded into a text file.
+ - formatCode.py: a module to take in a submission or comment, and reformat it adding 4 spaces to help display the code on reddit. 
+ - archiveAndUpdateReddit: Ho Boy we're in for a lot here. 
+
+
 
 #### Changed
  - Most helper functions have been moved to a seperate folder named utils. This should help reduce clutter 
+ - learningSubs.txt has been moved to misc/learningSubs.txt
+
+
 
 #### Deprecated
 #### Removed

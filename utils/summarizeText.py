@@ -6,6 +6,7 @@ from nltk.corpus import stopwords
 #from nltk.tokenize.moses import MosesDetokenizer 
 # # Deprecated due to licensing issues 
 #https://github.com/nltk/nltk/issues/2000
+from nltk.tokenize.treebank import TreebankWordTokenizer, TreebankWordDetokenizer
 
 import datetime
 import time
@@ -67,7 +68,8 @@ def detokenize(token_text):
     # CHANGE
     #detokenizer = MosesDetokenizer()
     #return detokenizer.detokenize(token_text, return_str=True)
-    return ' '.join(token_text)
+    detokenizer = TreebankWordDetokenizer()
+    return detokenizer.detokenize(token_text)
 
     
 def tokenTextToDict(text):

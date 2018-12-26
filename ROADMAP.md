@@ -76,6 +76,11 @@ There will probably be a large update to move the bot to v0.2.00. Moving to v0.2
  A function which polls one of the gpio pins to see if it's low (normally high) (or flipped levels). That pin will be tied to a jumper or switch. When set, the bot will not turn on at boot, allowing for simpler diagnostics, updates, etc. 
 
  - Continue Documentation
+ - [X] Adjust log format to record the source py file, function name, and line number of the code that triggered the log. Also consider adding the version atop the log file
+ - Add ram usage check and log it in every 'awake' cycle of program, to try and tease out any possible MemeoryError's kicking up after long periods of time
+ - Log processing: a set of functions and visualizations to process the log files for various useful tidbits. Something nicer than grep
+ - formatCode.py: a module to classify each line in a post to identify blocks of code, then to reformat the code for reddit by appending 4 spaces to the start of each newline
+ 
 
 
 #### Change
@@ -84,6 +89,7 @@ There will probably be a large update to move the bot to v0.2.00. Moving to v0.2
  - Move key phrases to a .txt file rather than hard coded in a function, load it into memory at startup. 
  - Consider restructuring the bot to be able to autoreply faster than once every 15 minutes, making the keyphrase autoreply an independent and parallel classifier
  - Move NLP functions from NLTK (used in many files) to a buffer module, allowing for simpler, universal changes to be made. For example, if there is a better POS tagger than nltk.pos_tag(sent) then we can easily switch to that. Right now NLTK is used over a fairly large filespace making adjustments of that sort difficult. 
+ - Review all my logging notes. See what should be dropped, changed, etc. 
 
 #### Deprecate
  - Search Stack Overflow has not been functional in ages, the code doesn't really work, and back when it did it was rarely helpful. This version will deprecate the code, but not remove it on the off chance that the SO Database project path could use portions of it. 
@@ -103,6 +109,8 @@ There will probably be a large update to move the bot to v0.2.00. Moving to v0.2
 
 
  - [X] (Completed to currently reasonable limits) module folder structure. It's a mess, make it easy to work through. Each little module could use it's own readme, roadmap, and changelog. Especially the more generic and useful functions.
+
+ - Develop terms for a walk away condition. Either End of active development and the bot remains online, end of active development and death of bot, or end of active development and project is passed on to others. Terms will almost certainly be changed constantly and the project grows and evolves, but it's nice to have an idea of what I consider to be a "complete" project. 
 
 
 
@@ -301,6 +309,16 @@ are still certain factors which can be measured and acted on.
   (This is probably going to be an early test of soft skills)
   * ["Possibly wanting to learn Python, is it worth it?"](https://www.reddit.com/r/Python/comments/917zxd/)
 
+
+#### Question & Answer
+Resources to draw from:
+ - Stack Overflow (Primary)
+ - Python Docs (Secondary)
+ - Python Blog Posts (Out of Focus)
+ - Scraped Github Code (Out of Focus)
+
+Think about using a subset of highly matching SO posts code to OPs source code and using bayes in a MSAlignment fashion to guess on solution.
+Most likely this is especially useful with syntax errors and stack traces. 
 
 
 ### Generalizing the bot: 

@@ -2,10 +2,12 @@
 import time
 import datetime
 import praw
+from prawcore import RequestException, ServerError
 from asecretplace import getPythonHelperBotKeys
 import sqlite3
 import os
 import logging
+
 
 
 import subprocess
@@ -24,6 +26,192 @@ Keith Murray
 email: kmurrayis@gmail.com
 '''
 
+
+class phb_Reddit_Submission(object):
+    '''
+    Build local structure to save reddit data, only 
+    be concerned with useful information, drop all else
+
+    phb stands for Python Helper Bot
+
+    God I hope this takes care of most reddit based errors
+    I hope this acts like a padded room for the insanity that is reddit errors
+    '''
+    def __init__(self, sub):
+        vals_Assigned = False
+        self.directed_to_learning_sub = False
+        self.mod_removed_for_learning = False
+        self.said_thanks_or_it_worked = False
+        self.deleted_or_removed = False
+        
+        # Prep for errors
+        maxTotalWaitTime = 5*60*60
+        requestBackoffTime = 60 # starting amount of time required to wait after an error. it will then double
+        serverBackoffTime = 5 
+        maxBackoffTime = 5*60
+        startTime = time.time()
+
+        while True:
+            if vals_Assigned:
+                break
+            try:
+                now = datetime.datetime.utcnow()
+                try:
+                    self.author = sub.author.name
+                except AttributeError:
+                    # Author has deleted the post or been removed and can't be identified
+                    self.author = '[deleted]'
+                self.created_utc = datetime.datetime.utcfromtimestamp(sub.created_utc)
+                self.id = sub.id
+                self.url = sub.url
+                self.score = sub.score
+                self.upvote_ratio =  sub.upvote_ratio
+                self.title = sub.title
+                self.selftext = sub.selftext
+                self.subreddit = sub.subreddit.display_name
+                self.link_flair_text = sub.link_flair_text
+                self.score_History = [[self.score, self.upvote_ratio, now]]
+                self.edit_History = []
+                vals_Assigned = True
+                break
+            except RequestException as e:
+                logging.error("Caught Server Rate Limit Hit | Specific Error:")
+                logging.error("\n"+traceback.format_exc())
+                requestBackoffTime = self._backoff(requestBackoffTime)
+                if time.time()-startTime > maxTotalWaitTime:
+                    logging.error("I've tried this too much, escalating error")
+                    raise e
+            except ServerError as e:
+                logging.error("Caught Server 500 Error | Specific Error:")
+                logging.error("\n"+traceback.format_exc())
+                serverBackoffTime = self._backoff(serverBackoffTime)
+                if time.time()-startTime > maxTotalWaitTime:
+                    logging.error("I've tried this too much, escalating error")
+                    raise e
+            except Exception as e:
+                internet = is_connected()
+                if internet:
+                    # I'm connected and There's some problem. Figure it out and pass it along
+                    logging.error("I'm connected to the internet and recieving this error")
+                    logging.error("\n"+traceback.format_exc())
+                    raise e 
+                else:
+                    # no internet, figure out what to do here
+                    logging.error("I'm not connected to the internet escalating this error")
+                    logging.error("\n"+traceback.format_exc())
+                    raise e
+
+    def _backoff(self, backoffTime, maxBackoffTime = 5*60):
+        backoffTime = min(backoffTime, maxBackoffTime)
+        time.sleep(backoffTime)
+        return backoffTime*2
+
+    def update_info(self, reddit):
+        vals_Assigned = False
+
+        
+        maxTotalWaitTime = 5*60*60
+        requestBackoffTime = 60 # starting amount of time required to wait after an error. it will then double
+        serverBackoffTime = 5 
+        maxBackoffTime = 5*60
+        startTime = time.time()
+
+        while True:
+            if vals_Assigned:
+                break
+            try:
+                sub = reddit.submission(id=self.id)
+                now = datetime.datetime.utcnow()
+                self.edited = sub.edited
+                self.score = sub.score
+                self.upvote_ratio =  sub.upvote_ratio
+                self.link_flair_text = sub.link_flair_text
+                if self.selftext != sub.selftext:
+                    self.edit_History.append(self.selftext)
+                    self.selftext = sub.selftext
+                self.score_History.append([self.score, self.upvote_ratio, now])
+                vals_Assigned = True
+                break
+
+            except RequestException as e:
+                logging.error("Caught Server Rate Limit Hit | Specific Error:")
+                logging.error("\n"+traceback.format_exc())
+                requestBackoffTime = self._backoff(requestBackoffTime)
+                if time.time()-startTime > maxTotalWaitTime:
+                    logging.error("I've tried this too much, escalating error")
+                    raise e
+            except ServerError as e:
+                logging.error("Caught Server 500 Error | Specific Error:")
+                logging.error("\n"+traceback.format_exc())
+                serverBackoffTime = self._backoff(serverBackoffTime)
+                if time.time()-startTime > maxTotalWaitTime:
+                    logging.error("I've tried this too much, escalating error")
+                    raise e
+            except Exception as e:
+                internet = is_connected()
+                if internet:
+                    # I'm connected and There's some problem. Figure it out and pass it along
+                    logging.error("I'm connected to the internet and recieving this error")
+                    logging.error("\n"+traceback.format_exc())
+                    raise e 
+                else:
+                    # no internet, figure out what to do here
+                    logging.error("I'm not connected to the internet escalating this error")
+                    logging.error("\n"+traceback.format_exc())
+                    raise e
+
+
+    def _print_Full(self):
+        msg = self.title
+        msg += "\nPost by "+ self.author
+        msg += "\nScore:  " + str(self.score)
+        msg += "\nUpvote ratio: " + str(self.upvote_ratio)
+        msg += "\nID: " + str(self.id)
+        msg += "\nURL: " + str(self.url)
+        msg += "\nSelfText:\n" + str(self.selftext)
+        return msg
+    def __repr__(self):
+        return self._print_Full()
+
+    #def get_top_level_comments(self, sub):
+
+    #def get_all_comments(self, sub):
+
+
+class phb_Reddit_Comment(object):
+    '''
+    Build local structure to save reddit data, only 
+    be concerned with useful information, drop all else
+
+    phb stands for Python Helper Bot
+
+    God I hope this takes care of most reddit based errors
+    I hope this acts like a padded room for the insanity that is reddit errors
+    '''
+    def __init__(self, comment):
+        self.author
+        self.id
+        self.parentID
+        self.parentSubreddit
+        self.score
+
+
+
+class phb_Reddit_User(object):
+    '''
+    Build local structure to save reddit data, only 
+    be concerned with useful information, drop all else
+
+    phb stands for Python Helper Bot
+
+    God I hope this takes care of most reddit based errors
+    I hope this acts like a padded room for the insanity that is reddit errors
+    '''
+    def __init__(self, sub):
+
+
+
+        
 
 
 # WARNING: This function is duplicated. Not yet sure how best to organize it

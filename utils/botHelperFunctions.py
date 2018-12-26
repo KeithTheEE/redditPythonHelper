@@ -12,7 +12,7 @@ email: kmurrayis@gmail.com
 
 
 def get_learning_sub_Names():
-    fl = open('learningSubs.txt', 'r')
+    fl = open('misc/learningSubs.txt', 'r')
     subList = []
     for line in fl:
         line = line.strip()
@@ -21,3 +21,23 @@ def get_learning_sub_Names():
         subList.append(line.lower())
     fl.close()
     return subList
+
+def load_autoreply_key_phrases(fl_path):
+    fl = open('misc/autoreplyKeyPhrases.txt', 'r')
+    phrase_set = []
+    for line in fl:
+        line = line.strip()
+        if line != "":
+            phrase_set.append(line.lower())
+    fl.close()
+    return phrase_set
+
+
+def coolPlacesToDonate():
+    donationList = []
+    # Load websites, randomly suggest one as a good place to donate too
+    return
+
+def ramCheck():
+    # Return used and available ram for logging 
+    return

@@ -248,6 +248,8 @@ def request_Key_Word_Filter(submission):
     
     text = ' '.join(summarizeText.parseStringSimple01(submission.title))
     # Pass phrase_set through string parser and back, it'll help? 
+    phrase_set = botHelperFunctions.load_autoreply_key_phrases(fl_path='misc/autoreplyKeyPhrases.txt')
+    '''
     phrase_set = ['need help', '[help]', '[ help ]', '[question]', 
                     '[ question ]', 'noob ', 'n00b ', ' newb','please help', 
                     'noobie question', 'help!', 'help me', "isn't working",
@@ -255,6 +257,7 @@ def request_Key_Word_Filter(submission):
                     'looking for tutorial', 'Quick question', 'help needed',
                     'plz help', "what's wrong", "need some help", '[q]',
                     '[Beginner Question]']
+    '''
     request_Made = False
     #print text
     for phrase in phrase_set:
@@ -625,6 +628,7 @@ def startupBot():
     classifier = questionIdentifier.buildClassifier02NLTKChat()
     # Reddit API
     keySet = getPythonHelperBotKeys.GETREDDIT()
+    assert 1 == 2
     reddit = praw.Reddit(client_id=keySet[0], client_secret=keySet[1], 
                      password=keySet[2], user_agent=keySet[3],
                     username=keySet[4])
@@ -719,8 +723,8 @@ if __name__ == "__main__":
     if not os.path.exists(dirName):
         os.makedirs(dirName)
     logFileName =   'LOG_'+ datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + '.log'
-    filePath = os.path.join(dirName, logFileName)
-    logging.basicConfig(filename=filePath, level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
+    filePath = os.path.join(dirName, logFileName) 
+    logging.basicConfig(filename=filePath, level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(filename)s:%(funcName)s():%(lineno)s - %(message)s')
     if quietMode:
         logging.debug("Running in Quiet Mode")
 

@@ -55,6 +55,15 @@ positive. All in all, the c
 
 '''
 
+'''
+Look at scripts for:
+Installing Python
+Should I learn Python
+Best Editor/IDE
+Best GUI (PyQt vs tkinter)
+Interviewing for Python
+
+'''
 
 
 class installNode(object):

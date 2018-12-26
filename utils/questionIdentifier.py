@@ -4,6 +4,7 @@ import datetime
 import gzip
 import kmlistfi
 from random import shuffle
+import logging
 
 
 '''  
@@ -86,5 +87,5 @@ def buildClassifier02NLTKChat():
     size = int(len(featuresets) * 0.1)
     train_set, test_set = featuresets[size:], featuresets[:size]
     classifier = nltk.NaiveBayesClassifier.train(train_set)
-    print(nltk.classify.accuracy(classifier, test_set))
+    logging.debug("NLTK Classifier accuracy:" + str( nltk.classify.accuracy(classifier, test_set)))
     return classifier
