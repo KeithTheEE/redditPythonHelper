@@ -9,13 +9,17 @@ import logging
 import traceback
 
 from utils import archiveAndUpdateReddit
-from utils import questionIdentifier
-from utils import summarizeText
-from utils import searchStackOverflowWeb
-from utils import textSupervision
-from utils import locateDB
-from utils import botMetrics
 from utils import botHelperFunctions 
+from utils import botMetrics
+from utils import botSummons
+from utils import buildComment
+from utils import formatCode
+#from utils import learningSubmissionClassifiers
+from utils import locateDB
+from utils import questionIdentifier
+from utils import searchStackOverflowWeb
+from utils import summarizeText
+from utils import textSupervision
 from asecretplace import getPythonHelperBotKeys
   
 
@@ -30,77 +34,7 @@ act = "JUST CODE IT"
 print(act[:5]+ act[6:8][::-1]+act[9:])
 '''
 
-# Post to reddit text block
-def baseComment():
-    msg = '''Hello! I'm a bot! 
-It looks to me like your post might be better suited for r/learnpython, a sub geared towards questions and learning more about python. 
-That said, I am a bot and it is hard to tell.
-I highly recommend posting your question there. 
-Please follow the subs rules and guidelines when you do post there, it'll help you get better answers faster. 
-
-Show /r/learnpython the code you have tried and describe where you are stuck. 
-**[Be sure to format your code for reddit](https://www.reddit.com/r/learnpython/wiki/faq#wiki_how_do_i_format_code.3F)** and include which version of python and what OS you are using.
-
-You can also ask this question in the [Python discord](https://discord.gg/3Abzge7), a large, friendly community focused around the Python programming language, open to those who wish to learn the language or improve their skills, as well as those looking to help others. 
-'''
-    return msg
-def alreadySuggestedComment():
-    msg = '''Hello! I'm a bot!
-I see someone has already suggested going to r/learnpython, a sub geared towards questions and learning more about python. I highly recommend posting your question there. 
-Please follow the subs rules and guidelines when you do post there, it'll help you get better answers faster. 
-    
-Show /r/learnpython the code you have tried and describe where you are stuck. 
-**[Be sure to format your code for reddit](https://www.reddit.com/r/learnpython/wiki/faq#wiki_how_do_i_format_code.3F)** and include which version of python and what OS you are using.
-
-You can also ask this question in the [Python discord](https://discord.gg/3Abzge7), a large, friendly community focused around the Python programming language, open to those who wish to learn the language or improve their skills, as well as those looking to help others. 
-'''
-    return msg
-def UserCrossPosted():
-    # Figure out what to say to the spray and pray
-    msg = '''Hello! I'm a bot!
-It looks like you posted this in multiple subs in a short period of time. 
-
-    '''
-    return msg
-def alreadyAnsweredComment():
-    msg = '''Hello! I'm a bot!
-It looks to me like someone might have already answered your question. 
-That said, I am a bot and it is hard to tell. 
-In the future, I suggest asking questions like this in r/learnpython, a sub geared towards questions and learning more about python. 
-Please follow the subs rules and guidelines when you do post there, it'll help you get better answers faster. 
-    
-Show /r/learnpython the code you have tried and describe where you are stuck. 
-**[Be sure to format your code for reddit](https://www.reddit.com/r/learnpython/wiki/faq#wiki_how_do_i_format_code.3F)** and include which version of python and what OS you are using.
-
-You can also ask this question in the [Python discord](https://discord.gg/3Abzge7), a large, friendly community focused around the Python programming language, open to those who wish to learn the language or improve their skills, as well as those looking to help others. 
-'''
-    return msg
-def supervisedComment():
-    msg ="\n\n###I am currently running in a supervised mode for testing and only comment when it's been approved"
-    return msg
-
-def signatureComment():
-    msg = """\n\n***\n\n[^(README)](https://github.com/CrakeNotSnowman/redditPythonHelper) 
-^(|)
-[^(FAQ)](https://github.com/CrakeNotSnowman/redditPythonHelper/blob/master/FAQ.md) 
-^(|)
-^(this bot is written and managed by /u/IAmKindOfCreative) 
 """
-    return msg
-
-def inDevelopmentComment():
-    msg = "\n\n^(This bot is currently under development and experiencing changes to improve its usefulness)"
-    return msg
-
-def commentOnSubmmission(submission, msg, reddit):
-    # Post message to reddit submission
-    #testingsubmissionID = '8nvbf3'
-    #submission = reddit.submission(id=testingsubmissionID)
-
-    submission.reply(msg)
-    return
-
-
 def idealQuery(title, questions, keywords, tdm):
     # Using NLP Magic (yet to be determined): identify best keywords 
     #   to search stack overflow with
@@ -180,54 +114,51 @@ TypeError: object of type 'NoneType' has no len()
     msg += msgNotWorkingProperly
 
     return key_phrase_set, msg, searchResults
-
-def shortenRedditURL(url):
-    url = url[8:]
-    return '/'.join(url.split('/')[:-2])+'/'
-
-def buildHelpfulComment(submission, user, question_Set, classifier, tdm, reddit, suggested, crossPosted, quietMode):
+"""
+def buildHelpfulComment_DEPRECATED(submission, user, question_Set, classifier, tdm, reddit, suggested, crossPosted, quietMode):
     supervised = False
     underDev = True
 
-    title = summarizeText.parseStringSimple01(submission.title)
-    text = summarizeText.parseStringSimple01(submission.selftext)
+    msgBagOfSents = []
     if suggested:
-        msg = alreadySuggestedComment()
+        msg = buildComment.alreadySuggestedComment()
+        msgBagOfSents.append(buildComment.alreadySuggestedComment())
     #elif crossPosted:
      #   msg = UserCrossPosted()
     else:
-        msg = baseComment()
-
-    # Stack Overflow has changed and I'm not working through the soup right now
-    #key_phrases, so_msg, search_results = stackOverflowInfo(title, text, question_Set, tdm)
-    #msg += so_msg
+        msg = buildComment.baseComment()
+        msgBagOfSents.append()
 
     if supervised:
-        msg = msg+supervisedComment()
-        print(title)
-        print(text)
-        print(submission.url)
-        cleanURL = shortenRedditURL(submission.url)
+        msg = msg+buildComment.supervisedComment()
+        msgBagOfSents.append(buildComment.supervisedComment())
+        #print(title)
+        #print(text)
+        #print(submission.url)
+        cleanURL = botHelperFunctions.shortenRedditURL(submission.url)
         sms_msg = "Is this post worth commenting on?\n" + cleanURL 
         reply = textSupervision.getUserFeedbackViaText(outgoingMsg=sms_msg).strip()
         #input_str = raw_input("Is this post worth commenting on?")
         if reply.lower() in ['y', 'yes']:
-            print("COOL BRO")
+            #print("COOL BRO")
             #print("Keywords found: ", key_phrases, '\nSearch Result Size')
             #print(len(search_results[0]))
-            print('\tCommenting...')
+            #print('\tCommenting...')
+            pass
         else:
-            print("Aw Damnit.")
+            #print("Aw Damnit.")
             return
     # Sign the message
-    msg += signatureComment() 
+    msg += buildComment.signatureComment() 
+    msgBagOfSents.append(buildComment.signatureComment() )
     # Say it's changing
     if underDev:
-        msg += inDevelopmentComment()
+        msg += buildComment.inDevelopmentComment()
+        msgBagOfSents.append(buildComment.inDevelopmentComment())
     logging.debug(msg)
     # Quiet Mode is used to debug, and avoid
     if not quietMode:
-        commentOnSubmmission(submission, msg, reddit)
+        archiveAndUpdateReddit.commentOnSubmmission(submission, msg, reddit)
         archiveAndUpdateReddit.updateDatabase(user.name, submission.id)
         logging.debug( '\t\tCommented.')
     else:
@@ -236,8 +167,69 @@ def buildHelpfulComment(submission, user, question_Set, classifier, tdm, reddit,
 
     return
 
+
+def buildHelpfulComment(submission, user, reddit, suggested, crossPosted, answered, codePresent, correctlyFormatted, quietMode):
+    supervised = False
+    underDev = True
     
-def request_Key_Word_Filter(submission):
+    bagOfSents = []
+    # Intro
+    bagOfSents.append(buildComment.botIntro())
+
+    # User Sittuation Context Awareness
+    if crossPosted:
+        bagOfSents.append(buildComment.userCrossPosted())
+    elif answered:
+        bagOfSents.append(buildComment.alreadyAnsweredComment())
+    elif suggested:
+        bagOfSents.append(buildComment.alreadySuggestedComment())
+    else:
+        bagOfSents.append(buildComment.standardIntro())
+
+    # Follow rules and help make code clear
+    bagOfSents.append(buildComment.followSubRules())
+    if not (codePresent and correctlyFormatted):
+        # They've either not shown code or not shown
+        #  well formatted code, we should suggest formatting
+        bagOfSents.append(buildComment.formatCodeAndOS())
+
+    # Another good location is the discord
+    bagOfSents.append(buildComment.discord())
+
+    if supervised:
+        logging.debug("Asking about post")
+        bagOfSents.append(buildComment.supervisedComment())
+        cleanURL = botHelperFunctions.shortenRedditURL(submission.url)
+        sms_msg = "Is this post worth commenting on?\n" + cleanURL 
+        reply = textSupervision.getUserFeedbackViaText(outgoingMsg=sms_msg).strip()
+        if reply.lower() not in ['y', 'yes']:  
+            logging.debug("Told not to comment")          
+            return
+        logging.debug("Told to comment")
+    
+    # Sign the message
+    bagOfSents.append(buildComment.signatureComment() )
+    # Say it's changing
+    if underDev:
+        bagOfSents.append(buildComment.inDevelopmentComment())
+
+
+    msg = '\n'.join(bagOfSents)    
+    logging.debug(msg)
+    # Quiet Mode is used to debug, and avoid
+    if not quietMode:
+        archiveAndUpdateReddit.commentOnSubmmission(submission, msg, reddit)
+        archiveAndUpdateReddit.updateDatabase(user.name, submission.id)
+        logging.debug( '\t\tCommented.')
+    else:
+        logging.debug("Quiet Mode is on, no actual post was made")
+    
+
+    
+
+
+    
+def request_Key_Word_Filter(submission, phrase_set):
     '''
     This is a hand made feature set to id titles that make reddit-typical 
     requests for help, but might not phrase the request as a question
@@ -248,7 +240,7 @@ def request_Key_Word_Filter(submission):
     
     text = ' '.join(summarizeText.parseStringSimple01(submission.title))
     # Pass phrase_set through string parser and back, it'll help? 
-    phrase_set = botHelperFunctions.load_autoreply_key_phrases(fl_path='misc/autoreplyKeyPhrases.txt')
+    #phrase_set = botHelperFunctions.load_autoreply_key_phrases(fl_path='misc/autoreplyKeyPhrases.txt')
     '''
     phrase_set = ['need help', '[help]', '[ help ]', '[question]', 
                     '[ question ]', 'noob ', 'n00b ', ' newb','please help', 
@@ -307,7 +299,7 @@ def basicQuestionClassify(submission, user, classifier, tdm):
     #text = summarizeText.parseStringSimple01(submission.selftext)
     #postText = title + text
 
-    postAge = datetime.datetime.utcnow() - datetime.datetime.utcfromtimestamp(submission.created_utc)
+    postAge = datetime.datetime.utcnow() - submission.created_utc
     hours2 = datetime.timedelta(hours=2)
     logging.debug(  '\t'+"Post Age: "+ str(postAge) )
 
@@ -364,22 +356,22 @@ def basicQuestionClassify(submission, user, classifier, tdm):
     # All else
     return False 
 
-def checkForLearnPythonSuggestion(submission):
+def checkForLearnPythonSuggestion(reddit, submission):
     # This is to check and see if learn python has been suggested 
-    topComments = archiveAndUpdateReddit.getTopLevelComments(submission)
+    topComments = submission.get_top_level_comments(reddit)
     suggestedTime = -1
     for comment in topComments:
         text = comment.body
         #words = text.split()
         if 'learnpython' in text:
             logging.debug("Someone has already Suggested r/learnpython")
-            suggestedTime = datetime.datetime.fromtimestamp(comment.created_utc)
+            suggestedTime = comment.created_utc
             return True, suggestedTime
 
     return False, suggestedTime
 
 
-def checkForAlreadyAnswered(submission):
+def checkForAlreadyAnswered(reddit, user, submission):
     '''
     Soft Skill extension
     'Wow thank you so much!'
@@ -389,7 +381,7 @@ def checkForAlreadyAnswered(submission):
 
     return False
 
-def getSubsUsersInteractsIn(user, limitCount=25):
+def getSubsUsersInteractsIn(reddit, user, limitCount=25):
     '''
     Effectively a very basic funtion. However, because of the use-case
     it has an added flag to show whether or not the user has previously
@@ -419,8 +411,8 @@ def getSubsUsersInteractsIn(user, limitCount=25):
     learning_Subs = botHelperFunctions.get_learning_sub_Names()
     postsInLearningSubs = []
     redditSubs = {}
-    submissionList = archiveAndUpdateReddit.getUserPosts(user, limitCount)
-    commentList = archiveAndUpdateReddit.getUsersComments(user, limitCount)
+    submissionList = user.getUserPosts(reddit, limitCount)
+    commentList = user.getUsersComments(reddit, limitCount)
     hasSuggestedLearnPython = False
 
 
@@ -442,13 +434,13 @@ def getSubsUsersInteractsIn(user, limitCount=25):
         
     return redditSubs, hasSuggestedLearnPython, postsInLearningSubs
     
-def basicUserClassify(user, userNames, submission, suggestedTime, antiSpamList):
+def basicUserClassify(reddit, user, userNames, submission, suggestedTime, antiSpamList):
     
     # Need to classify a user here
     # Only post if 
     DayLimit = 700
     timeDelt = datetime.timedelta(days=DayLimit)
-    accountAge = datetime.datetime.utcnow() - datetime.datetime.utcfromtimestamp(user.created_utc)
+    accountAge = datetime.datetime.utcnow() - user.created_utc
 
     antiSpamList = popOldSpammers(antiSpamList, ageLimitHours=12) # Should stop growing dict memory leak
 
@@ -459,8 +451,8 @@ def basicUserClassify(user, userNames, submission, suggestedTime, antiSpamList):
         msg = "\tI've already commented on a post by " + str(user.name) 
         print(msg)
         if submission.id not in antiSpamList:
-            antiSpamList[submission.id] = datetime.datetime.utcfromtimestamp(submission.created_utc)
-            msg = msg.strip() + "\n\nPost in Question: "+ shortenRedditURL(submission.url)
+            antiSpamList[submission.id] = submission.created_utc
+            msg = msg.strip() + "\n\nPost in Question: "+ botHelperFunctions.shortenRedditURL(submission.url)
             textSupervision.send_update(msg)
         return False, [], antiSpamList
 
@@ -475,7 +467,7 @@ def basicUserClassify(user, userNames, submission, suggestedTime, antiSpamList):
         #return False, []
 
 
-    subs, directedOthersToLearn, postsInLearningSubs = getSubsUsersInteractsIn(user)
+    subs, directedOthersToLearn, postsInLearningSubs = getSubsUsersInteractsIn(reddit, user)
     if 'learnpython' in subs:
         # Probably should check if user has posted in the sub more recently than current post
         logging.info("User " + str(user.name) + " has posted in r/learnpython before")
@@ -524,9 +516,9 @@ def user_Already_Took_Advice(submission, postsInLearningSubs, suggestedTime):
     crossPosted = False
     askedLearningLater = False
     if len(postsInLearningSubs) > 0:
-        pythonPostTime = datetime.datetime.utcfromtimestamp(submission.created_utc)
+        pythonPostTime = submission.created_utc
         for post in postsInLearningSubs:
-            learningPostTime = datetime.datetime.utcfromtimestamp(post.created_utc)
+            learningPostTime = post.created_utc
             if suggestedTime  != -1:
                 if learningPostTime - suggestedTime >  datetime.timedelta(seconds=0):
                     tookAdvice = True
@@ -561,18 +553,43 @@ def popOldSpammers(antiSpamList, ageLimitHours):
 
             
 
+def checkForSummons(msg):
+    summonID = None
+    if msg.subject.strip() == "username mention":
+        if (msg.body.strip() == 'u/pythonHelperBot !reformat') or (msg.body.strip() == '/u/pythonHelperBot !reformat'):
+            print("SUMMONS")
+            print(msg.id)
+            summonID = msg.id
+        print(msg.body)
+    
+    return summonID
 
 
 
 def checkInbox(reddit, unreadCount=None, sendText = True):
     # Mark all messages as read after notification has been sent
-    inboxMessages = archiveAndUpdateReddit.checkForMessages(reddit)
+    rawInboxMessages = archiveAndUpdateReddit.checkForMessages(reddit)
     sendText = True
+    
+    # Handle Summoning:
+    inboxMessages = []
+    for msg in rawInboxMessages:
+        summoned = checkForSummons(msg)
+        if summoned != None:
+            # Reply
+            # Pass message off to summoning processor, 
+            # Act on summons,
+            # Reply to summoner 
+            pass
+        else:
+            inboxMessages.append(msg)
+    
 
     # Handle startup unread count
     if unreadCount == None:
         return len(inboxMessages)
 
+    
 
     if len(inboxMessages) > unreadCount:
         commentReplies = 0
@@ -626,9 +643,12 @@ def startupBot():
     tdm = summarizeText.buildModelFromDocsInFolder(sourceDataPath=paths["englishDB"])
     # NLTK classifier (Statement, YNQuestion, WHQuestion, etc)
     classifier = questionIdentifier.buildClassifier02NLTKChat()
-    # Reddit API
+    # Code vs Text classifier 
+    codeVTextClassifier = formatCode.buildTextCodeClassifier(sourceDataPath=paths["codeText"])
+
+    # Reddit API 
     keySet = getPythonHelperBotKeys.GETREDDIT()
-    assert 1 == 2
+    #assert 1 == 2
     reddit = praw.Reddit(client_id=keySet[0], client_secret=keySet[1], 
                      password=keySet[2], user_agent=keySet[3],
                     username=keySet[4])
@@ -641,10 +661,13 @@ def startupBot():
     
 
     logging.debug( "Loaded. Running...")
-    return reddit, classifier, tdm, userNames, postHistory
+    return reddit, classifier, codeVTextClassifier, tdm, userNames, postHistory
 
 
-def runBot(reddit, classifier, tdm, userNames, postHistory, quietMode=False):
+def runBot(reddit, classifier, codeVTextClassifier, tdm, userNames, postHistory, quietMode=False):
+    
+    phrase_set = botHelperFunctions.load_autoreply_key_phrases(fl_path='misc/autoreplyKeyPhrases.txt')
+    
     setOfPosts = archiveAndUpdateReddit.grabAndUpdateNewPosts(reddit)
     unreadCount = checkInbox(reddit)
     antiSpamList = {} # Used in basicUserClassify to only text me once per submission by a repeat user
@@ -657,15 +680,15 @@ def runBot(reddit, classifier, tdm, userNames, postHistory, quietMode=False):
                 logging.debug('[AUTHOR] | ' + str(user.name))
                 logging.debug('[ID]     | ' + str(submission.id))
                 question_Set = basicQuestionClassify(submission, user, classifier, tdm)
-                request_Made = request_Key_Word_Filter(submission)
+                request_Made = request_Key_Word_Filter(submission, phrase_set)
                 if question_Set or request_Made:
                     # BODGE
                     if request_Made and not question_Set:
                         question_Set = request_Made
                     
                     logging.debug(  '\t'+ "Found a valid post")
-                    suggested, suggestedTime = checkForLearnPythonSuggestion(submission)
-                    user_status, postsInLearningSubs, antiSpamList = basicUserClassify(user, userNames, submission, suggestedTime, antiSpamList) 
+                    suggested, suggestedTime = checkForLearnPythonSuggestion(reddit, submission)
+                    user_status, postsInLearningSubs, antiSpamList = basicUserClassify(reddit, user, userNames, submission, suggestedTime, antiSpamList) 
                     if user_status:
                         logging.debug(  '\t'+ "User is valid")
 
@@ -680,7 +703,10 @@ def runBot(reddit, classifier, tdm, userNames, postHistory, quietMode=False):
 
                         if not tookAdvice and not askedLearningLater:
                             # Shutup if already directed, and user listened
-                            buildHelpfulComment(submission, user, question_Set, classifier, tdm, reddit, suggested, crossPosted, quietMode)
+                            answered=False
+                            codePresent=False
+                            correctlyFormatted=False
+                            buildHelpfulComment(submission, user, reddit, suggested, crossPosted, answered, codePresent, correctlyFormatted, quietMode)
                             userNames.append(str(user.name))
                             postHistory.append(str(submission.id))
                             #pass
@@ -717,7 +743,9 @@ def interface():
 if __name__ == "__main__":
     args = interface()
     quietMode = args.quiet_mode
-    print(quietMode)
+    if quietMode:
+        # Fair assumption that the user is watching the terminal during quiet mode
+        print("Bot is Running in Quite Mode")
     # Logging Stuff
     dirName = "logs"
     if not os.path.exists(dirName):
@@ -728,9 +756,9 @@ if __name__ == "__main__":
     if quietMode:
         logging.debug("Running in Quiet Mode")
 
-    reddit, classifier, tdm, userNames, postHistory = startupBot()
+    reddit, classifier, codeVTextClassifier, tdm, userNames, postHistory = startupBot()
     try:
-        runBot(reddit, classifier, tdm, userNames, postHistory, quietMode=quietMode)
+        runBot(reddit, classifier, codeVTextClassifier, tdm, userNames, postHistory, quietMode=quietMode)
     except KeyboardInterrupt:
         print("Concluding Program")
         logging.debug("Keyboard Interrupt: Ending Program")

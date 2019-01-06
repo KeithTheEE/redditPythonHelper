@@ -18,7 +18,7 @@ Dates follow YYYY-MM-DD format
 
 
 
-## [A0.2.00] 2018-XX-XX
+## [A0.2.00] 2019-XX-XX
 In Progress
 ### Contributors
 Keith Murray
@@ -41,46 +41,62 @@ Folder structure has been redone, most helper functions have been moved to the u
  - Source code has been posted to github (it's a big deal: woo!)
  - .gitignore file has been made
  - associated personal libraries have also been posted github
- - botHelperFunctions.coolPlacesToDonate(): a function (currently empty) that returns a website asking for donations. Ideally it's be sites that are non profit, and are for causes that either center around the bots actions, or center around my own favorite charities. 
+ - botHelperFunctions.coolPlacesToDonate(): a function (currently empty) that returns a website asking for donations. Ideally it's be sites that are non profit, and are for causes that either center around the bots actions, or center around my own favorite charities. Should rarely trigger.
  - botHelperFunctions.ramCheck(): Currently empty function. will return how much ram is being used and how much is free. Hopefully this will help when the pi runs for months then suddenly stops working, giving me a chance to see if there was a slow and creeping memory error. 
  - botHelperFunctions.load_autoreply_key_phrases(): rather than hard coding, key phrases can be loaded into a text file.
  - formatCode.py: a module to take in a submission or comment, and reformat it adding 4 spaces to help display the code on reddit. 
- - archiveAndUpdateReddit: Ho Boy we're in for a lot here. 
+ - misc/pyProgramTrainingLines.txt: training file for the 'code' classification, the 'text' is taken from the nltk Brown sentence corpus on 'news'. 
+ - buildComment.py has been added, now functions as the holding ground for variations on the primary bot comment. 
+ - learningSubmissionClassifiers.py has been added, though it is not currently active. It's intended to be base home of the post classifiers, clearing up the main and making modifications easier. 
+ - archiveAndUpdateReddit: Ho Boy we're in for a lot here. Almost everything in this file has been changed to wrap all possible praw api calls into a custom class which has ugly but hopefully functional try/excepts wrapped in a while True loop attached to a backoff timer such that any time any anticipated exception gets raised. This should prevent the reddit server timeouts from causing random bot deaths as well as help isolate api calls to functions which are prepared for the concequences. It's big, it's ugly, but it's in a nice rubber padded room that's shielded from reality. So it works I guess. We'll see. A lot of breaking changes have been made. 
+
 
 
 
 #### Changed
+ - logs now record source module, function name, and line number when a log entry is named. New format is now: 
+ YYYY-MM-DD HR:MN:SC,MSC - Level - module:function():line - Message
  - Most helper functions have been moved to a seperate folder named utils. This should help reduce clutter 
  - learningSubs.txt has been moved to misc/learningSubs.txt
+ - codeVTextClassifier is now added to the startup and runbot functions, changing the return and in args respectively
+ - shortenRedditURL(url) has been moved from main to botHelperFunctions module
 
 
 
 #### Deprecated
+ - buildHelpfulComment has been changed and rename as buildHelpfulComment_DEPRECATED with a new buildHelpfulComment acting in the same namespace. The new one does not have the stack overflow answer section included as that's been non functional for too long, and not needed. The new one is also cleaner and easier to understand.  
+ idealQuery() and stackOverflowInfo() have been commented out and will be removed soon. 
 #### Removed
 
 #### Fixed
+ - Fixed some of the changelog formatting
 
 #### Security
 
 
 ### Main
 
-### Libraries
-
-### archiveAndUpdateReddit.py
-### botHelperFunctions.py
-### botMetrics.py
-### getChatBotKeys.py
-### getPythonHelperBotKeys.py
-### locateDB.py
-### questionIdentifier.py
-### rpiGPIOFunctions.py
 ### rpiManager.py
-### searchStackOverflowWeb.py
-### summarizeText.py
-### textSupervision.py
-### updateLocalSubHistory.py
-### user_agents.py
+
+### Util Libraries
+
+#### archiveAndUpdateReddit.py
+#### botHelperFunctions.py
+#### botMetrics.py
+#### formatBagOfSentences.py
+A module to order a handed bag of sentences, and insert new lines to make paragraphs. Currently does not function. 
+#### formatCode.py
+Trains a classifier on code vs text, returns the classifier. Later, takes in a textBlock and classifies it on a 'newline' basis, rather than a tokenized sentence basis. The feature profile is build from a modified lz78 algorithm, where 
+#### locateDB.py
+#### lsalib2.py
+#### questionIdentifier.py
+#### rpiGPIOFunctions.py
+#### scriptedReply.py
+#### searchStackOverflowWeb.py
+#### summarizeText.py
+#### textSupervision.py
+#### updateLocalSubHistory.py
+#### user_agents.py
 
 ### Tests 
 

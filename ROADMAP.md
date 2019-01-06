@@ -22,7 +22,7 @@ Dates follow YYYY-MM-DD format
 
 
 
-## [A0.2.00] 2018-xx-xx
+## [A0.2.00] 2019-xx-xx
 In Progress
 ### Contributors
 Keith Murray
@@ -39,11 +39,11 @@ There will probably be a large update to move the bot to v0.2.00. Moving to v0.2
 
 #### Add
     
- - Submission, Comment, and Users are getting a new class structure. 
+ - Submission, Comment, Users, and Messages are getting a new class structure. 
     This is going to be based heavily off of networkEval's design (a sepperate bot), and should provide a number of wonderful little side effects, but will come at an API call cost. This is currently being worked on and should hit the next change log, and also bring about a large version change this next time around.
     Side effects include but are not limited to archiving posts, samples a test suite can draw from, and fewer unexpected errors caused because I assumed praw populated that varible so I didn't put it in a try except block and oh god how are reddit servers so spotty. 
 
- - Numbering system for items in roadmap to clear up what's being worked on and what is completed from an outside perspective. A master numbering system probably is a good idea, vX.X.XX[a,c,d,r,f,s,co]XX, following version, section, and specific roadmap suggestion number. But That seems bloated and unnecessary. 
+ - Numbering system for items in roadmap to clear up what's being worked on and what is completed from an outside perspective. A master numbering system probably is a good idea, vX.X.XX[a,c,d,r,f,s,co]XX, following version, section, and specific roadmap suggestion number. But That seems bloated and unnecessary. (Maybe this isn't worth while, maybe it is and will help catch things in the changelog)
 
  - Verify reddit post logs by grabbing most recent bot comments. This should reduce risk of two computers commenting on the same post which could happen if databases are de-synced and one computer is not in quiet mode because I typed in the wrong command. Opperator Error Risk Reduction. 
 
@@ -79,17 +79,18 @@ There will probably be a large update to move the bot to v0.2.00. Moving to v0.2
  - [X] Adjust log format to record the source py file, function name, and line number of the code that triggered the log. Also consider adding the version atop the log file
  - Add ram usage check and log it in every 'awake' cycle of program, to try and tease out any possible MemeoryError's kicking up after long periods of time
  - Log processing: a set of functions and visualizations to process the log files for various useful tidbits. Something nicer than grep
- - formatCode.py: a module to classify each line in a post to identify blocks of code, then to reformat the code for reddit by appending 4 spaces to the start of each newline
+ - [X] formatCode.py: a module to classify each line in a post to identify blocks of code, then to reformat the code for reddit by appending 4 spaces to the start of each newline
  
 
 
 #### Change
  - [X] module folder structure. It's a mess, make it easy to work through. Each little module could use it's own readme, roadmap, and changelog. Especially the more generic and useful functions.
- - main.XComment(): fix so the base comment is actually the base comment, and there's varible headers/preambles. The message as a whole is also a bit unwieldy, rework the base comment to cut it down as best as possible. Be mindful that there is also an intended "I searched stack overflow and this is what I thought might be useful" section that will be added as well.
- - Move key phrases to a .txt file rather than hard coded in a function, load it into memory at startup. 
+ - [X] main.XComment(): fix so the base comment is actually the base comment, and there's varible headers/preambles. The message as a whole is also a bit unwieldy, rework the base comment to cut it down as best as possible. Be mindful that there is also an intended "I searched stack overflow and this is what I thought might be useful" section that will be added as well.
+ - [X] Move key phrases to a .txt file rather than hard coded in a function, load it into memory at startup.
  - Consider restructuring the bot to be able to autoreply faster than once every 15 minutes, making the keyphrase autoreply an independent and parallel classifier
  - Move NLP functions from NLTK (used in many files) to a buffer module, allowing for simpler, universal changes to be made. For example, if there is a better POS tagger than nltk.pos_tag(sent) then we can easily switch to that. Right now NLTK is used over a fairly large filespace making adjustments of that sort difficult. 
  - Review all my logging notes. See what should be dropped, changed, etc. 
+ - move classifier into its own module to make it cleaner and easier to build new ones off of
 
 #### Deprecate
  - Search Stack Overflow has not been functional in ages, the code doesn't really work, and back when it did it was rarely helpful. This version will deprecate the code, but not remove it on the off chance that the SO Database project path could use portions of it. 
@@ -119,6 +120,7 @@ There will probably be a large update to move the bot to v0.2.00. Moving to v0.2
  Parse through OPs comments on the thread, and search for text that implies the question
  has been answered. Adjust comment on submission accordingly, probably to say, "Next time
  you have a question like this, consider using r/learnpython" blah blah  blah 
+ - Redo the main runbot while loop to envoke certain actions once every time period, allowing for variable flexibility on different tasks, Ex: classifying posts infrequently, checking for summons frequently
 
 
 
@@ -275,19 +277,23 @@ are still certain factors which can be measured and acted on.
 
  - reformat_User_Code():
  a function to identify python code blocks that aren't properly formated, and auto format the code
- for other reddit users. Might live it its own module 
+ for other reddit users. Might live it its own module.
+ Currently being worked on.
+
+ - Leverage reformat user code with automatic Q&A: Use classified code regions to match SO code regions, classified text regions to match SO text regions. Hopefully this improves the search engine and cuts the risk of added noise by a text to code block increasing precieved distance between the user query and the SO database post.
+ Next If a majority of highly matching SO posts have sample code in the question, but the reddit query does not, strongly suggest adding the example code that caused the issue to the next itteration of the query.
 
 
  - question_topic_Modeling():
  This is going to take a few parts. 
- Identify all related learning subreddits:
+   - Identify all related learning subreddits:
 
- Model the topics of stack overflow questions. 
+   - Model the topics of stack overflow questions. 
 
- Model the topics in the learning subs
+   - Model the topics in the learning subs
  Do network analysis to find the most active sub that addresses a topic: probably pagerank since it's simple and it works. It doesn't need to be state of the art, and if it can run on the pi, that's even better
 
- Next take in the question, extract topics, feed the topics in the network, identify the sub that will get the best answer fastest. This means there also has to be some knowledge of the subs activity score
+   - Next take in the question, extract topics, feed the topics in the network, identify the sub that will get the best answer fastest. This means there also has to be some knowledge of the subs activity score
 
  - sub_Activity_Measure():
  Or score.. 
@@ -308,6 +314,8 @@ are still certain factors which can be measured and acted on.
  - Auto Reply to common questions (Functional FAQ as it were)
   (This is probably going to be an early test of soft skills)
   * ["Possibly wanting to learn Python, is it worth it?"](https://www.reddit.com/r/Python/comments/917zxd/)
+
+ - Use Automatic Sentence Ordering to construct the bots autoreply, reducing the mess of the code there. Should be mildly simple (ha, sure...), and allow for much more flexible commenting. Target is to have a defined intro, a 'bag of sentences' for the body, and a defined signature. The 'mildly simple' notion is built off the idea that there will be little the program can do incorrectly with that scaffolding. Look at two metrics: absolute sentence ordering, and new paragraph insertion. Maybe train on a ton of readme's, or wiki data for the new paragraph insertion. 
 
 
 #### Question & Answer

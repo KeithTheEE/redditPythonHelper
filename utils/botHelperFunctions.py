@@ -32,6 +32,10 @@ def load_autoreply_key_phrases(fl_path):
     fl.close()
     return phrase_set
 
+def shortenRedditURL(url):
+    url = url[8:]
+    return '/'.join(url.split('/')[:-2])+'/'
+
 
 def coolPlacesToDonate():
     donationList = []

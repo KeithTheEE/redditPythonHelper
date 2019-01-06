@@ -3,6 +3,11 @@
 
 '''
 Keith Murray
+
+
+Logging 'not working' error notes can be found here
+https://stackoverflow.com/questions/42431418/python-logging-multiple-modules-logger-not-working-outside-main-program
+
 '''
 
 import subprocess
@@ -197,9 +202,9 @@ def pull_from_github():
 def botStuff():
     time.sleep(30)
 
-    reddit, classifier, tdm, userNames, postHistory = main.startupBot()
+    reddit, classifier, codeVTextClassifier, tdm, userNames, postHistory = main.startupBot()
     try:
-        main.runBot(reddit, classifier, tdm, userNames, postHistory)
+        main.runBot(reddit, classifier, codeVTextClassifier, tdm, userNames, postHistory)
     except KeyboardInterrupt:
         print("Concluding Program")
         logging.debug("Keyboard Interrupt: Ending Program")

@@ -107,9 +107,9 @@ def performanceVisualization(reddit):
     # Only run once per unit time
 
     # Running
-    user = reddit.redditor('pythonHelperBot')
+    user = archiveAndUpdateReddit.get_redditor_by_name(reddit, 'pythonHelperBot')
     totalCommentKarma = user.comment_karma
-    date, karma = archiveAndUpdateReddit.makeCommentKarmaReport(user) 
+    date, karma = archiveAndUpdateReddit.makeCommentKarmaReport(user, reddit) 
     karmaPlot(date, karma, totalCommentKarma)
     return
 

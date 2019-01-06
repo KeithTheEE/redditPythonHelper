@@ -14,10 +14,12 @@ def check_through_these():
                             'D:/Databases/GutTop100Books',
                              '/home/pi/Documents/filesForProgramming/Reddit/GutTop100Books',
                              '/media/keith/hdd01/Databases/GutTop100Books']
+    codeForCodeAndText = ['misc/pyProgramTrainingLines.txt']
 
     check_here = {
         "amazonQ":amazonQuestionDBSources,
-        "englishDB":englishLangDBSourcess
+        "englishDB":englishLangDBSourcess,
+        "codeText":codeForCodeAndText
     }
 
     return check_here
