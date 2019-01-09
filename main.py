@@ -158,7 +158,7 @@ def buildHelpfulComment_DEPRECATED(submission, user, question_Set, classifier, t
     logging.debug(msg)
     # Quiet Mode is used to debug, and avoid
     if not quietMode:
-        archiveAndUpdateReddit.commentOnSubmmission(submission, msg, reddit)
+        archiveAndUpdateReddit.commentOnSubmmission(submission, msg, reddit, quietMode)
         archiveAndUpdateReddit.updateDatabase(user.name, submission.id)
         logging.debug( '\t\tCommented.')
     else:
@@ -188,6 +188,7 @@ def buildHelpfulComment(submission, user, reddit, suggested, crossPosted, answer
 
     # Follow rules and help make code clear
     bagOfSents.append(buildComment.followSubRules())
+    logging.info("Code Present: " + str(codePresent) + " | Correctly Formatted: " + str(correctlyFormatted))
     if not (codePresent and correctlyFormatted):
         # They've either not shown code or not shown
         #  well formatted code, we should suggest formatting
@@ -218,14 +219,14 @@ def buildHelpfulComment(submission, user, reddit, suggested, crossPosted, answer
     logging.debug(msg)
     # Quiet Mode is used to debug, and avoid
     if not quietMode:
-        archiveAndUpdateReddit.commentOnSubmmission(submission, msg, reddit)
+        archiveAndUpdateReddit.commentOnSubmmission(submission, msg, reddit, quietMode)
         archiveAndUpdateReddit.updateDatabase(user.name, submission.id)
         logging.debug( '\t\tCommented.')
     else:
         logging.debug("Quiet Mode is on, no actual post was made")
     
 
-    
+    return
 
 
     
@@ -566,61 +567,6 @@ def checkForSummons(msg):
 
 
 
-def checkInbox(reddit, unreadCount=None, sendText = True):
-    # Mark all messages as read after notification has been sent
-    rawInboxMessages = archiveAndUpdateReddit.checkForMessages(reddit)
-    sendText = True
-    
-    # Handle Summoning:
-    inboxMessages = []
-    for msg in rawInboxMessages:
-        summoned = checkForSummons(msg)
-        if summoned != None:
-            # Reply
-            # Pass message off to summoning processor, 
-            # Act on summons,
-            # Reply to summoner 
-            pass
-        else:
-            inboxMessages.append(msg)
-    
-
-    # Handle startup unread count
-    if unreadCount == None:
-        return len(inboxMessages)
-
-    
-
-    if len(inboxMessages) > unreadCount:
-        commentReplies = 0
-        directMessages = 0
-        userNameMentions = 0
-        for msg in inboxMessages:
-            if msg.was_comment:
-                if msg.subject == "username mention":
-                    userNameMentions += 1
-                else: 
-                    commentReplies += 1
-            else:
-                directMessages += 1
-        newMsgCount = len(inboxMessages) - unreadCount
-
-        if sendText:
-            if newMsgCount > 1:
-                txtmsg = "You have " + str(newMsgCount) + " new unread messages."
-            else:
-                txtmsg = "You have 1 new unread message."
-            txtmsg += "\n\nUnread Replies to your Comments: " + str(commentReplies)
-            txtmsg += "\nUnread Direct Messages: " + str(directMessages)
-            txtmsg += "\nUnread Username Mentions: " + str(userNameMentions)
-            textSupervision.send_update(txtmsg)
-            logging.info("Text Message sent: \n"+txtmsg)
-
-    unreadCount = len(inboxMessages)
-
-    return unreadCount
-
-    
 
 
 
@@ -669,7 +615,7 @@ def runBot(reddit, classifier, codeVTextClassifier, tdm, userNames, postHistory,
     phrase_set = botHelperFunctions.load_autoreply_key_phrases(fl_path='misc/autoreplyKeyPhrases.txt')
     
     setOfPosts = archiveAndUpdateReddit.grabAndUpdateNewPosts(reddit)
-    unreadCount = checkInbox(reddit)
+    unreadCount = botSummons.handleInbox(reddit, codeVTextClassifier, quietMode=quietMode)
     antiSpamList = {} # Used in basicUserClassify to only text me once per submission by a repeat user
     while True:
         for key in setOfPosts:
@@ -684,7 +630,7 @@ def runBot(reddit, classifier, codeVTextClassifier, tdm, userNames, postHistory,
                 if question_Set or request_Made:
                     # BODGE
                     if request_Made and not question_Set:
-                        question_Set = request_Made
+                        question_Set = request_Made 
                     
                     logging.debug(  '\t'+ "Found a valid post")
                     suggested, suggestedTime = checkForLearnPythonSuggestion(reddit, submission)
@@ -712,7 +658,7 @@ def runBot(reddit, classifier, codeVTextClassifier, tdm, userNames, postHistory,
                             #pass
 
         botMetrics.performanceVisualization(reddit)
-        unreadCount = checkInbox(reddit, unreadCount=unreadCount, sendText= True)
+        unreadCount = botSummons.handleInbox(reddit, codeVTextClassifier, unreadCount=unreadCount, sendText= True, quietMode=quietMode)
         logging.debug( "Sleeping..." + str(datetime.datetime.now()))
         time.sleep(15*60)
         setOfPosts = archiveAndUpdateReddit.grabAndUpdateNewPosts(reddit, submissionList=setOfPosts)

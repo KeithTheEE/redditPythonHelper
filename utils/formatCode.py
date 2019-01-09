@@ -12,6 +12,7 @@ from nltk.corpus import brown
 from nltk.metrics import ConfusionMatrix
 
 
+from utils import archiveAndUpdateReddit
 
 '''
 Keith Murray
@@ -154,6 +155,11 @@ def rewrapClassifications(line):
     return c
 
 def classifyPostLines(textBlock, classifier):
+    '''
+    This classifier is pretty consistenly all or nothing
+    A larger code base to train from will help significantly, but is not currently
+    a critical requirement 
+    '''
     lines = textBlock.split('\n')
     classifications = []
     rwclassifications = []
@@ -162,7 +168,13 @@ def classifyPostLines(textBlock, classifier):
         classifications.append(c)
         rwc = rewrapClassifications(line)
         rwclassifications.append(rwc)
-        print(c, rwc, line)
+        #print(c, rwc, line)
+        '''
+        print('\t>',c, line)
+        dist = classifier.prob_classify(code_text_features(line.strip()))
+        for label in dist.samples():
+            print("\t\t>%s: %f" % (label, dist.prob(label)))
+        '''
     return classifications, rwclassifications   
 
 
@@ -192,7 +204,7 @@ def reformat(text, classifier):
 
     # Also assume bot is only called when reformat is needed
     msgPrefix = "Here's the best I could do:\n\n***\n"
-    msgSuffix = """\n\n***\n[^(CODE FORMATTING HELP)](https://www.reddit.com/r/learnpython/wiki/faq#wiki_how_do_i_format_code.3F) 
+    msgSuffix = """\n\n***\n[^(Code Formatting Help)](https://www.reddit.com/r/learnpython/wiki/faq#wiki_how_do_i_format_code.3F) 
 ^(|)
 [^(README)](https://github.com/CrakeNotSnowman/redditPythonHelper) 
 ^(|)
@@ -207,6 +219,7 @@ def reformat(text, classifier):
     sourceText = text.split('\n')
     #print(len(sourceText), len(c), len(rwc))
     assert (len(sourceText) == len(c)) and (len(c) == len(rwc))
+    #print(sourceText, c, rwc)
 
     # Block out/split regions on 'emptyline' class
     # For block, if region is mostly code, add 4 spaces to the start of it
@@ -222,11 +235,12 @@ def reformat(text, classifier):
         textBlock = []
         codeLines = 0
         # Classify a block
-        while (rwc[i] != 'emptyline') and i <len(c):
-            textBlock.append(sourceText[i])
-            if rwc[i] == 'code' or c[i] == 'code': 
-                codeLines += 1
-            i += 1
+        if len(c)>0:
+            while  i <len(c) and (rwc[i] != 'emptyline'):
+                textBlock.append(sourceText[i])
+                if rwc[i] == 'code' or c[i] == 'code': 
+                    codeLines += 1
+                i += 1
 
         # ID if block was a coding region
         if len(textBlock) > 0:
@@ -248,4 +262,115 @@ def reformat(text, classifier):
         i += 1
     newMSG = "\n".join(msgBlock)
     msg = msgPrefix + newMSG + msgSuffix
+    #logging.info("Code Present: " + str(codePresent) + " | Correctly Formatted" + str(correctlyFormatted))
     return msg, changesMade, codePresent, correctlyFormatted
+
+def loadSummoningHistory(sourcefl):
+    submissions = {}
+    reformatted = []
+    summoners = []
+
+    with open(sourcefl, 'r') as fl:
+        for line in fl:
+            if line.strip() != "":
+                vals = line.strip().split('\t')
+                subm = vals[0]
+                ref = vals [1]
+                summ = vals[3]
+                if subm in submissions:
+                    submissions[subm] += 1
+                else:
+                    submissions[subm] = 1
+                reformatted.append(ref)
+                summoners.append(summ)
+
+
+    return submissions, reformatted, summoners
+
+def saveSummoningAction(sourcefl,saveLine):
+    # Submission ID, Parent Comment ID, Parent Author, Summoning Comment ID, Summoning Author, Summoning Comment Timestamp, summoning comment, Boolean if changes were made, was there code present, was the code correctly formated
+
+    with open(sourcefl, 'a') as fl:
+        fl.write(saveLine)
+        fl.write('\n')
+
+    return 
+
+def handleSummons(reddit, msg, codeVTextClassifier, quietMode, ageLimitHours=2):
+    # Add more logging info to see who summoned etc
+    # This is the reformat summons
+
+    # Get necessary values:
+    # Summoning Comment
+    if msg.was_comment:
+        summoning_comment = archiveAndUpdateReddit.get_comment_by_ID(reddit, comment_id= msg.id)
+        if datetime.datetime.utcnow() - summoning_comment.created_utc > datetime.timedelta(hours=ageLimitHours):
+            # It was too long ago
+            logging.info("Post is older than allowed, "+ str(datetime.datetime.utcnow() - summoning_comment.created_utc))
+            #logging.debug("Continuing action for testing")
+            #pass
+            return
+
+        # Parent comment
+        #parentID = 
+        parentID = summoning_comment.parent_id.split('_')[-1]
+        if summoning_comment.parent_id == summoning_comment.link_id:
+            # Parent comment is the post
+            parent = archiveAndUpdateReddit.get_submission_by_ID(reddit, submission_id=parentID)
+            textBlock = parent.selftext 
+        else:
+            parent = archiveAndUpdateReddit.get_comment_by_ID(reddit, comment_id=parentID)
+            textBlock = parent.body
+
+        if summoning_comment.author == 'pythonHelperBot' or parent.author == 'pythonHelperBot':
+            logging.info("Summoned and interacting with self, ignoring.")
+            return
+            
+        # Verify that I haven't already reformated the parent comment 
+        #print(parent.id, summoning_comment.id, summoning_comment.created_utc)
+        submissions, reformatted, summoners = loadSummoningHistory("redditData/summoningHistory.txt")
+        if summoning_comment.link_id in submissions:
+            if submissions[summoning_comment.link_id] >= 3:
+                logging.info("I've commented on this thread too many times, I'm ignoring all other summons")
+                return
+        if parent.id in reformatted:
+            logging.info("I've already reformatted either this comment or the parent, I'm ignoring it")
+            return
+        if parent.id in summoners:
+            logging.info("I've responding to this summoner, and will not reformat the summons")
+            return
+        if summoning_comment in reformatted:
+            logging.info("I've reformatted this summons, I'm not responding to this summons")
+            return
+        if summoning_comment in summoners:
+            logging.info("I've already responded to this summons")
+            return
+            
+
+        # Attempt to reformat
+        
+        msg, changesMade, codePresent, correctlyFormatted = reformat(textBlock, codeVTextClassifier)
+
+        # Comment below the summoning comment with msg
+        #  Only if comment is recent enough
+
+        #quietMode = False # used for testing
+        if not quietMode:
+            # Save data saying I've commented on it 
+            saveLine = str(summoning_comment.link_id) + '\t'
+            saveLine += str(parent.id) + '\t' + str(parent.author) + '\t'
+            saveLine += str(summoning_comment.id)+ '\t' + str(summoning_comment.author) + '\t' + str(summoning_comment.created_utc) +'\t'+ str(summoning_comment.body.encode('ascii', 'ignore')) + '\t'
+            saveLine += str(changesMade) + '\t'+ str(codePresent) + '\t' + str(correctlyFormatted)
+
+            logging.debug(saveLine)
+            if codePresent and changesMade:
+                saveSummoningAction("redditData/summoningHistory.txt", saveLine)
+                archiveAndUpdateReddit.commentOnComment(summoning_comment, msg, reddit, quietMode)
+                logging.debug(msg.encode('ascii', 'ignore'))
+            else:
+                logging.info("Code Present: " +  str(codePresent) + " | Changes Made: " + str(changesMade) + " | Correctly Formatted: "+str(correctlyFormatted))
+        else:
+            logging.debug("Quiet Mode is active, no reformat comment made.")
+            print(msg)
+
+    return

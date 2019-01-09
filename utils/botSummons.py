@@ -1,6 +1,13 @@
 
 
 
+import logging
+
+from utils import archiveAndUpdateReddit
+from utils import formatCode
+from utils import textSupervision
+
+
 def summonCommands():
     '''
     Returns a list of accepted commands for bot actions
@@ -9,14 +16,99 @@ def summonCommands():
     '''
     return ['reformat']
 
+def actOnSummons(reddit, msg, command, codeVTextClassifier, quietMode):
+
+    if 'reformat' == command.strip().lower():
+        formatCode.handleSummons(reddit, msg, codeVTextClassifier, quietMode)
+    else:
+        logging.info("No know command associated with summons command")
+
+    return
 
 def checkForSummons(msg):
     summonID = None
+    command = None
+    #commandList = summonCommands()
     if msg.subject.strip() == "username mention":
-        if (msg.body.strip() == 'u/pythonHelperBot !reformat') or (msg.body.strip() == '/u/pythonHelperBot !reformat'):
-            print("SUMMONS")
-            print(msg.id)
+        if 'u/pythonHelperBot !' in msg.body.strip() :
+            command = msg.body.strip().split('u/pythonHelperBot !')[-1]
+            #if command in commandList:
+            logging.info("Bot has been summoned: ID: " + str(msg.id) + "\nDate: " + str(msg.created_utc) +"\nSubject: " + str(msg.subject) + "\nBody\n" + str(msg.body))
+            #print("SUMMONS")
+            #print(msg.id)
             summonID = msg.id
-        print(msg.body)
+        #print(msg.body)
     
-    return summonID
+    return summonID, command
+
+
+def handleInbox(reddit, codeVTextClassifier, unreadCount=None, sendText = True, quietMode=False):
+    # Mark all messages as read after notification has been sent
+    rawInboxMessages = archiveAndUpdateReddit.checkForMessages(reddit)
+    sendText = True
+    
+    # Handle Summoning:
+    inboxMessages = []
+    summonMsgs = []
+    summonedIDs = []
+    if len(rawInboxMessages) == 1:
+        logging.debug("Checking Inbox.. 1 message")
+    else:
+        logging.debug("Checking Inbox.. "+str(len(rawInboxMessages)) + " message(s)")
+
+    for msg in rawInboxMessages:
+        summoned, command = checkForSummons(msg)
+        if summoned != None:
+            # Reply
+            # Pass message off to summoning processor, 
+            # Act on summons,
+            # Reply to summoner 
+            # mark summoning as read
+            summonMsgs.append(msg)
+            summonedIDs.append(summoned)
+            actOnSummons(reddit, msg, command, codeVTextClassifier, quietMode)
+            #formatCode.handleSummons(reddit, msg, codeVTextClassifier)
+            pass
+        else:
+            inboxMessages.append(msg)
+
+    # Commented out during testing:
+    logging.debug(str(len(summonedIDs)) + " summoning messages, clearing them..")
+    archiveAndUpdateReddit.markSummonsAsReadMessages(reddit, msgIDs =summonedIDs)
+
+    # Handle startup unread count
+    if unreadCount == None:
+        return len(inboxMessages)
+
+    
+
+    if len(inboxMessages) > unreadCount:
+        commentReplies = 0
+        directMessages = 0
+        userNameMentions = 0
+        for msg in inboxMessages:
+            if msg.was_comment:
+                if msg.subject == "username mention":
+                    userNameMentions += 1
+                else: 
+                    commentReplies += 1
+            else:
+                directMessages += 1
+        newMsgCount = len(inboxMessages) - unreadCount
+
+        if sendText:
+            if newMsgCount > 1:
+                txtmsg = "You have " + str(newMsgCount) + " new unread messages."
+            else:
+                txtmsg = "You have 1 new unread message."
+            txtmsg += "\n\nUnread Replies to your Comments: " + str(commentReplies)
+            txtmsg += "\nUnread Direct Messages: " + str(directMessages)
+            txtmsg += "\nUnread Username Mentions: " + str(userNameMentions)
+            textSupervision.send_update(txtmsg)
+            logging.info("Text Message sent: \n"+txtmsg)
+
+    unreadCount = len(inboxMessages)
+
+    return unreadCount
+
+    

@@ -790,7 +790,7 @@ def get_submission_by_ID(reddit, submission_id):
             break
         try:
             # ********************************
-            submission = phb_Reddit_Comment(reddit.submission(id=submission_id))
+            submission = phb_Reddit_Submission(reddit.submission(id=submission_id))
             # ********************************
             vals_Assigned = True
             break
@@ -848,7 +848,7 @@ def is_connected():
     return False
 
 
-def commentOnSubmmission(submission, msg, reddit):
+def commentOnSubmmission(submission, msg, reddit, quietMode):
     # Post message to reddit submission
     #testingsubmissionID = '8nvbf3'
     # Prep for errors
@@ -860,46 +860,49 @@ def commentOnSubmmission(submission, msg, reddit):
 
     vals_Assigned = False
 
-    while True:
-        if vals_Assigned:
-            break
-        try:
-            # ********************************
-            submission = reddit.submission(id=submission.id)
-            submission.reply(msg)
-            # ********************************
-            vals_Assigned = True
-            break
-        except RequestException as e:
-            logging.error("Caught Server Rate Limit Hit | Specific Error:")
-            logging.error("\n"+traceback.format_exc())
-            requestBackoffTime = _backoff_Sleeper(requestBackoffTime)
-            if time.time()-startTime > maxTotalWaitTime:
-                logging.error("I've tried this too much, escalating error")
-                raise e
-        except ServerError as e:
-            logging.error("Caught Server 500 Error | Specific Error:")
-            logging.error("\n"+traceback.format_exc())
-            serverBackoffTime = _backoff_Sleeper(serverBackoffTime)
-            if time.time()-startTime > maxTotalWaitTime:
-                logging.error("I've tried this too much, escalating error")
-                raise e
-        except Exception as e:
-            internet = is_connected()
-            if internet:
-                # I'm connected and There's some problem. Figure it out and pass it along
-                logging.error("I'm connected to the internet and recieving this error")
+    if not quietMode:
+        while True:
+            if vals_Assigned:
+                break
+            try:
+                # ********************************
+                submission = reddit.submission(id=submission.id)
+                submission.reply(msg)
+                # ********************************
+                vals_Assigned = True
+                break
+            except RequestException as e:
+                logging.error("Caught Server Rate Limit Hit | Specific Error:")
                 logging.error("\n"+traceback.format_exc())
-                raise e 
-            else:
-                # no internet, figure out what to do here
-                logging.error("I'm not connected to the internet escalating this error")
+                requestBackoffTime = _backoff_Sleeper(requestBackoffTime)
+                if time.time()-startTime > maxTotalWaitTime:
+                    logging.error("I've tried this too much, escalating error")
+                    raise e
+            except ServerError as e:
+                logging.error("Caught Server 500 Error | Specific Error:")
                 logging.error("\n"+traceback.format_exc())
-                raise e
+                serverBackoffTime = _backoff_Sleeper(serverBackoffTime)
+                if time.time()-startTime > maxTotalWaitTime:
+                    logging.error("I've tried this too much, escalating error")
+                    raise e
+            except Exception as e:
+                internet = is_connected()
+                if internet:
+                    # I'm connected and There's some problem. Figure it out and pass it along
+                    logging.error("I'm connected to the internet and recieving this error")
+                    logging.error("\n"+traceback.format_exc())
+                    raise e 
+                else:
+                    # no internet, figure out what to do here
+                    logging.error("I'm not connected to the internet escalating this error")
+                    logging.error("\n"+traceback.format_exc())
+                    raise e
+    else:
+        logging.debug("Quiet Mode is active, Comment On Submission Ignored")
 
     return
 
-def commentOnComment(comment, msg, reddit):
+def commentOnComment(comment, msg, reddit, quietMode):
     
     # Prep for errors
     maxTotalWaitTime = 5*60*60
@@ -911,42 +914,46 @@ def commentOnComment(comment, msg, reddit):
     vals_Assigned = False
 
 
-    while True:
-        if vals_Assigned:
-            break
-        try:
-            # ********************************
-            comment = reddit.comment(id=comment.id)
-            comment.reply(msg)
-            # ********************************
-            vals_Assigned = True
-            break
-        except RequestException as e:
-            logging.error("Caught Server Rate Limit Hit | Specific Error:")
-            logging.error("\n"+traceback.format_exc())
-            requestBackoffTime = _backoff_Sleeper(requestBackoffTime)
-            if time.time()-startTime > maxTotalWaitTime:
-                logging.error("I've tried this too much, escalating error")
-                raise e
-        except ServerError as e:
-            logging.error("Caught Server 500 Error | Specific Error:")
-            logging.error("\n"+traceback.format_exc())
-            serverBackoffTime = _backoff_Sleeper(serverBackoffTime)
-            if time.time()-startTime > maxTotalWaitTime:
-                logging.error("I've tried this too much, escalating error")
-                raise e
-        except Exception as e:
-            internet = is_connected()
-            if internet:
-                # I'm connected and There's some problem. Figure it out and pass it along
-                logging.error("I'm connected to the internet and recieving this error")
+    if not quietMode: 
+        while True:
+            if vals_Assigned:
+                break
+            try:
+                # ********************************
+                comment = reddit.comment(id=comment.id)
+                comment.reply(msg)
+                # ********************************
+                vals_Assigned = True
+                break
+            except RequestException as e:
+                logging.error("Caught Server Rate Limit Hit | Specific Error:")
                 logging.error("\n"+traceback.format_exc())
-                raise e 
-            else:
-                # no internet, figure out what to do here
-                logging.error("I'm not connected to the internet escalating this error")
+                requestBackoffTime = _backoff_Sleeper(requestBackoffTime)
+                if time.time()-startTime > maxTotalWaitTime:
+                    logging.error("I've tried this too much, escalating error")
+                    raise e
+            except ServerError as e:
+                logging.error("Caught Server 500 Error | Specific Error:")
                 logging.error("\n"+traceback.format_exc())
-                raise e
+                serverBackoffTime = _backoff_Sleeper(serverBackoffTime)
+                if time.time()-startTime > maxTotalWaitTime:
+                    logging.error("I've tried this too much, escalating error")
+                    raise e
+            except Exception as e:
+                internet = is_connected()
+                if internet:
+                    # I'm connected and There's some problem. Figure it out and pass it along
+                    logging.error("I'm connected to the internet and recieving this error")
+                    logging.error("\n"+traceback.format_exc())
+                    raise e 
+                else:
+                    # no internet, figure out what to do here
+                    logging.error("I'm not connected to the internet escalating this error")
+                    logging.error("\n"+traceback.format_exc())
+                    raise e
+    else:
+        logging.debug("Quiet Mode is active, Comment On Comment Ignored")
+        
     return
 
 
@@ -1113,6 +1120,61 @@ def checkForMessages(reddit):
                 raise e
 
     return inboxMessages
+    
+
+def markSummonsAsReadMessages(reddit, msgIDs = []):
+    # Change to isolated msg class
+
+    # Prep for errors
+    maxTotalWaitTime = 5*60*60
+    requestBackoffTime = 60 # starting amount of time required to wait after an error. it will then double
+    serverBackoffTime = 5 
+    maxBackoffTime = 5*60
+    startTime = time.time()
+
+    vals_Assigned = False
+
+    while True:
+        if vals_Assigned:
+            break
+        try:
+            # ********************************
+            for msg in reddit.inbox.unread():
+                time.sleep(1) # Try to reduce rate limit issues
+                if msg.id in msgIDs:
+                    msg.mark_read()
+            # ********************************
+
+            vals_Assigned = True
+            break
+        except RequestException as e:
+            logging.error("Caught Server Rate Limit Hit | Specific Error:")
+            logging.error("\n"+traceback.format_exc())
+            requestBackoffTime = _backoff_Sleeper(requestBackoffTime)
+            if time.time()-startTime > maxTotalWaitTime:
+                logging.error("I've tried this too much, escalating error")
+                raise e
+        except ServerError as e:
+            logging.error("Caught Server 500 Error | Specific Error:")
+            logging.error("\n"+traceback.format_exc())
+            serverBackoffTime = _backoff_Sleeper(serverBackoffTime)
+            if time.time()-startTime > maxTotalWaitTime:
+                logging.error("I've tried this too much, escalating error")
+                raise e
+        except Exception as e:
+            internet = is_connected()
+            if internet:
+                # I'm connected and There's some problem. Figure it out and pass it along
+                logging.error("I'm connected to the internet and recieving this error")
+                logging.error("\n"+traceback.format_exc())
+                raise e 
+            else:
+                # no internet, figure out what to do here
+                logging.error("I'm not connected to the internet escalating this error")
+                logging.error("\n"+traceback.format_exc())
+                raise e
+
+    return 
     
 
 
