@@ -147,7 +147,7 @@ def getSubsUsersInteractsIn(reddit, user, limitCount=25):
  /r/MLQuestions
  /r/learnprogramming
     '''
-    learning_Subs = botHelperFunctions.get_learning_sub_Names()
+    learning_Subs = get_learning_sub_Names()
     postsInLearningSubs = []
     redditSubs = {}
     submissionList = user.getUserPosts(reddit, limitCount)
