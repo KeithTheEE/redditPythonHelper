@@ -12,7 +12,6 @@ from utils import botMetrics
 from utils import botHelperFunctions 
 from utils import buildComment
 from utils import formatCode
-from utils import learningSubmissionClassifiers
 from utils import locateDB
 from utils import questionIdentifier
 from utils import searchStackOverflowWeb
