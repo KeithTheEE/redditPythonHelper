@@ -2,7 +2,7 @@
 import time
 import datetime
 import praw
-from prawcore import RequestException, ServerError
+from prawcore import RequestException, ResponseException, ServerError
 from asecretplace import getPythonHelperBotKeys
 import sqlite3
 import os
@@ -81,7 +81,7 @@ class phb_Reddit_Submission(object):
                 if time.time()-startTime > maxTotalWaitTime:
                     logging.error("I've tried this too much, escalating error")
                     raise e
-            except ServerError as e:
+            except (ServerError, ResponseException) as e:
                 logging.error("Caught Server 500 Error | Specific Error:")
                 logging.error("\n"+traceback.format_exc())
                 serverBackoffTime = self._backoff(serverBackoffTime)
@@ -140,7 +140,7 @@ class phb_Reddit_Submission(object):
                 if time.time()-startTime > maxTotalWaitTime:
                     logging.error("I've tried this too much, escalating error")
                     raise e
-            except ServerError as e:
+            except (ServerError, ResponseException) as e:
                 logging.error("Caught Server 500 Error | Specific Error:")
                 logging.error("\n"+traceback.format_exc())
                 serverBackoffTime = self._backoff(serverBackoffTime)
@@ -202,7 +202,7 @@ class phb_Reddit_Submission(object):
                 if time.time()-startTime > maxTotalWaitTime:
                     logging.error("I've tried this too much, escalating error")
                     raise e
-            except ServerError as e:
+            except (ServerError, ResponseException) as e:
                 logging.error("Caught Server 500 Error | Specific Error:")
                 logging.error("\n"+traceback.format_exc())
                 serverBackoffTime = self._backoff(serverBackoffTime)
@@ -255,7 +255,7 @@ class phb_Reddit_Submission(object):
                 if time.time()-startTime > maxTotalWaitTime:
                     logging.error("I've tried this too much, escalating error")
                     raise e
-            except ServerError as e:
+            except (ServerError, ResponseException) as e:
                 logging.error("Caught Server 500 Error | Specific Error:")
                 logging.error("\n"+traceback.format_exc())
                 serverBackoffTime = self._backoff(serverBackoffTime)
@@ -333,7 +333,7 @@ class phb_Reddit_Comment(object):
                 if time.time()-startTime > maxTotalWaitTime:
                     logging.error("I've tried this too much, escalating error")
                     raise e
-            except ServerError as e:
+            except (ServerError, ResponseException) as e:
                 logging.error("Caught Server 500 Error | Specific Error:")
                 logging.error("\n"+traceback.format_exc())
                 serverBackoffTime = self._backoff(serverBackoffTime)
@@ -390,7 +390,7 @@ class phb_Reddit_Comment(object):
                 if time.time()-startTime > maxTotalWaitTime:
                     logging.error("I've tried this too much, escalating error")
                     raise e
-            except ServerError as e:
+            except (ServerError, ResponseException) as e:
                 logging.error("Caught Server 500 Error | Specific Error:")
                 logging.error("\n"+traceback.format_exc())
                 serverBackoffTime = self._backoff(serverBackoffTime)
@@ -471,7 +471,7 @@ class phb_Reddit_User(object):
                 if time.time()-startTime > maxTotalWaitTime:
                     logging.error("I've tried this too much, escalating error")
                     raise e
-            except ServerError as e:
+            except (ServerError, ResponseException) as e:
                 logging.error("Caught Server 500 Error | Specific Error:")
                 logging.error("\n"+traceback.format_exc())
                 serverBackoffTime = self._backoff(serverBackoffTime)
@@ -532,7 +532,7 @@ class phb_Reddit_User(object):
                 if time.time()-startTime > maxTotalWaitTime:
                     logging.error("I've tried this too much, escalating error")
                     raise e
-            except ServerError as e:
+            except (ServerError, ResponseException) as e:
                 logging.error("Caught Server 500 Error | Specific Error:")
                 logging.error("\n"+traceback.format_exc())
                 serverBackoffTime = self._backoff(serverBackoffTime)
@@ -582,7 +582,7 @@ class phb_Reddit_User(object):
                 if time.time()-startTime > maxTotalWaitTime:
                     logging.error("I've tried this too much, escalating error")
                     raise e
-            except ServerError as e:
+            except (ServerError, ResponseException) as e:
                 logging.error("Caught Server 500 Error | Specific Error:")
                 logging.error("\n"+traceback.format_exc())
                 serverBackoffTime = self._backoff(serverBackoffTime)
@@ -653,7 +653,7 @@ class phb_Reddit_Msg(object):
                 if time.time()-startTime > maxTotalWaitTime:
                     logging.error("I've tried this too much, escalating error")
                     raise e
-            except ServerError as e:
+            except (ServerError, ResponseException) as e:
                 logging.error("Caught Server 500 Error | Specific Error:")
                 logging.error("\n"+traceback.format_exc())
                 serverBackoffTime = self._backoff(serverBackoffTime)
@@ -705,7 +705,7 @@ def get_redditor_by_name(reddit, name):
             if time.time()-startTime > maxTotalWaitTime:
                 logging.error("I've tried this too much, escalating error")
                 raise e
-        except ServerError as e:
+        except (ServerError, ResponseException) as e:
             logging.error("Caught Server 500 Error | Specific Error:")
             logging.error("\n"+traceback.format_exc())
             serverBackoffTime = _backoff_Sleeper(serverBackoffTime)
@@ -753,7 +753,7 @@ def get_comment_by_ID(reddit, comment_id):
             if time.time()-startTime > maxTotalWaitTime:
                 logging.error("I've tried this too much, escalating error")
                 raise e
-        except ServerError as e:
+        except (ServerError, ResponseException) as e:
             logging.error("Caught Server 500 Error | Specific Error:")
             logging.error("\n"+traceback.format_exc())
             serverBackoffTime = _backoff_Sleeper(serverBackoffTime)
@@ -801,7 +801,7 @@ def get_submission_by_ID(reddit, submission_id):
             if time.time()-startTime > maxTotalWaitTime:
                 logging.error("I've tried this too much, escalating error")
                 raise e
-        except ServerError as e:
+        except (ServerError, ResponseException) as e:
             logging.error("Caught Server 500 Error | Specific Error:")
             logging.error("\n"+traceback.format_exc())
             serverBackoffTime = _backoff_Sleeper(serverBackoffTime)
@@ -878,7 +878,7 @@ def commentOnSubmmission(submission, msg, reddit, quietMode):
                 if time.time()-startTime > maxTotalWaitTime:
                     logging.error("I've tried this too much, escalating error")
                     raise e
-            except ServerError as e:
+            except (ServerError, ResponseException) as e:
                 logging.error("Caught Server 500 Error | Specific Error:")
                 logging.error("\n"+traceback.format_exc())
                 serverBackoffTime = _backoff_Sleeper(serverBackoffTime)
@@ -932,7 +932,7 @@ def commentOnComment(comment, msg, reddit, quietMode):
                 if time.time()-startTime > maxTotalWaitTime:
                     logging.error("I've tried this too much, escalating error")
                     raise e
-            except ServerError as e:
+            except (ServerError, ResponseException) as e:
                 logging.error("Caught Server 500 Error | Specific Error:")
                 logging.error("\n"+traceback.format_exc())
                 serverBackoffTime = _backoff_Sleeper(serverBackoffTime)
@@ -1021,7 +1021,7 @@ def getNewPosts(reddit, sub="python", submissionList={}, ageLimitHours=12):
             if time.time()-startTime > maxTotalWaitTime:
                 logging.error("I've tried this too much, escalating error")
                 raise e
-        except ServerError as e:
+        except (ServerError, ResponseException) as e:
             logging.error("Caught Server 500 Error | Specific Error:")
             logging.error("\n"+traceback.format_exc())
             serverBackoffTime = _backoff_Sleeper(serverBackoffTime)
@@ -1106,7 +1106,7 @@ def checkForMessages(reddit):
             if time.time()-startTime > maxTotalWaitTime:
                 logging.error("I've tried this too much, escalating error")
                 raise e
-        except ServerError as e:
+        except (ServerError, ResponseException) as e:
             logging.error("Caught Server 500 Error | Specific Error:")
             logging.error("\n"+traceback.format_exc())
             serverBackoffTime = _backoff_Sleeper(serverBackoffTime)
@@ -1161,7 +1161,7 @@ def markSummonsAsReadMessages(reddit, msgIDs = []):
             if time.time()-startTime > maxTotalWaitTime:
                 logging.error("I've tried this too much, escalating error")
                 raise e
-        except ServerError as e:
+        except (ServerError, ResponseException) as e:
             logging.error("Caught Server 500 Error | Specific Error:")
             logging.error("\n"+traceback.format_exc())
             serverBackoffTime = _backoff_Sleeper(serverBackoffTime)
