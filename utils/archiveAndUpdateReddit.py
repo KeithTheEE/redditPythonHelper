@@ -957,13 +957,8 @@ def commentOnComment(comment, msg, reddit, quietMode):
     return
 
 
-
-
-def grabAndUpdateNewPosts(reddit, sub="python", submissionList={}, ageLimitHours=12):
-    submissionList = removeOldPosts(submissionList, ageLimitHours)
-    submissionList = updatePostFeatures(reddit, submissionList)
-
-
+def getNewPosts(reddit, sub="python", submissionList={}, ageLimitHours=12):
+    
     # Prep for errors
     maxTotalWaitTime = 5*60*60
     requestBackoffTime = 60 # starting amount of time required to wait after an error. it will then double
@@ -1048,6 +1043,18 @@ def grabAndUpdateNewPosts(reddit, sub="python", submissionList={}, ageLimitHours
 
     # Archive and filter out posts that are too old 
 
+    return submissionList
+
+def grabAndUpdateNewPosts(reddit, sub="python", submissionList={}, ageLimitHours=12):
+    submissionList = removeOldPosts(submissionList, ageLimitHours)
+    submissionList = updatePostFeatures(reddit, submissionList)
+
+    submissionList = getNewPosts(reddit, sub="python", submissionList={}, ageLimitHours=12)
+    return submissionList
+
+def updatePosts(reddit, sub="python", submissionList={}, ageLimitHours=12):
+    submissionList = removeOldPosts(submissionList, ageLimitHours)
+    submissionList = updatePostFeatures(reddit, submissionList)
     return submissionList
 
 

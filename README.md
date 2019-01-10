@@ -1,5 +1,5 @@
 
-# Reddit Helper Bot: Version Pre Alpha A0.1.01
+# Reddit Helper Bot: Version Pre Alpha A0.2.00
 pythonHelperBot is a reddit bot built to analyze r/python post and determine if 
 they're better suited for the r/learnpython sub. 
 If they are it suggests that the user post to that sub rather than to r/python.
@@ -28,16 +28,34 @@ But first it'll look through the top level comments to see if there's already so
 
 ## Where is the bot in its development?
 The bot is currently in a pre alpha stage. This means that the founding goals of the bot have not been met. Once they have been, the bot will enter alpha, where the simple classifier that is currently being used can act as a performance baseline and be compared to more complex classifiers. Hopefully a better classifier will improve accuracy and response time a measurable amount.
+
+
+## Summoning The Bot
+The bot can be summomed to reformat text blocks that have code in them. To summon the bot, simply type `/u/pythonHelperBot !reformat` as a comment below the post or comment you want to see reformatted. The bot will reply to your comment with a reformated version of the parent comment if it thinks a change can be made. There are some edge cases the bot misses, but it can help users autoformat their comments if the user wasn't aware of reddit formatting. 
+
+The bot is only allowed to make three comments on the same submission (be they on the submission itself which is only allowed once, or on comments on the thread). After that, it ignores summons. This hopefully will reduce the chance of summoning loops with other bots or overuse with specific users.
+
 #### Pre Alpha Goals:
  - [X] Simply comment on redditors posts who look like they should post in r/learnpython
  - [X] Run on the raspberry pi
  - Archive reddit posts for future classification evaluation
+ - Build a local Stack Overflow Search Engine
  - Use Stack Overflow to gauge the simplicity of a redditors question
  - Use Stack Overflow to implement a naive Question and Answer system
 
 
-
 ## Other Aspects
+
+
+ ### Interesting Research Areas this Bot Explores
+ - Various Tiers of Classification
+ - Automatic Answering in Question and Answer scenarios
+ - Text Summarization 
+ - Key Word Extraction
+ - Sentence Ordering
+ - Compound Sentence Generation 
+
+
 ### License
 PythonHelperBot is open source [licensed under the MIT License](https://github.com/CrakeNotSnowman/redditPythonHelper/blob/master/LICENSE)
 

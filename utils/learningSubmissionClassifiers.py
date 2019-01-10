@@ -58,23 +58,12 @@ def request_Key_Word_Classifier(submission, phrase_set):
             request_Made = True
             break
 
-    if request_Made:
-        text = summarizeText.parseStringSimple01(submission.selftext)
-        sents = nltk.sent_tokenize(' '.join(text))
-        # Returning the last sentence is chosen purely based on a guess
-        # It'll be more useful to select sents based on idf and entropy score
-        try:
-            return sents[-1]
-        except:
-            logging.info("Failed to grab last sentence: Probably links offsite")
-            pass
-    
-    return False
+    return request_Made
 
 
 
 
-def basicQuestionClassify(submission, user, classifier, tdm):
+def basicQuestionClassify(submission, classifier):
     """
     A really simple classifier. if a submission is old enough, has low enough votes
     and asks a question, it's treated as a basic question that r/learnpython is 
@@ -100,17 +89,17 @@ def basicQuestionClassify(submission, user, classifier, tdm):
     #text = summarizeText.parseStringSimple01(submission.selftext)
     #postText = title + text
 
-    postAge = datetime.datetime.utcnow() - datetime.datetime.utcfromtimestamp(submission.created_utc)
+    postAge = datetime.datetime.utcnow() - submission.created_utc
     hours2 = datetime.timedelta(hours=2)
-    logging.debug(  '\t'+"Post Age: "+ str(postAge) )
+    #logging.debug(  '\t'+"Post Age: "+ str(postAge) )
 
     votes = submission.score 
     upvoteRatio = submission.upvote_ratio 
 
 
     #print title
-    logging.debug(  '\t'+ "Votes: "+ str(votes))
-    logging.debug(  '\t'+ "Upvote Ratio: "+str( upvoteRatio))
+    #logging.debug(  '\t'+ "Votes: "+ str(votes))
+    #logging.debug(  '\t'+ "Upvote Ratio: "+str( upvoteRatio))
 
     if postAge < hours2:
         return False
@@ -136,7 +125,7 @@ def basicQuestionClassify(submission, user, classifier, tdm):
     #print " ".join(sents)
     question_Sents = []
     for sent in sents:
-        sentDisplay = ' '.join(sent.strip().split('\n'))
+        #sentDisplay = ' '.join(sent.strip().split('\n'))
         #print '\t', sentDisplay.strip()
         classified = questionIdentifier.classifyString(sent, classifier)
         #print classified
@@ -159,7 +148,8 @@ def basicQuestionClassify(submission, user, classifier, tdm):
 
 
 
-def basicUserClassify(user, userNames, submission, suggestedTime, antiSpamList):
+
+def basicUserClassify(reddit, user, userNames, submission, suggestedTime, antiSpamList):
     def popOldSpammers(antiSpamList, ageLimitHours):
         # This is a bodge because it's late
         ageLimit = datetime.timedelta(hours=ageLimitHours)
@@ -178,7 +168,7 @@ def basicUserClassify(user, userNames, submission, suggestedTime, antiSpamList):
     # Only post if 
     DayLimit = 700
     timeDelt = datetime.timedelta(days=DayLimit)
-    accountAge = datetime.datetime.utcnow() - datetime.datetime.utcfromtimestamp(user.created_utc)
+    accountAge = datetime.datetime.utcnow() - user.created_utc
 
     antiSpamList = popOldSpammers(antiSpamList, ageLimitHours=12) # Should stop growing dict memory leak
 
@@ -189,7 +179,7 @@ def basicUserClassify(user, userNames, submission, suggestedTime, antiSpamList):
         msg = "\tI've already commented on a post by " + str(user.name) 
         print(msg)
         if submission.id not in antiSpamList:
-            antiSpamList[submission.id] = datetime.datetime.utcfromtimestamp(submission.created_utc)
+            antiSpamList[submission.id] = submission.created_utc
             msg = msg.strip() + "\n\nPost in Question: "+ botHelperFunctions.shortenRedditURL(submission.url)
             textSupervision.send_update(msg)
         return False, [], antiSpamList
@@ -205,7 +195,7 @@ def basicUserClassify(user, userNames, submission, suggestedTime, antiSpamList):
         #return False, []
 
 
-    subs, directedOthersToLearn, postsInLearningSubs = getSubsUsersInteractsIn(user)
+    subs, directedOthersToLearn, postsInLearningSubs = botHelperFunctions.getSubsUsersInteractsIn(reddit, user)
     if 'learnpython' in subs:
         # Probably should check if user has posted in the sub more recently than current post
         logging.info("User " + str(user.name) + " has posted in r/learnpython before")

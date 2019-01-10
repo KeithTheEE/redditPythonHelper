@@ -14,7 +14,7 @@ from utils import botMetrics
 from utils import botSummons
 from utils import buildComment
 from utils import formatCode
-#from utils import learningSubmissionClassifiers
+from utils import learningSubmissionClassifiers
 from utils import locateDB
 from utils import questionIdentifier
 from utils import searchStackOverflowWeb
@@ -230,7 +230,7 @@ def buildHelpfulComment(submission, user, reddit, suggested, crossPosted, answer
 
 
     
-def request_Key_Word_Filter(submission, phrase_set):
+def xrequest_Key_Word_Filter(submission, phrase_set):
     '''
     This is a hand made feature set to id titles that make reddit-typical 
     requests for help, but might not phrase the request as a question
@@ -274,7 +274,7 @@ def request_Key_Word_Filter(submission, phrase_set):
     return False
 
 
-def basicQuestionClassify(submission, user, classifier, tdm):
+def xbasicQuestionClassify(submission, user, classifier, tdm):
     """
     A really simple classifier. if a submission is old enough, has low enough votes
     and asks a question, it's treated as a basic question that r/learnpython is 
@@ -382,7 +382,7 @@ def checkForAlreadyAnswered(reddit, user, submission):
 
     return False
 
-def getSubsUsersInteractsIn(reddit, user, limitCount=25):
+def xgetSubsUsersInteractsIn(reddit, user, limitCount=25):
     '''
     Effectively a very basic funtion. However, because of the use-case
     it has an added flag to show whether or not the user has previously
@@ -435,7 +435,7 @@ def getSubsUsersInteractsIn(reddit, user, limitCount=25):
         
     return redditSubs, hasSuggestedLearnPython, postsInLearningSubs
     
-def basicUserClassify(reddit, user, userNames, submission, suggestedTime, antiSpamList):
+def xbasicUserClassify(reddit, user, userNames, submission, suggestedTime, antiSpamList):
     
     # Need to classify a user here
     # Only post if 
@@ -443,7 +443,7 @@ def basicUserClassify(reddit, user, userNames, submission, suggestedTime, antiSp
     timeDelt = datetime.timedelta(days=DayLimit)
     accountAge = datetime.datetime.utcnow() - user.created_utc
 
-    antiSpamList = popOldSpammers(antiSpamList, ageLimitHours=12) # Should stop growing dict memory leak
+    antiSpamList = xpopOldSpammers(antiSpamList, ageLimitHours=12) # Should stop growing dict memory leak
 
         
     # Don't bother commenting if I've talked to the user before
@@ -468,7 +468,7 @@ def basicUserClassify(reddit, user, userNames, submission, suggestedTime, antiSp
         #return False, []
 
 
-    subs, directedOthersToLearn, postsInLearningSubs = getSubsUsersInteractsIn(reddit, user)
+    subs, directedOthersToLearn, postsInLearningSubs = xgetSubsUsersInteractsIn(reddit, user)
     if 'learnpython' in subs:
         # Probably should check if user has posted in the sub more recently than current post
         logging.info("User " + str(user.name) + " has posted in r/learnpython before")
@@ -481,7 +481,7 @@ def basicUserClassify(reddit, user, userNames, submission, suggestedTime, antiSp
     return True, postsInLearningSubs, antiSpamList
 
 
-def user_Already_Took_Advice(submission, postsInLearningSubs, suggestedTime):
+def xuser_Already_Took_Advice(submission, postsInLearningSubs, suggestedTime):
     '''
     See whether or not user has posted in learning subs, and distinguish between
     following advice vs just posting in multiple places vs posting in learning 
@@ -537,7 +537,7 @@ def user_Already_Took_Advice(submission, postsInLearningSubs, suggestedTime):
     return tookAdvice, crossPosted, askedLearningLater
 
 
-def popOldSpammers(antiSpamList, ageLimitHours):
+def xpopOldSpammers(antiSpamList, ageLimitHours):
     # This is a bodge because it's late
     ageLimit = datetime.timedelta(hours=ageLimitHours)
     oldKeys = []
@@ -567,10 +567,78 @@ def checkForSummons(msg):
 
 
 
+def check_for_key_phrase(submission, phrase_set):
+    botHelperFunctions.logPostFeatures(submission)
+    request_Made = learningSubmissionClassifiers.request_Key_Word_Classifier(submission, phrase_set)
+    return request_Made
+
+def lookForKeyPhrasePosts(reddit, setOfPosts, phrase_set):
+
+    oldPosts = setOfPosts
+    setOfPosts = archiveAndUpdateReddit.getNewPosts(reddit, submissionList=setOfPosts)
+    submissionsToCommentOn_KP = []
+    for key in setOfPosts:
+        if key not in oldPosts:
+            submission, user = setOfPosts[key]
+            request_Made = check_for_key_phrase(submission, phrase_set)
+            if request_Made:
+                submissionsToCommentOn_KP.append(key)
+
+    return setOfPosts, submissionsToCommentOn_KP
 
 
 
+def basicQuestion_classifyPost(submission, classifier):
+    botHelperFunctions.logPostFeatures(submission)
+    question_Sents = learningSubmissionClassifiers.basicQuestionClassify(submission, classifier)
+    return question_Sents
 
+def handleSetOfSubmissions(reddit, setOfPosts, postHistory, classifier):
+
+    submissionsToCommentOn_BC = []
+    for key in setOfPosts:
+        if key not in postHistory:
+            submission, user = setOfPosts[key]
+            question_Sents = basicQuestion_classifyPost(submission, classifier)
+            if question_Sents:
+                submissionsToCommentOn_BC.append(key)
+    return submissionsToCommentOn_BC
+
+
+def getReadyToComment(reddit, setOfPosts, userNames, postHistory, commentOnThese, antiSpamList, codeVTextClassifier):
+
+    # Remove Duplicates as a precaution
+    #commentOnThese = list(set(commentOnThese))
+
+    for key in setOfPosts:
+        if key in commentOnThese:
+            if key not in postHistory:
+                submission, user = setOfPosts[key]
+                logging.debug("Processing a valid post")
+                botHelperFunctions.logPostFeatures(submission)
+                suggested, suggestedTime = checkForLearnPythonSuggestion(reddit, submission)
+                user_status, postsInLearningSubs, antiSpamList = learningSubmissionClassifiers.basicUserClassify(reddit, user, userNames, submission, suggestedTime, antiSpamList) 
+                if user_status:
+                    logging.debug(  '\t'+ "User is valid")
+                    tookAdvice = False
+                    crossPosted = False
+                    askedLearningLater = False
+                    if len(postsInLearningSubs) > 0:
+                        tookAdvice, crossPosted, askedLearningLater = botHelperFunctions.user_Already_Took_Advice(submission, postsInLearningSubs, suggestedTime)
+                        
+                    if not tookAdvice and not askedLearningLater:
+                        # Shutup if already directed, and user listened
+                        answered=False
+                        codePresent=False
+                        correctlyFormatted=False
+                        msg, changesMade, codePresent, correctlyFormatted = formatCode.reformat(submission.selftext, codeVTextClassifier)
+
+                        buildHelpfulComment(submission, user, reddit, suggested, crossPosted, answered, codePresent, correctlyFormatted, quietMode)
+                        userNames.append(str(user.name))
+                        postHistory.append(str(submission.id))
+
+
+    return userNames, postHistory, antiSpamList
 
 
 
@@ -610,7 +678,7 @@ def startupBot():
     return reddit, classifier, codeVTextClassifier, tdm, userNames, postHistory
 
 
-def runBot(reddit, classifier, codeVTextClassifier, tdm, userNames, postHistory, quietMode=False):
+def xrunBotX(reddit, classifier, codeVTextClassifier, tdm, userNames, postHistory, quietMode=False):
     
     phrase_set = botHelperFunctions.load_autoreply_key_phrases(fl_path='misc/autoreplyKeyPhrases.txt')
     
@@ -625,8 +693,8 @@ def runBot(reddit, classifier, codeVTextClassifier, tdm, userNames, postHistory,
                 logging.debug('[POST]   | ' + str(submission.title.encode('ascii', 'ignore')))
                 logging.debug('[AUTHOR] | ' + str(user.name))
                 logging.debug('[ID]     | ' + str(submission.id))
-                question_Set = basicQuestionClassify(submission, user, classifier, tdm)
-                request_Made = request_Key_Word_Filter(submission, phrase_set)
+                question_Set = xbasicQuestionClassify(submission, user, classifier, tdm)
+                request_Made = xrequest_Key_Word_Filter(submission, phrase_set)
                 if question_Set or request_Made:
                     # BODGE
                     if request_Made and not question_Set:
@@ -634,12 +702,12 @@ def runBot(reddit, classifier, codeVTextClassifier, tdm, userNames, postHistory,
                     
                     logging.debug(  '\t'+ "Found a valid post")
                     suggested, suggestedTime = checkForLearnPythonSuggestion(reddit, submission)
-                    user_status, postsInLearningSubs, antiSpamList = basicUserClassify(reddit, user, userNames, submission, suggestedTime, antiSpamList) 
+                    user_status, postsInLearningSubs, antiSpamList = xbasicUserClassify(reddit, user, userNames, submission, suggestedTime, antiSpamList) 
                     if user_status:
                         logging.debug(  '\t'+ "User is valid")
 
                         if len(postsInLearningSubs) > 0:
-                            tookAdvice, crossPosted, askedLearningLater = user_Already_Took_Advice(submission, postsInLearningSubs, suggestedTime)
+                            tookAdvice, crossPosted, askedLearningLater = xuser_Already_Took_Advice(submission, postsInLearningSubs, suggestedTime)
                         else: 
                             tookAdvice = False
                             crossPosted = False
@@ -662,6 +730,59 @@ def runBot(reddit, classifier, codeVTextClassifier, tdm, userNames, postHistory,
         logging.debug( "Sleeping..." + str(datetime.datetime.now()))
         time.sleep(15*60)
         setOfPosts = archiveAndUpdateReddit.grabAndUpdateNewPosts(reddit, submissionList=setOfPosts)
+
+
+
+
+
+def runBot(reddit, classifier, codeVTextClassifier, tdm, userNames, postHistory, quietMode=False):
+    
+    phrase_set = botHelperFunctions.load_autoreply_key_phrases(fl_path='misc/autoreplyKeyPhrases.txt')
+    
+    setOfPosts = archiveAndUpdateReddit.grabAndUpdateNewPosts(reddit)
+    unreadCount = botSummons.handleInbox(reddit, codeVTextClassifier, quietMode=quietMode)
+    antiSpamList = {} # Used in basicUserClassify to only text me once per submission by a repeat user
+
+  
+    threeMin = 3
+    lastThreeMin = datetime.datetime.now() - datetime.timedelta(seconds=threeMin*60)
+    fifteenMin = 15
+    lastFifteenMin = datetime.datetime.now() - datetime.timedelta(seconds=fifteenMin*60)
+
+    while True:
+        commentOnThese = [] 
+        if datetime.datetime.now() - lastThreeMin > datetime.timedelta(seconds=threeMin*60):
+            #print("3 mins")
+            # Handle Inbox
+            unreadCount = botSummons.handleInbox(reddit, codeVTextClassifier, unreadCount=unreadCount, sendText= True, quietMode=quietMode)
+
+            # Get new posts, respond to keywords
+            setOfPosts, submissionsToCommentOn = lookForKeyPhrasePosts(reddit, setOfPosts, phrase_set)
+            commentOnThese += submissionsToCommentOn
+
+            lastThreeMin = datetime.datetime.now()
+            logging.debug( "3 minute region is Sleeping..." + str(datetime.datetime.now()))
+
+        if datetime.datetime.now() - lastFifteenMin > datetime.timedelta(seconds=fifteenMin*60):
+            #print("15 mins")
+            # Update posts
+            setOfPosts = archiveAndUpdateReddit.updatePosts(reddit, submissionList=setOfPosts) 
+
+            # reclassify posts
+            commentOnThese += handleSetOfSubmissions(reddit, setOfPosts, postHistory, classifier)
+
+            # Performance Visualizations 
+            botMetrics.performanceVisualization(reddit)
+            lastFifteenMin = datetime.datetime.now()
+            logging.debug( "15 minute region is Sleeping..." + str(datetime.datetime.now()))
+
+
+        # Comment on all classified submissions
+        userNames, postHistory, antiSpamList =  getReadyToComment(reddit, setOfPosts, userNames, postHistory, commentOnThese, antiSpamList, codeVTextClassifier)
+
+        time.sleep(30)
+
+
 
 
 def interface():

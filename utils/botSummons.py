@@ -33,7 +33,7 @@ def checkForSummons(msg):
         if 'u/pythonHelperBot !' in msg.body.strip() :
             command = msg.body.strip().split('u/pythonHelperBot !')[-1]
             #if command in commandList:
-            logging.info("Bot has been summoned: ID: " + str(msg.id) + "\nDate: " + str(msg.created_utc) +"\nSubject: " + str(msg.subject) + "\nBody\n" + str(msg.body))
+            logging.info("Bot has been summoned: ID: " + str(msg.id) + " Author: " + str(msg.author) + "\nDate: " + str(msg.created_utc) +"\nSubject: " + str(msg.subject) + "\nBody\n" + str(msg.body))
             #print("SUMMONS")
             #print(msg.id)
             summonID = msg.id
@@ -67,14 +67,16 @@ def handleInbox(reddit, codeVTextClassifier, unreadCount=None, sendText = True, 
             summonMsgs.append(msg)
             summonedIDs.append(summoned)
             actOnSummons(reddit, msg, command, codeVTextClassifier, quietMode)
-            #formatCode.handleSummons(reddit, msg, codeVTextClassifier)
-            pass
         else:
             inboxMessages.append(msg)
 
     # Commented out during testing:
-    logging.debug(str(len(summonedIDs)) + " summoning messages, clearing them..")
-    archiveAndUpdateReddit.markSummonsAsReadMessages(reddit, msgIDs =summonedIDs)
+    if len(summonedIDs) > 0:
+        logging.debug(str(len(summonedIDs)) + " summoning messages, clearing them..")
+        # Not sure if I should clear summons during testing..
+        #if not quietMode:
+        #    archiveAndUpdateReddit.markSummonsAsReadMessages(reddit, msgIDs =summonedIDs)
+        archiveAndUpdateReddit.markSummonsAsReadMessages(reddit, msgIDs =summonedIDs)
 
     # Handle startup unread count
     if unreadCount == None:

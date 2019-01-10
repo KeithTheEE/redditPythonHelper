@@ -18,8 +18,8 @@ Dates follow YYYY-MM-DD format
 
 
 
-## [A0.2.00] 2019-XX-XX
-In Progress
+## [A0.2.00] 2019-01-10
+Official
 ### Contributors
 Keith Murray
 
@@ -33,22 +33,25 @@ This project is not currently looking for other contributors
 
 #### Big Picture: What happened, what was worked on
 
-Folder structure has been redone, most helper functions have been moved to the utils folder. The code for vA0.1.01 has been posted to github so it's easier to completely mess up the vA0.2.00 update and have the ability to undo it. 
+Folder structure has been redone, most helper functions have been moved to the utils folder. The code for vA0.1.01 has been posted to github so it's easier to completely mess up the vA0.2.00 update and have the ability to undo it. In that vein the work for the bot is now conducted in the development branch. 
 
+A majority of reddit api calls with praw are now wrapped in custom methods to handle more variety of issues, including reddit server downtime. Most reddit related actions are now exclusively done in archiveAndUpdateReddit, with very few reddit calls which are not passed through that module. The custom wrappers are a huge change and should increase the length of time the bot can run on the pi without random errors killing it (With the exception of memory and threading errors, which will be investigated soon). 
+
+The bot can now be summoned to reformat code by making a comment on reddit that says, "/u/pythonHelperBot !reformat". The classifier is not perfect, but it's a starting point and should help some reformating. 
 
 #### Added
  - The bot is now licensed under the MIT license
  - Source code has been posted to github (it's a big deal: woo!)
  - .gitignore file has been made
- - associated personal libraries have also been posted github
+ - associated personal libraries have also been posted to github
  - botHelperFunctions.coolPlacesToDonate(): a function (currently empty) that returns a website asking for donations. Ideally it's be sites that are non profit, and are for causes that either center around the bots actions, or center around my own favorite charities. Should rarely trigger.
  - botHelperFunctions.ramCheck(): Currently empty function. will return how much ram is being used and how much is free. Hopefully this will help when the pi runs for months then suddenly stops working, giving me a chance to see if there was a slow and creeping memory error. 
  - botHelperFunctions.load_autoreply_key_phrases(): rather than hard coding, key phrases can be loaded into a text file.
- - formatCode.py: a module to take in a submission or comment, and reformat it adding 4 spaces to help display the code on reddit. 
+ - formatCode.py: a module to take in a submission or comment, and reformat it adding 4 spaces to help display the code on reddit. It's a simple classifier right now, and has room for improvement 
  - botSummons.py: a module to process any and all keyword summoning. 
  - misc/pyProgramTrainingLines.txt: training file for the 'code' classification, the 'text' is taken from the nltk Brown sentence corpus on 'news'. 
  - buildComment.py has been added, now functions as the holding ground for variations on the primary bot comment. 
- - learningSubmissionClassifiers.py has been added, though it is not currently active. It's intended to be base home of the post classifiers, clearing up the main and making modifications easier. 
+ - learningSubmissionClassifiers.py has been added. It's intended to be base home of the post classifiers, clearing up the main and making modifications easier. This means a large number of functions in the main will soon be deleted (marked with prefix x) since they should be sucessfully migrated.
  - archiveAndUpdateReddit: Ho Boy we're in for a lot here. Almost everything in this file has been changed to wrap all possible praw api calls into a custom class which has ugly but hopefully functional try/excepts wrapped in a while True loop attached to a backoff timer such that any time any anticipated exception gets raised. This should prevent the reddit server timeouts from causing random bot deaths as well as help isolate api calls to functions which are prepared for the concequences. It's big, it's ugly, but it's in a nice rubber padded room that's shielded from reality. So it works I guess. We'll see. A lot of breaking changes have been made. To comment on a submission or comment the bot now requires "quiteMode" to be passed, helping reduce errors caused by impropperly silencing the bot 
 
 
@@ -61,12 +64,15 @@ Folder structure has been redone, most helper functions have been moved to the u
  - learningSubs.txt has been moved to misc/learningSubs.txt
  - codeVTextClassifier is now added to the startup and runbot functions, changing the return and in args respectively
  - shortenRedditURL(url) has been moved from main to botHelperFunctions module
+ - The main runBot loop has been redone to be more responsive and easier to understand, breaking it's wall of code into a few smaller functions as well as only sleeping for 30 seconds on each itteration. Then it checks a couple of blocks which are set to run after different sleeping periods (currently oneis once every 3 minutes, and the other is once every 15 minutes). Because of the risk of breaking changes, the 'moved' functions have been copied, and their legacy 
+
 
 
 
 #### Deprecated
  - buildHelpfulComment has been changed and rename as buildHelpfulComment_DEPRECATED with a new buildHelpfulComment acting in the same namespace. The new one does not have the stack overflow answer section included as that's been non functional for too long, and not needed. The new one is also cleaner and easier to understand.  
  idealQuery() and stackOverflowInfo() have been commented out and will be removed soon. 
+ - a number of functions in the main file will soon be removed, as it stands they've been renamed with the prefix x. Their removal will take place with the update is stable on the pi
 #### Removed
 
 #### Fixed
@@ -76,19 +82,29 @@ Folder structure has been redone, most helper functions have been moved to the u
 
 
 ### Main
+A solid amount of restructuring took place. The praw structures should now be custom classes to help isolate where server errors are handled. Thankfully main() doesn't really feel a large impact from this as most of the attributes are the same with the exception of 'created_utc', which is now cast as a datetime object. 
 
+The main runBot loop has been restructured to make it easier to add classifiers, change how often the bot runs specific classifiers, and add extra functions (in this itteration the !reformat command). It will continue to be redesigned in the future.
+
+A large number of functions have been moved away from the main into their own modules (classifiers and comment skeleton)
 ### rpiManager.py
+Relatively little changed here with the exception of the codeVtextClassifier varible being added to the return of startupBot() and input of runBot(). I expect in the next few updates this will start pulling updates from the master branch, reducing the amount of manual updates I need to make. 
 
 ### Util Libraries
 
 #### archiveAndUpdateReddit.py
+So much has been redone. Hopefully this reduces the number of bot killing errors due to various types of internet issues, and increases the amount of time the bot can run without maintainance, by hand rebooting, and handling of other issues which can be anticipated and coded out. 
+
+Class wrappers for users, submissions, comments, and inbox messages have been added, as well as wrappers for reteriving any of those values. 
 #### botHelperFunctions.py
+Multiple functions have been moved here from main
 #### botMetrics.py
 #### formatBagOfSentences.py
 A module to order a handed bag of sentences, and insert new lines to make paragraphs. Currently does not function. 
 #### formatCode.py
 Trains a classifier on code vs text, returns the classifier. Later, takes in a textBlock and classifies it on a 'newline' basis, rather than a tokenized sentence basis. The feature profile is build from a modified lz78 algorithm, where 
 #### locateDB.py
+Added entry for Code database for the code and text classifier
 #### lsalib2.py
 #### questionIdentifier.py
 #### rpiGPIOFunctions.py

@@ -22,8 +22,8 @@ Dates follow YYYY-MM-DD format
 
 
 
-## [A0.2.00] 2019-xx-xx
-In Progress
+## [A0.2.00] 2019-01-10
+Official
 ### Contributors
 Keith Murray
 
@@ -37,9 +37,10 @@ Unless otherwise noted, all changes by @kmurrayis
 
 There will probably be a large update to move the bot to v0.2.00. Moving to v0.2.00 will signify major changes in the way praw varibles are handled, including remapping them into a custom class to reduce unexpected errors caused by either the reddit server being down, or the bot exceeding api call limits. The custom class will hold a majority of the info the bot might need at any given classification level, as well as being simpler to save and repopulate from disk. This should then make more complex classifiers easier to build. Key values include whether or not the post was removed by a mod based on learning or spam, whether or not the user was suggested to 'read the sidebar' or go to r/learnpython, and the score of the commenter who made the suggestion. Other useful elements include if the bot commented, and what it's score was. These should all directly be useful with the bot confusion matrix. 
 
+
 #### Add
     
- - Submission, Comment, Users, and Messages are getting a new class structure. 
+ - [X] Submission, Comment, Users, and Messages are getting a new class structure. 
     This is going to be based heavily off of networkEval's design (a sepperate bot), and should provide a number of wonderful little side effects, but will come at an API call cost. This is currently being worked on and should hit the next change log, and also bring about a large version change this next time around.
     Side effects include but are not limited to archiving posts, samples a test suite can draw from, and fewer unexpected errors caused because I assumed praw populated that varible so I didn't put it in a try except block and oh god how are reddit servers so spotty. 
 
@@ -50,7 +51,7 @@ There will probably be a large update to move the bot to v0.2.00. Moving to v0.2
  - [X] LICENSE: PRIORITY
  - Full Test Suite: PRIORITY
  - Archive Posts: PRIORITY
-    Probably should be priority as well, use to draw on for the test suite. This is actually going to be moved to priority. Having a test suite to draw on is really important. Probably will be dealt with in this update. I do have to be mindful of the write-rate, and might need to buy an externally powered usb hub, and two usb hard drives to redundantly save the database and avoid killing the SD card for the pi by overwritting to it. 
+    Probably should be priority as well, use to draw on for the test suite. This is actually going to be moved to priority. Having a test suite to draw on is really important. Probably will be dealt with in this update or one of the quick ones after. I do have to be mindful of the write-rate, and might need to buy an externally powered usb hub, and two usb hard drives to redundantly save the database and avoid killing the SD card for the pi by overwritting to it. 
 
  - botMetrics.measureUserReaction(): 
  A function focused on seeing if a user did in fact go to
@@ -61,7 +62,8 @@ There will probably be a large update to move the bot to v0.2.00. Moving to v0.2
  Prebuild and pickle the output tdm of 
  summarizeText.buildModelFromDocsInFolder(sourceDataPath=paths["englishDB"])
  so the raspberry pi doesn't have to hit memory errors in in main.startupBot()
- load the prebuilt database and build it if the prebuild database does not exist
+ load the prebuilt database and build it if the prebuild database does not exist.
+ Or just build a custom compression scheme and load that instead of using pickle
 
  - test.EvaluatePost():
  This is going to require some restructuring of the bot in main. Take a post given a post id, then run it through the classifier where the exitpoints are turned off from the functions, forcing it to classify the post in full
@@ -80,6 +82,8 @@ There will probably be a large update to move the bot to v0.2.00. Moving to v0.2
  - Add ram usage check and log it in every 'awake' cycle of program, to try and tease out any possible MemeoryError's kicking up after long periods of time
  - Log processing: a set of functions and visualizations to process the log files for various useful tidbits. Something nicer than grep
  - [X] formatCode.py: a module to classify each line in a post to identify blocks of code, then to reformat the code for reddit by appending 4 spaces to the start of each newline
+
+ - A queue which has inputs added to it by functions, and removed by the raspberry pi gpio handler, allowing the bot to change LED status based on what it's doing. Similar to the twitter event bot design (sepperate project).
  
 
 
@@ -87,21 +91,22 @@ There will probably be a large update to move the bot to v0.2.00. Moving to v0.2
  - [X] module folder structure. It's a mess, make it easy to work through. Each little module could use it's own readme, roadmap, and changelog. Especially the more generic and useful functions.
  - [X] main.XComment(): fix so the base comment is actually the base comment, and there's varible headers/preambles. The message as a whole is also a bit unwieldy, rework the base comment to cut it down as best as possible. Be mindful that there is also an intended "I searched stack overflow and this is what I thought might be useful" section that will be added as well.
  - [X] Move key phrases to a .txt file rather than hard coded in a function, load it into memory at startup.
- - Consider restructuring the bot to be able to autoreply faster than once every 15 minutes, making the keyphrase autoreply an independent and parallel classifier
+ - [X] Consider restructuring the bot to be able to autoreply faster than once every 15 minutes, making the keyphrase autoreply an independent and parallel classifier
  - Move NLP functions from NLTK (used in many files) to a buffer module, allowing for simpler, universal changes to be made. For example, if there is a better POS tagger than nltk.pos_tag(sent) then we can easily switch to that. Right now NLTK is used over a fairly large filespace making adjustments of that sort difficult. 
  - Review all my logging notes. See what should be dropped, changed, etc. 
- - move classifier into its own module to make it cleaner and easier to build new ones off of
+ - [X] move classifier into its own module to make it cleaner and easier to build new ones off of
 
 #### Deprecate
- - Search Stack Overflow has not been functional in ages, the code doesn't really work, and back when it did it was rarely helpful. This version will deprecate the code, but not remove it on the off chance that the SO Database project path could use portions of it. 
+ - [X] Search Stack Overflow has not been functional in ages, the code doesn't really work, and back when it did it was rarely helpful. This version will deprecate the code, but not remove it on the off chance that the SO Database project path could use portions of it. 
 #### Remove
+ - Broken Search Stack Overflow code. It's been deprecated, on 0.2.01 it should be completely deleted.
 #### Fix
  - Standardize function name style. Either underscore or camelcase, just not both
  Probably preferable to use underscore, the despite camelcase being faster..
 
 #### Security
 #### Consider
- - all timestamps in any form as UTC. 
+ - all timestamps in any form as UTC. (I Believe this is the case with the exception of log file timestamps, which should not be an issue)
 
 
 ---
