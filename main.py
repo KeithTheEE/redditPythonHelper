@@ -605,7 +605,7 @@ def handleSetOfSubmissions(reddit, setOfPosts, postHistory, classifier):
     return submissionsToCommentOn_BC
 
 
-def getReadyToComment(reddit, setOfPosts, userNames, postHistory, commentOnThese, antiSpamList, codeVTextClassifier):
+def getReadyToComment(reddit, setOfPosts, userNames, postHistory, commentOnThese, antiSpamList, codeVTextClassifier, quietMode):
 
     # Remove Duplicates as a precaution
     #commentOnThese = list(set(commentOnThese))
@@ -778,7 +778,7 @@ def runBot(reddit, classifier, codeVTextClassifier, tdm, userNames, postHistory,
 
 
         # Comment on all classified submissions
-        userNames, postHistory, antiSpamList =  getReadyToComment(reddit, setOfPosts, userNames, postHistory, commentOnThese, antiSpamList, codeVTextClassifier)
+        userNames, postHistory, antiSpamList =  getReadyToComment(reddit, setOfPosts, userNames, postHistory, commentOnThese, antiSpamList, codeVTextClassifier, quietMode)
 
         time.sleep(30)
 
