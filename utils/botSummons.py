@@ -30,7 +30,7 @@ def checkForSummons(msg):
     command = None
     #commandList = summonCommands()
     if msg.subject.strip() == "username mention":
-        if 'u/pythonHelperBot !' in msg.body.strip() :
+        if 'u/pythonHelperBot !'.lower() in msg.body.lower().strip() :
             command = msg.body.strip().split('u/pythonHelperBot !')[-1]
             #if command in commandList:
             logging.info("Bot has been summoned: ID: " + str(msg.id) + " Author: " + str(msg.author) + "\nDate: " + str(msg.created_utc) +"\nSubject: " + str(msg.subject) + "\nBody\n" + str(msg.body))
