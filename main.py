@@ -574,7 +574,7 @@ def check_for_key_phrase(submission, phrase_set):
 
 def lookForKeyPhrasePosts(reddit, setOfPosts, phrase_set):
 
-    oldPosts = setOfPosts
+    oldPosts = setOfPosts.copy() # https://stackoverflow.com/questions/5861498/
     setOfPosts = archiveAndUpdateReddit.getNewPosts(reddit, submissionList=setOfPosts)
     submissionsToCommentOn_KP = []
     for key in setOfPosts:
