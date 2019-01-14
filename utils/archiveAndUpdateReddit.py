@@ -2,6 +2,7 @@
 import time
 import datetime
 import praw
+from praw.exceptions import APIException
 from prawcore import RequestException, ResponseException, ServerError
 from asecretplace import getPythonHelperBotKeys
 import sqlite3
@@ -81,6 +82,16 @@ class phb_Reddit_Submission(object):
                 if time.time()-startTime > maxTotalWaitTime:
                     logging.error("I've tried this too much, escalating error")
                     raise e
+            except APIException as e:
+                if "RATELIMIT" in traceback.format_exc():
+                    logging.error("Caught Server Rate Limit Hit By API | Specific Error:")
+                    logging.error("\n"+traceback.format_exc())
+                    requestBackoffTime = self._backoff(requestBackoffTime)
+                    if time.time()-startTime > maxTotalWaitTime:
+                        logging.error("I've tried this too much, escalating error")
+                        raise e
+                else:
+                    raise e
             except (ServerError, ResponseException) as e:
                 logging.error("Caught Server 500 Error | Specific Error:")
                 logging.error("\n"+traceback.format_exc())
@@ -88,6 +99,7 @@ class phb_Reddit_Submission(object):
                 if time.time()-startTime > maxTotalWaitTime:
                     logging.error("I've tried this too much, escalating error")
                     raise e
+
             except Exception as e:
                 internet = is_connected()
                 if internet:
@@ -139,6 +151,16 @@ class phb_Reddit_Submission(object):
                 requestBackoffTime = self._backoff(requestBackoffTime)
                 if time.time()-startTime > maxTotalWaitTime:
                     logging.error("I've tried this too much, escalating error")
+                    raise e
+            except APIException as e:
+                if "RATELIMIT" in traceback.format_exc():
+                    logging.error("Caught Server Rate Limit Hit By API | Specific Error:")
+                    logging.error("\n"+traceback.format_exc())
+                    requestBackoffTime = self._backoff(requestBackoffTime)
+                    if time.time()-startTime > maxTotalWaitTime:
+                        logging.error("I've tried this too much, escalating error")
+                        raise e
+                else:
                     raise e
             except (ServerError, ResponseException) as e:
                 logging.error("Caught Server 500 Error | Specific Error:")
@@ -202,6 +224,16 @@ class phb_Reddit_Submission(object):
                 if time.time()-startTime > maxTotalWaitTime:
                     logging.error("I've tried this too much, escalating error")
                     raise e
+            except APIException as e:
+                if "RATELIMIT" in traceback.format_exc():
+                    logging.error("Caught Server Rate Limit Hit By API | Specific Error:")
+                    logging.error("\n"+traceback.format_exc())
+                    requestBackoffTime = self._backoff(requestBackoffTime)
+                    if time.time()-startTime > maxTotalWaitTime:
+                        logging.error("I've tried this too much, escalating error")
+                        raise e
+                else:
+                    raise e
             except (ServerError, ResponseException) as e:
                 logging.error("Caught Server 500 Error | Specific Error:")
                 logging.error("\n"+traceback.format_exc())
@@ -254,6 +286,16 @@ class phb_Reddit_Submission(object):
                 requestBackoffTime = self._backoff(requestBackoffTime)
                 if time.time()-startTime > maxTotalWaitTime:
                     logging.error("I've tried this too much, escalating error")
+                    raise e
+            except APIException as e:
+                if "RATELIMIT" in traceback.format_exc():
+                    logging.error("Caught Server Rate Limit Hit By API | Specific Error:")
+                    logging.error("\n"+traceback.format_exc())
+                    requestBackoffTime = self._backoff(requestBackoffTime)
+                    if time.time()-startTime > maxTotalWaitTime:
+                        logging.error("I've tried this too much, escalating error")
+                        raise e
+                else:
                     raise e
             except (ServerError, ResponseException) as e:
                 logging.error("Caught Server 500 Error | Specific Error:")
@@ -333,6 +375,16 @@ class phb_Reddit_Comment(object):
                 if time.time()-startTime > maxTotalWaitTime:
                     logging.error("I've tried this too much, escalating error")
                     raise e
+            except APIException as e:
+                if "RATELIMIT" in traceback.format_exc():
+                    logging.error("Caught Server Rate Limit Hit By API | Specific Error:")
+                    logging.error("\n"+traceback.format_exc())
+                    requestBackoffTime = self._backoff(requestBackoffTime)
+                    if time.time()-startTime > maxTotalWaitTime:
+                        logging.error("I've tried this too much, escalating error")
+                        raise e
+                else:
+                    raise e
             except (ServerError, ResponseException) as e:
                 logging.error("Caught Server 500 Error | Specific Error:")
                 logging.error("\n"+traceback.format_exc())
@@ -389,6 +441,16 @@ class phb_Reddit_Comment(object):
                 requestBackoffTime = self._backoff(requestBackoffTime)
                 if time.time()-startTime > maxTotalWaitTime:
                     logging.error("I've tried this too much, escalating error")
+                    raise e
+            except APIException as e:
+                if "RATELIMIT" in traceback.format_exc():
+                    logging.error("Caught Server Rate Limit Hit By API | Specific Error:")
+                    logging.error("\n"+traceback.format_exc())
+                    requestBackoffTime = self._backoff(requestBackoffTime)
+                    if time.time()-startTime > maxTotalWaitTime:
+                        logging.error("I've tried this too much, escalating error")
+                        raise e
+                else:
                     raise e
             except (ServerError, ResponseException) as e:
                 logging.error("Caught Server 500 Error | Specific Error:")
@@ -471,6 +533,16 @@ class phb_Reddit_User(object):
                 if time.time()-startTime > maxTotalWaitTime:
                     logging.error("I've tried this too much, escalating error")
                     raise e
+            except APIException as e:
+                if "RATELIMIT" in traceback.format_exc():
+                    logging.error("Caught Server Rate Limit Hit By API | Specific Error:")
+                    logging.error("\n"+traceback.format_exc())
+                    requestBackoffTime = self._backoff(requestBackoffTime)
+                    if time.time()-startTime > maxTotalWaitTime:
+                        logging.error("I've tried this too much, escalating error")
+                        raise e
+                else:
+                    raise e
             except (ServerError, ResponseException) as e:
                 logging.error("Caught Server 500 Error | Specific Error:")
                 logging.error("\n"+traceback.format_exc())
@@ -532,6 +604,16 @@ class phb_Reddit_User(object):
                 if time.time()-startTime > maxTotalWaitTime:
                     logging.error("I've tried this too much, escalating error")
                     raise e
+            except APIException as e:
+                if "RATELIMIT" in traceback.format_exc():
+                    logging.error("Caught Server Rate Limit Hit By API | Specific Error:")
+                    logging.error("\n"+traceback.format_exc())
+                    requestBackoffTime = self._backoff(requestBackoffTime)
+                    if time.time()-startTime > maxTotalWaitTime:
+                        logging.error("I've tried this too much, escalating error")
+                        raise e
+                else:
+                    raise e
             except (ServerError, ResponseException) as e:
                 logging.error("Caught Server 500 Error | Specific Error:")
                 logging.error("\n"+traceback.format_exc())
@@ -581,6 +663,16 @@ class phb_Reddit_User(object):
                 requestBackoffTime = self._backoff(requestBackoffTime)
                 if time.time()-startTime > maxTotalWaitTime:
                     logging.error("I've tried this too much, escalating error")
+                    raise e
+            except APIException as e:
+                if "RATELIMIT" in traceback.format_exc():
+                    logging.error("Caught Server Rate Limit Hit By API | Specific Error:")
+                    logging.error("\n"+traceback.format_exc())
+                    requestBackoffTime = self._backoff(requestBackoffTime)
+                    if time.time()-startTime > maxTotalWaitTime:
+                        logging.error("I've tried this too much, escalating error")
+                        raise e
+                else:
                     raise e
             except (ServerError, ResponseException) as e:
                 logging.error("Caught Server 500 Error | Specific Error:")
@@ -653,6 +745,16 @@ class phb_Reddit_Msg(object):
                 if time.time()-startTime > maxTotalWaitTime:
                     logging.error("I've tried this too much, escalating error")
                     raise e
+            except APIException as e:
+                if "RATELIMIT" in traceback.format_exc():
+                    logging.error("Caught Server Rate Limit Hit By API | Specific Error:")
+                    logging.error("\n"+traceback.format_exc())
+                    requestBackoffTime = self._backoff(requestBackoffTime)
+                    if time.time()-startTime > maxTotalWaitTime:
+                        logging.error("I've tried this too much, escalating error")
+                        raise e
+                else:
+                    raise e
             except (ServerError, ResponseException) as e:
                 logging.error("Caught Server 500 Error | Specific Error:")
                 logging.error("\n"+traceback.format_exc())
@@ -705,6 +807,16 @@ def get_redditor_by_name(reddit, name):
             if time.time()-startTime > maxTotalWaitTime:
                 logging.error("I've tried this too much, escalating error")
                 raise e
+        except APIException as e:
+            if "RATELIMIT" in traceback.format_exc():
+                logging.error("Caught Server Rate Limit Hit By API | Specific Error:")
+                logging.error("\n"+traceback.format_exc())
+                requestBackoffTime = self._backoff(requestBackoffTime)
+                if time.time()-startTime > maxTotalWaitTime:
+                    logging.error("I've tried this too much, escalating error")
+                    raise e
+            else:
+                raise e
         except (ServerError, ResponseException) as e:
             logging.error("Caught Server 500 Error | Specific Error:")
             logging.error("\n"+traceback.format_exc())
@@ -753,6 +865,16 @@ def get_comment_by_ID(reddit, comment_id):
             if time.time()-startTime > maxTotalWaitTime:
                 logging.error("I've tried this too much, escalating error")
                 raise e
+        except APIException as e:
+            if "RATELIMIT" in traceback.format_exc():
+                logging.error("Caught Server Rate Limit Hit By API | Specific Error:")
+                logging.error("\n"+traceback.format_exc())
+                requestBackoffTime = self._backoff(requestBackoffTime)
+                if time.time()-startTime > maxTotalWaitTime:
+                    logging.error("I've tried this too much, escalating error")
+                    raise e
+            else:
+                raise e
         except (ServerError, ResponseException) as e:
             logging.error("Caught Server 500 Error | Specific Error:")
             logging.error("\n"+traceback.format_exc())
@@ -800,6 +922,16 @@ def get_submission_by_ID(reddit, submission_id):
             requestBackoffTime = _backoff_Sleeper(requestBackoffTime)
             if time.time()-startTime > maxTotalWaitTime:
                 logging.error("I've tried this too much, escalating error")
+                raise e
+        except APIException as e:
+            if "RATELIMIT" in traceback.format_exc():
+                logging.error("Caught Server Rate Limit Hit By API | Specific Error:")
+                logging.error("\n"+traceback.format_exc())
+                requestBackoffTime = self._backoff(requestBackoffTime)
+                if time.time()-startTime > maxTotalWaitTime:
+                    logging.error("I've tried this too much, escalating error")
+                    raise e
+            else:
                 raise e
         except (ServerError, ResponseException) as e:
             logging.error("Caught Server 500 Error | Specific Error:")
@@ -878,6 +1010,16 @@ def commentOnSubmmission(submission, msg, reddit, quietMode):
                 if time.time()-startTime > maxTotalWaitTime:
                     logging.error("I've tried this too much, escalating error")
                     raise e
+            except APIException as e:
+                if "RATELIMIT" in traceback.format_exc():
+                    logging.error("Caught Server Rate Limit Hit By API | Specific Error:")
+                    logging.error("\n"+traceback.format_exc())
+                    requestBackoffTime = self._backoff(requestBackoffTime)
+                    if time.time()-startTime > maxTotalWaitTime:
+                        logging.error("I've tried this too much, escalating error")
+                        raise e
+                else:
+                    raise e
             except (ServerError, ResponseException) as e:
                 logging.error("Caught Server 500 Error | Specific Error:")
                 logging.error("\n"+traceback.format_exc())
@@ -931,6 +1073,16 @@ def commentOnComment(comment, msg, reddit, quietMode):
                 requestBackoffTime = _backoff_Sleeper(requestBackoffTime)
                 if time.time()-startTime > maxTotalWaitTime:
                     logging.error("I've tried this too much, escalating error")
+                    raise e
+            except APIException as e:
+                if "RATELIMIT" in traceback.format_exc():
+                    logging.error("Caught Server Rate Limit Hit By API | Specific Error:")
+                    logging.error("\n"+traceback.format_exc())
+                    requestBackoffTime = self._backoff(requestBackoffTime)
+                    if time.time()-startTime > maxTotalWaitTime:
+                        logging.error("I've tried this too much, escalating error")
+                        raise e
+                else:
                     raise e
             except (ServerError, ResponseException) as e:
                 logging.error("Caught Server 500 Error | Specific Error:")
@@ -1021,6 +1173,16 @@ def getNewPosts(reddit, sub="python", submissionList={}, ageLimitHours=12):
             if time.time()-startTime > maxTotalWaitTime:
                 logging.error("I've tried this too much, escalating error")
                 raise e
+        except APIException as e:
+            if "RATELIMIT" in traceback.format_exc():
+                logging.error("Caught Server Rate Limit Hit By API | Specific Error:")
+                logging.error("\n"+traceback.format_exc())
+                requestBackoffTime = self._backoff(requestBackoffTime)
+                if time.time()-startTime > maxTotalWaitTime:
+                    logging.error("I've tried this too much, escalating error")
+                    raise e
+            else:
+                raise e
         except (ServerError, ResponseException) as e:
             logging.error("Caught Server 500 Error | Specific Error:")
             logging.error("\n"+traceback.format_exc())
@@ -1106,6 +1268,16 @@ def checkForMessages(reddit):
             if time.time()-startTime > maxTotalWaitTime:
                 logging.error("I've tried this too much, escalating error")
                 raise e
+        except APIException as e:
+            if "RATELIMIT" in traceback.format_exc():
+                logging.error("Caught Server Rate Limit Hit By API | Specific Error:")
+                logging.error("\n"+traceback.format_exc())
+                requestBackoffTime = self._backoff(requestBackoffTime)
+                if time.time()-startTime > maxTotalWaitTime:
+                    logging.error("I've tried this too much, escalating error")
+                    raise e
+            else:
+                raise e
         except (ServerError, ResponseException) as e:
             logging.error("Caught Server 500 Error | Specific Error:")
             logging.error("\n"+traceback.format_exc())
@@ -1160,6 +1332,16 @@ def markSummonsAsReadMessages(reddit, msgIDs = []):
             requestBackoffTime = _backoff_Sleeper(requestBackoffTime)
             if time.time()-startTime > maxTotalWaitTime:
                 logging.error("I've tried this too much, escalating error")
+                raise e
+        except APIException as e:
+            if "RATELIMIT" in traceback.format_exc():
+                logging.error("Caught Server Rate Limit Hit By API | Specific Error:")
+                logging.error("\n"+traceback.format_exc())
+                requestBackoffTime = self._backoff(requestBackoffTime)
+                if time.time()-startTime > maxTotalWaitTime:
+                    logging.error("I've tried this too much, escalating error")
+                    raise e
+            else:
                 raise e
         except (ServerError, ResponseException) as e:
             logging.error("Caught Server 500 Error | Specific Error:")
