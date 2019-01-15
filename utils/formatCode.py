@@ -359,7 +359,7 @@ def handleSummons(reddit, msg, codeVTextClassifier, quietMode, ageLimitHours=2):
             # Save data saying I've commented on it 
             saveLine = str(summoning_comment.link_id) + '\t'
             saveLine += str(parent.id) + '\t' + str(parent.author) + '\t'
-            saveLine += str(summoning_comment.id)+ '\t' + str(summoning_comment.author) + '\t' + str(summoning_comment.created_utc) +'\t'+ str(summoning_comment.body.encode('ascii', 'ignore')) + '\t'
+            saveLine += str(summoning_comment.id)+ '\t' + str(summoning_comment.author) + '\t' + str(summoning_comment.created_utc) +'\t'+ str(summoning_comment.body.encode('ascii', 'ignore')).strip().replace('\n', ' ') + '\t'
             saveLine += str(changesMade) + '\t'+ str(codePresent) + '\t' + str(correctlyFormatted)
 
             logging.debug(saveLine)
