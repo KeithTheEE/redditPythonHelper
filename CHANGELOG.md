@@ -1,6 +1,6 @@
 
 
-# CHANGELOG: Python Helper Bot Version pre Alpha A0.2.00
+# CHANGELOG: Python Helper Bot Version pre Alpha A0.2.01
 All notable changes to this project will be documented in this file.
 
 The format is loosely based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
@@ -15,6 +15,70 @@ Dates follow YYYY-MM-DD format
 > the explanation known, and that’s why we can only guess -- and keep on guessing.”
 
 -- Susan Calvin in "I, Robot" by Isaac Asimov
+
+
+## [A0.2.01] 2019-XX-XX
+In Progress
+### Contributors
+Keith Murray
+
+email: kmurrayis@gmail.com |
+twitter: [@keithTheEE](https://twitter.com/keithTheEE) |
+github: [CrakeNotSnowman](https://github.com/CrakeNotSnowman)
+
+Unless otherwise noted, all changes by @kmurrayis
+
+This project is not currently looking for other contributors
+
+#### Big Picture: What happened, what was worked on
+
+Primary focus is bug identification and fixes from the 0.2.00 udate.
+
+#### Added
+ - Added 'ResponseException' in archieveAndUpdateReddit to the except statement on the server error level. Apperently ServerError is not the only exception thrown for 500 errors, though response exception is classified as a server error. For some reason catching serverError does not catch responseException as I had previously interpurted the documentation 
+ - Added 'APIException' from praw.exceptions in archieveAndUpdateReddit. This then checks the exception to see if it was a rate limit error that reddit threw, and if it was it retries after a backoff time for rate limiting, and if not it escelates the error out of the exception catch. 
+
+#### Changed
+ - Bug Fix [ed7e6c6]: getReadyToComment now passes quietMode
+ - Bug Fix [fd35a7c]: removed prefix 'botHelperFunctions' from a get_learning_sub_Names() call since the calling function now resides in botHelperFunction Module as well
+ - Bug Fix [9edca52]: learningSubmissionClassifiers should import itself to itself
+ - Bug Fix [0890b4d]: Adjusted bot summons so capitalization of username doesn't matter
+ - Bug Fix [9d4dfba]: Key Phrase Autoreply oldPosts now is set to setOfPosts.copy().  was never triggering because oldPosts automatically updated as new posts were added to setOfPosts due to a shallow copy. 
+ - Bug Fix [14133ff]: in formatCode the summoning message was saved with no stripping of newline characters. That is no longer the case as newline characters should now be replaced with a space character
+ - Adjusted max age of a reformat summons from 2 hours to 4 hours. While I like two hours better, I'm just not likely to notice and respond to an error in 2 unless I'm lucky. 4 isn't too old but it gives me a chance to get the message reformatted after an error crops up
+
+#### Deprecated
+#### Removed
+
+#### Fixed
+#### Security
+
+
+### Main
+
+### rpiManager.py
+
+
+### Util Libraries
+
+#### archiveAndUpdateReddit.py
+
+#### botHelperFunctions.py
+#### botMetrics.py
+#### formatBagOfSentences.py
+#### formatCode.py
+#### locateDB.py
+#### lsalib2.py
+#### questionIdentifier.py
+#### rpiGPIOFunctions.py
+#### scriptedReply.py
+#### searchStackOverflowWeb.py
+#### summarizeText.py
+#### textSupervision.py
+#### updateLocalSubHistory.py
+#### user_agents.py
+
+### Tests 
 
 
 

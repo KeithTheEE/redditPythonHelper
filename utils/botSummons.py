@@ -20,6 +20,8 @@ def actOnSummons(reddit, msg, command, codeVTextClassifier, quietMode):
 
     if 'reformat' == command.strip().lower():
         formatCode.handleSummons(reddit, msg, codeVTextClassifier, quietMode)
+    elif 'format_howto' == command.strip().lower():
+        formatCode.makeFormatHelpMessage(reddit, msg)
     else:
         logging.info("No know command associated with summons command")
 

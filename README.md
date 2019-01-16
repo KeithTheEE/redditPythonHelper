@@ -25,15 +25,29 @@ But first it'll look through the top level comments to see if there's already so
  - If it's been mentioned it'll acknowledge that, and adjust its comment to focus on formatting the users question according to the subreddit's rules. (Though if it was mentioned and the OP has already taken the advice, the bot will not comment.)
  - If no one has suggested r/learnpython, it'll suggest the subreddit, say why it's useful, and emphasize following the subreddit rules. 
 
+ 
+## Summoning The Bot
+### Commands:
+ - `/u/pythonHelperBot !reformat`
+ - `/u/pythonHelperBot !format_howto`
+
+### `/u/pythonHelperBot !reformat`
+The bot can be summomed to reformat text blocks that have code in them. To summon the bot, simply type `/u/pythonHelperBot !reformat` as a comment below the post/comment you want to see reformatted. The bot will reply to your comment with a reformated version of the parent text if it thinks a change can be made. There are some edge cases the bot misses, but it can help users autoformat their comments if the user wasn't aware of reddit formatting. 
+
+The bot is only allowed to make three reformatting comments on the same submission (be they on the submission itself which is only allowed once, or on comments on the thread). After that, it ignores summons. This hopefully will reduce the chance of summoning loops with other bots or overuse with specific users.
+
+
+#### `/u/pythonHelperBot !format_howto`
+Will Be Active Soon
+
+The bot can also be summoned to display a helpful message about how to format code for reddit. This message will appear below the summoning comment, and tag the part post/comment in its message. Because of this, it tags a user unprompted, it's only allowed to interact with that user once, unless the summoner and parent post/comment are by the same user. 
+
+
 
 ## Where is the bot in its development?
 The bot is currently in a pre alpha stage. This means that the founding goals of the bot have not been met. Once they have been, the bot will enter alpha, where the simple classifier that is currently being used can act as a performance baseline and be compared to more complex classifiers. Hopefully a better classifier will improve accuracy and response time a measurable amount.
 
 
-## Summoning The Bot
-The bot can be summomed to reformat text blocks that have code in them. To summon the bot, simply type `/u/pythonHelperBot !reformat` as a comment below the post or comment you want to see reformatted. The bot will reply to your comment with a reformated version of the parent comment if it thinks a change can be made. There are some edge cases the bot misses, but it can help users autoformat their comments if the user wasn't aware of reddit formatting. 
-
-The bot is only allowed to make three comments on the same submission (be they on the submission itself which is only allowed once, or on comments on the thread). After that, it ignores summons. This hopefully will reduce the chance of summoning loops with other bots or overuse with specific users.
 
 #### Pre Alpha Goals:
  - [X] Simply comment on redditors posts who look like they should post in r/learnpython

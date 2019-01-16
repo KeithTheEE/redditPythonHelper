@@ -15,8 +15,23 @@ from nltk.metrics import ConfusionMatrix
 from utils import archiveAndUpdateReddit
 
 '''
+Tools to take a reddit message and classify lines as code or text
+
+
 Keith Murray
 email: kmurrayis@gmail.com
+
+Notes
+---
+`buildTextCodeClassifier` uses NLTK's Naive Bayes Classifier to 
+build a classifier based on the nltk provided Brown 'news' dataset
+
+Future Improvements:
+Explore better classifiers. Under this incarnation of the bayes 
+classifier, the line is either code or text with near complete 
+confidence, even when it's wrong. 
+
+
 
 Markdown Parsers and other Useful Links
 http://piumarta.com/software/peg/
@@ -28,13 +43,6 @@ https://github.com/jgm/peg-markdown/blob/master/markdown_parser.leg
 '''
 
 
-
-'''
-Itterate through every py file in a subdirectory
-append each line to a sample py file, used as the programming training set
-Count the number of lines
-
-'''
 
 def loadAndShuffleCodeSample(flsource,returnSize):
     randomSeed = random.randint(0,1000)
@@ -348,7 +356,11 @@ def handleSummons(reddit, msg, codeVTextClassifier, quietMode, ageLimitHours=4):
             
 
         # Attempt to reformat
-        
+        if parent.author == summoning_comment.author:
+            # Add help formating prefix
+            prefix = """Before I reformat this
+
+            """
         msg, changesMade, codePresent, correctlyFormatted = reformat(textBlock, codeVTextClassifier)
 
         # Comment below the summoning comment with msg
@@ -372,5 +384,10 @@ def handleSummons(reddit, msg, codeVTextClassifier, quietMode, ageLimitHours=4):
         else:
             logging.debug("Quiet Mode is active, no reformat comment made.")
             print(msg)
+
+    return
+
+
+def makeFormatHelpMessage(reddit, msg):
 
     return

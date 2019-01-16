@@ -8,6 +8,9 @@ Keith Murray
 Logging 'not working' error notes can be found here
 https://stackoverflow.com/questions/42431418/python-logging-multiple-modules-logger-not-working-outside-main-program
 
+it appears that when main.py is run on the pi (currently running py2.7), an import sets 
+logging ahead of the main settings, causing logging to just be printed
+
 '''
 
 import subprocess
@@ -156,46 +159,6 @@ def pull_from_github():
     output = process.communicate()[0]
     logging.info(output)
 
-    emailCount = 0
-    emailLimit = 5
-
-    while True:
-        try:
-            import something
-        except KeyboardInterrupt:
-            break
-        except:
-            ln = traceback.format_exc()
-            print(ln)
-            flname = 'errorReport.log'
-            fl = open(flname, 'w')
-            fl.write(ln)
-            fl.close()
-            import kmmessage        
-            recip = 'me@example.com'
-            subject = "Error on the Reddit Bot, which is impressive since this function isn't active"
-            text = ln
-            if emailCount < emailLimit:
-                try:
-                    kmmessage.message_Send_Full_Email([recip], subject, text, files=[flname])
-                except:
-                    trace = traceback.format_exc()
-                    flname = 'moreErrors.log'
-                    fl = open(flname, 'a')
-                    fl.write(ln + '\n' + trace + '\n')
-                    fl.close()
-                emailCount += 1
-            if emailCount == emailLimit:
-                text = text + '\n' + "EMAIL LIMIT REACHED FOR THIS BOOT"
-                try:
-                    kmmessage.message_Send_Full_Email([recip], subject, text, files=[flname])
-                except:
-                    trace = traceback.format_exc()
-                    flname = 'moreErrors.log'
-                    fl = open(flname, 'a')
-                    fl.write(ln + '\n' + trace + '\n')
-                    fl.close()
-                emailCount += 1
     return
                 
 
@@ -283,6 +246,11 @@ if __name__ == "__main__":
     logFileName =   'LOG_'+ datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + '.log'
     filePath = os.path.join(dirName, logFileName)
     logging.basicConfig(filename=filePath, level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(filename)s:%(funcName)s():%(lineno)s - %(message)s')
+
+    # check GPIO Flags
+    # F0: Continue as is
+    # F1: Pull code from repo origin master
+    # F2: Do not begin program
 
 
     # Importing here to prevent the "import logging"
