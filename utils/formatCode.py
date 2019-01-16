@@ -296,7 +296,7 @@ def saveSummoningAction(sourcefl,saveLine):
 
     return 
 
-def handleSummons(reddit, msg, codeVTextClassifier, quietMode, ageLimitHours=2):
+def handleSummons(reddit, msg, codeVTextClassifier, quietMode, ageLimitHours=4):
     # Add more logging info to see who summoned etc
     # This is the reformat summons
 
