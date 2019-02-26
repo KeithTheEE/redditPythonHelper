@@ -56,6 +56,12 @@ def request_Key_Word_Classifier(submission, phrase_set):
             logging.info(phrase + " Was used in the post title")
             request_Made = True
             break
+    
+    #if submission.id not in submission.url:
+        # Links off site 
+        # This check was not in early versions of the bot (v pa0.1.01 and earlier)
+    #    logging.debug(  '\t'+'Results: Error. Classification is dead,  (URL) Mismatch. ')
+    #    request_Made = False
 
     return request_Made
 

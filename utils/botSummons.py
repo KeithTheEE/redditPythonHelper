@@ -6,6 +6,7 @@ import logging
 from utils import archiveAndUpdateReddit
 from utils import formatCode
 from utils import textSupervision
+from utils import botMetrics
 
 
 def summonCommands():
@@ -16,12 +17,14 @@ def summonCommands():
     '''
     return ['reformat']
 
-def actOnSummons(reddit, msg, command, codeVTextClassifier, quietMode):
+def actOnSummons(reddit, msg, command, codeVTextClassifier, quietMode, setOfPosts):
 
     if 'reformat' == command.strip().lower():
         formatCode.handleSummons(reddit, msg, codeVTextClassifier, quietMode)
     elif 'format_howto' == command.strip().lower():
         formatCode.makeFormatHelpMessage(reddit, msg)
+    elif ('kplot' == command) and (msg.author.lower() == 'iamkindofcreative'):
+        botMetrics.processKarmaRequest(msg, setOfPosts, quietMode, ageLimitHours=4)
     else:
         logging.info("No know command associated with summons command")
 
@@ -40,11 +43,18 @@ def checkForSummons(msg):
             #print(msg.id)
             summonID = msg.id
         #print(msg.body)
+    elif not msg.was_comment:
+        # Was a direct message
+        if msg.author.lower() in  ['iamkindofcreative', 'u/iamkindofcreative']:
+            if 'kplot' in msg.body.lower():
+                # Call the karma plot thingy
+                command = 'kplot'
+                summonID = msg.id
     
     return summonID, command
 
 
-def handleInbox(reddit, codeVTextClassifier, unreadCount=None, sendText = True, quietMode=False):
+def handleInbox(reddit, codeVTextClassifier, setOfPosts={}, unreadCount=None, sendText = True, quietMode=False):
     # Mark all messages as read after notification has been sent
     rawInboxMessages = archiveAndUpdateReddit.checkForMessages(reddit)
     sendText = True
@@ -68,7 +78,7 @@ def handleInbox(reddit, codeVTextClassifier, unreadCount=None, sendText = True, 
             # mark summoning as read
             summonMsgs.append(msg)
             summonedIDs.append(summoned)
-            actOnSummons(reddit, msg, command, codeVTextClassifier, quietMode)
+            actOnSummons(reddit, msg, command, codeVTextClassifier, quietMode, setOfPosts)
         else:
             inboxMessages.append(msg)
 
@@ -97,6 +107,7 @@ def handleInbox(reddit, codeVTextClassifier, unreadCount=None, sendText = True, 
                 else: 
                     commentReplies += 1
             else:
+                # Check to see if it was a karma summons
                 directMessages += 1
         newMsgCount = len(inboxMessages) - unreadCount
 

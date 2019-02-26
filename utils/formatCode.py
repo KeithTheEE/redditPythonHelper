@@ -13,6 +13,7 @@ from nltk.metrics import ConfusionMatrix
 
 
 from utils import archiveAndUpdateReddit
+from utils import buildComment
 
 '''
 Tools to take a reddit message and classify lines as code or text
@@ -87,9 +88,15 @@ def detokenize(token_text):
         
 def code_text_features(text):
     d = mod_lz78(text, {})
+    d[0] = len(text)
     return d
 
 def buildTextCodeClassifier(sourceDataPath):
+    '''
+    Takes in a training file filled with coding samples
+    and uses the NLTK provided Brown News sentence corpus and builds
+    
+    '''
     
     randomSeed = random.randint(0,1000)
     sampleSize = 2000
@@ -115,24 +122,26 @@ def buildTextCodeClassifier(sourceDataPath):
     logging.debug("Random Seed for Training Shuffle: " + str(randomSeed))
     logging.debug("getting features")
     featureSets=[(code_text_features(post[0]), post[1]) for post in posts]
-    size = int(len(featureSets) * 0.1)
+    test_cut = 0.1
+    size = int(len(featureSets) * test_cut)
     train_set, test_set = featureSets[size:], featureSets[:size]
     logging.debug("Training Size: " + str( len(train_set)))
     logging.debug("Testing Size:  " + str( len(test_set)))
     logging.debug("  Training Model")
     classifier = nltk.NaiveBayesClassifier.train(train_set)
     logging.debug("  Model Accuracy: " + str(nltk.classify.accuracy(classifier, test_set)))
+    '''
     ref = []
     tagged = []
-    '''
     for i in range(len(test_set)):
         c = classifier.classify(test_set[i][0])
         tagged.append(c)
         ref.append(test_set[i][1])
         if i < 5:
             #print("Text:\n", test_set[i][0])
-            print("Classified: ", c)
-            print("Actually:   ", test_set[i][1])
+            print(test_set[i][1] + ':' + c + ' | Actually:Classified')
+            #print("Classified: ", c)
+            #print("Actually:   ", test_set[i][1])
     '''
     # I can't get the confusion matrix to work in a saved format. 
     #logging.debug(str(ConfusionMatrix(ref, tagged)))
@@ -144,8 +153,21 @@ def buildTextCodeClassifier(sourceDataPath):
 def rewrapClassifications(line):
     '''
     This is a by hand curriated list of markdown circumstances which 
-    define code blocks.
+    define code blocks. 
+
+    This function classifies a line as either empty, codeblock, code,
+    or NA,
     
+    empty: the line is either a newline character, or the value `&#x200B;`
+
+    codeblock: A tripple ` is present, starting or ending a codeblock
+
+    code: Either the line leads with at least 4 spaces, or the line starts 
+        and ends with a ` character.
+
+    NA: The line contains text of some form, but it definetly isn't 
+        formatted as code
+        
     '''
     # Function to by hand classify lines
     #  Should be used to bolster the naive bayes classifier
@@ -161,6 +183,70 @@ def rewrapClassifications(line):
     else:
         c = 'NA'
     return c
+
+def valid_python_syntax(line):
+    '''
+    Takes line and evalutes whether or not it follows BNF Grammar rules
+    for the python language 
+
+    only returns false if the line definetly does not evaluate 
+
+    Does not care about the existence of varibles
+
+    '''
+
+
+    return 
+
+def id_Missing_Whitespace(codeBlock):
+    '''
+    Simple Hand Curiated 'missing whitespace' classifier.
+
+    The code parses the text looking for a line which when stripped
+    leads with an indent trigger. The unstripped indent level is noted
+    then the next non emptyline is looked at
+
+    Parses through presented message line by line, looks for code blocks
+    In code blocks, checks for the pressence of 'def', 'if', 'elif', 'try',
+    'except', 'else', 'while' 
+
+    This function assumes it's being handed valid code, not text
+
+    references:
+    https://docs.python.org/2.0/ref/logical.html
+    https://docs.python.org/2.0/ref/indentation.html
+
+
+    '''
+
+    indentTriggerHeads = ['def', 'if', 'elif', 'else', 'try', 'except', 'while', 'for'
+                            'class', 'with']
+    indentTriggerTails = [':']
+    emptyLine = ['&#x200B;', '']
+
+
+    lines = codeBlock#.split('\n')
+    root = 0
+    level = root
+    wsCount = 0
+    i = 0
+    while i < len(lines)-1:
+        line = lines[i]
+        if line.strip() not in emptyLine:
+            tokens = line.strip().split()
+            if (tokens[0] in indentTriggerHeads) and (tokens[-1][-1] in indentTriggerTails):
+                # Whitespace Indent Should Occur
+                pass
+        i += 1
+
+
+    return False
+
+def whitespace_Error_Recovery():
+
+
+
+    return
 
 def classifyPostLines(textBlock, classifier):
     '''
@@ -256,6 +342,11 @@ def reformat(text, classifier):
                 codeRegion = True
             else:
                 codeRegion = False
+
+
+            # Evaluate if the block is missing expected indent
+            if codeRegion:
+                missingWS = id_Missing_Whitespace(textBlock)
 
             # Add to the message block with spacer as necessary
             for line in textBlock:
@@ -358,7 +449,7 @@ def handleSummons(reddit, msg, codeVTextClassifier, quietMode, ageLimitHours=4):
         # Attempt to reformat
         if parent.author == summoning_comment.author:
             # Add help formating prefix
-            prefix = """Before I reformat this
+            same_user_prefix = """Before I reformat this
 
             """
         msg, changesMade, codePresent, correctlyFormatted = reformat(textBlock, codeVTextClassifier)

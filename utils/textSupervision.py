@@ -11,6 +11,8 @@ email: kmurrayis@gmail.com
 '''
 from asecretplace import getPythonHelperBotKeys
 smstoaddr = getPythonHelperBotKeys.GETSMSADDR()
+mmstoaddr = getPythonHelperBotKeys.GETMMSADDR()
+emailtoaddr = getPythonHelperBotKeys.GETEMAILADDR()
 
 def getUserFeedbackViaText(outgoingMsg, recipAddr=smstoaddr, tryAgainDelayMin=5):
     """
@@ -113,3 +115,30 @@ def send_update(outgoingMsg, recipAddr=smstoaddr):
         time.sleep(wait)
         i += 1
     return 
+
+def send_karma_plot(outgoingMsg, outMedia, sbjLine, recipAddrMMS=mmstoaddr, recipAddrEmail=emailtoaddr):
+    # Message User
+    
+    maxTotalWaitTime = 5*60*60
+    backoffTime = 30 # starting amount of time required to wait after an error. it will then double
+    maxBackoffTime = 60*60
+    i = 0
+    startTime = time.time()
+    while True:
+        try:
+            logging.debug("Sending Karma Plot: Email")
+            kmmessage.message_Send_Full_Email([recipAddrEmail], sbjLine, outgoingMsg, files=[outMedia])
+            time.sleep(1)
+            logging.debug("Sending Karma Plot: MMS")
+            kmmessage.mms_message_Send(recipAddrMMS,outgoingMsg,outMedia)
+            break
+        except Exception as err:
+            logging.info("Caught exception\n" + err)
+
+        # Grow the amount of time it tries
+        if time.time()-startTime > maxTotalWaitTime:
+            break
+        wait = min(backoffTime* (2**i), maxBackoffTime)
+        time.sleep(wait)
+        i += 1
+    return

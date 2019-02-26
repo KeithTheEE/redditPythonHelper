@@ -811,7 +811,7 @@ def get_redditor_by_name(reddit, name):
             if "RATELIMIT" in traceback.format_exc():
                 logging.error("Caught Server Rate Limit Hit By API | Specific Error:")
                 logging.error("\n"+traceback.format_exc())
-                requestBackoffTime = self._backoff(requestBackoffTime)
+                requestBackoffTime = _backoff_Sleeper(requestBackoffTime)
                 if time.time()-startTime > maxTotalWaitTime:
                     logging.error("I've tried this too much, escalating error")
                     raise e
@@ -869,7 +869,7 @@ def get_comment_by_ID(reddit, comment_id):
             if "RATELIMIT" in traceback.format_exc():
                 logging.error("Caught Server Rate Limit Hit By API | Specific Error:")
                 logging.error("\n"+traceback.format_exc())
-                requestBackoffTime = self._backoff(requestBackoffTime)
+                requestBackoffTime = _backoff_Sleeper(requestBackoffTime)
                 if time.time()-startTime > maxTotalWaitTime:
                     logging.error("I've tried this too much, escalating error")
                     raise e
@@ -927,7 +927,7 @@ def get_submission_by_ID(reddit, submission_id):
             if "RATELIMIT" in traceback.format_exc():
                 logging.error("Caught Server Rate Limit Hit By API | Specific Error:")
                 logging.error("\n"+traceback.format_exc())
-                requestBackoffTime = self._backoff(requestBackoffTime)
+                requestBackoffTime = _backoff_Sleeper(requestBackoffTime)
                 if time.time()-startTime > maxTotalWaitTime:
                     logging.error("I've tried this too much, escalating error")
                     raise e
@@ -1014,7 +1014,7 @@ def commentOnSubmmission(submission, msg, reddit, quietMode):
                 if "RATELIMIT" in traceback.format_exc():
                     logging.error("Caught Server Rate Limit Hit By API | Specific Error:")
                     logging.error("\n"+traceback.format_exc())
-                    requestBackoffTime = self._backoff(requestBackoffTime)
+                    requestBackoffTime = _backoff_Sleeper(requestBackoffTime)
                     if time.time()-startTime > maxTotalWaitTime:
                         logging.error("I've tried this too much, escalating error")
                         raise e
@@ -1078,7 +1078,7 @@ def commentOnComment(comment, msg, reddit, quietMode):
                 if "RATELIMIT" in traceback.format_exc():
                     logging.error("Caught Server Rate Limit Hit By API | Specific Error:")
                     logging.error("\n"+traceback.format_exc())
-                    requestBackoffTime = self._backoff(requestBackoffTime)
+                    requestBackoffTime = _backoff_Sleeper(requestBackoffTime)
                     if time.time()-startTime > maxTotalWaitTime:
                         logging.error("I've tried this too much, escalating error")
                         raise e
@@ -1177,7 +1177,7 @@ def getNewPosts(reddit, sub="python", submissionList={}, ageLimitHours=12):
             if "RATELIMIT" in traceback.format_exc():
                 logging.error("Caught Server Rate Limit Hit By API | Specific Error:")
                 logging.error("\n"+traceback.format_exc())
-                requestBackoffTime = self._backoff(requestBackoffTime)
+                requestBackoffTime = _backoff_Sleeper(requestBackoffTime)
                 if time.time()-startTime > maxTotalWaitTime:
                     logging.error("I've tried this too much, escalating error")
                     raise e
@@ -1218,6 +1218,30 @@ def updatePosts(reddit, sub="python", submissionList={}, ageLimitHours=12):
     submissionList = removeOldPosts(submissionList, ageLimitHours)
     submissionList = updatePostFeatures(reddit, submissionList)
     return submissionList
+
+    
+def updateYoungerThanXPosts(reddit, sub="python", submissionList={}, ageLimitHours=2):
+    '''
+    Function exists so only a set of posts are updated where the set is defined by
+    their age. 
+    '''
+
+    # Splitting into younger/older than
+    holdSubmissions = {}
+    newSubmissions = {}
+    for key in submissionList:
+        submission, user = submissionList[key]
+        if datetime.datetime.utcnow() - submission.created_utc > datetime.timedelta(hours=ageLimitHours):
+            holdSubmissions[key] = submissionList[key]
+        else:
+            newSubmissions[key] = submissionList[key]
+    # The actual Update
+    newSubmissions = updatePostFeatures(reddit, newSubmissions)
+    # Merging Back Together
+    for key in newSubmissions:
+        holdSubmissions[key] = newSubmissions[key]
+
+    return holdSubmissions
 
 
 # ~~~~~~~~~ Monitoring and Metrics ~~~~~~~~~~ # 
@@ -1272,7 +1296,7 @@ def checkForMessages(reddit):
             if "RATELIMIT" in traceback.format_exc():
                 logging.error("Caught Server Rate Limit Hit By API | Specific Error:")
                 logging.error("\n"+traceback.format_exc())
-                requestBackoffTime = self._backoff(requestBackoffTime)
+                requestBackoffTime = _backoff_Sleeper(requestBackoffTime)
                 if time.time()-startTime > maxTotalWaitTime:
                     logging.error("I've tried this too much, escalating error")
                     raise e
@@ -1337,7 +1361,7 @@ def markSummonsAsReadMessages(reddit, msgIDs = []):
             if "RATELIMIT" in traceback.format_exc():
                 logging.error("Caught Server Rate Limit Hit By API | Specific Error:")
                 logging.error("\n"+traceback.format_exc())
-                requestBackoffTime = self._backoff(requestBackoffTime)
+                requestBackoffTime = _backoff_Sleeper(requestBackoffTime)
                 if time.time()-startTime > maxTotalWaitTime:
                     logging.error("I've tried this too much, escalating error")
                     raise e

@@ -89,7 +89,10 @@ try:
     GPIO.setup( 15, GPIO.OUT) # BLUE
     GPIO.setup( 16, GPIO.OUT) # WHITE
     GPIO.setup( 18, GPIO.OUT) # GREEN
-    GPIO.setup( 7, GPIO.IN)   # BUTTON
+    GPIO.setup( 7, GPIO.IN)   # 
+    
+    # Setup DIP Switch Inputs
+
 except:
     rPI = False
 
@@ -211,6 +214,7 @@ def buttonListener(testing=False):
     if rPI:
         oldState = GPIO.input(7)
     buttonPress = False
+    longHoldDuration = 7
     while True:
         if rPI:
             curState = GPIO.input(7)
@@ -241,7 +245,7 @@ def buttonListener(testing=False):
             time.sleep(.001)
             if buttonPress:
                 duration = time.time() - startTime
-                if duration > 7:
+                if duration > longHoldDuration:
                     # Shutdown condition
                     GPIO.output(red, True)
                     time.sleep(.1)

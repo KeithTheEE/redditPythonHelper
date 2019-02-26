@@ -36,17 +36,20 @@ Unless otherwise noted, all changes by @kmurrayis
 ### Short Term Roadmap
 
 With the class wrappers in place, archiving should be significantly easier. 
-This next update will probably decide a database structure, and either start archiving posts via the bot on the pi, or a clone bot on my primary computer. Before the so search engine can be rigorously tested, I will need sample data, so archiving is finally a real priority, as oppose to an idea priority. 
+This next update will probably decide a database structure, and either start archiving posts via the bot on the pi, or a clone bot on my primary computer. Before the so search engine can be rigorously tested, I will need sample data, so archiving is finally a real priority, as oppose to an ideal priority. 
+
+The bot summoning could use some work. While it's summons works well, it could classify when the bot has been summoned to reformat code that has indent errors,
 
 
 #### Add
+ - Verify the key phrase response checks for self post v image post. Ok this code is written and in learningSubmissionClassifiers, but after looking through the older versions of this, it never was a requirement. And it's usually pretty spot on. The code is commented out, so think on it for a while. 
+
  - loggingSetup.py: a module to be imported first by rpiManager and main, which sets up the logging format so the program can be called by either module on any system and initialize in the same way
 
- - Numbering system for items in roadmap to clear up what's being worked on and what is completed from an outside perspective. A master numbering system probably is a good idea, vX.X.XX[a,c,d,r,f,s,co]XX, following version, section, and specific roadmap suggestion number. But That seems bloated and unnecessary. (Maybe this isn't worth while, maybe it is and will help catch things in the changelog)
 
  - botHelperFunctions/botMetrics: Add ram usage check and log it in every 'awake' cycle of program, to try and tease out any possible MemeoryError's kicking up after long periods of time. Might as well save other diagnostics info, maybe call this from the hearbeat thread so it becomes a better representation of runtime
 
- - rpiMain.dontRunSwitchFlag(): 
+ - rpiManager.startupSwitchFlag(): 
  Moving this higher up.
  A function which polls one of the gpio pins to see if it's low (normally high) (or flipped levels). That pin will be tied to a jumper or switch. When set, the bot will not turn on at boot, allowing for simpler diagnostics, updates, etc. 
  Also a pull origin master from github state would be incredibly useful
@@ -89,14 +92,18 @@ This next update will probably decide a database structure, and either start arc
    - Previous code is stored in a tree like structure
    - Leverage sentence ordering ideology to say given the current line and the previous state of the code tree, which level of node in the tree should I be
  This should be an area of linguists where there's plenty of work already completed, look for it. I think Nevil-manning sequitor addresses it briefly, look at that+cited by for other work in the area.
+ - Built off of Bot Summons, DM to the bot with 'kplot:'+postID to get karma plotted by time for that post. Hopefully this will make it easier to see vote manipulation. Probably just for me, maybe mods as well
 
  - A queue which has inputs added to it by functions, and removed by the raspberry pi gpio handler, allowing the bot to change LED status based on what it's doing. Similar to the twitter event bot design (sepperate project).
  
+
+ - Numbering system for items in roadmap to clear up what's being worked on and what is completed from an outside perspective. A master numbering system probably is a good idea, vX.X.XX[a,c,d,r,f,s,co]XX, following version, section, and specific roadmap suggestion number. But That seems bloated and unnecessary. (Maybe this isn't worth while, maybe it is and will help catch things in the changelog. Probably wont be seriously considered until alpha)
 
 
 #### Change
  - Move NLP functions from NLTK (used in many files) to a buffer module, allowing for simpler, universal changes to be made. For example, if there is a better POS tagger than nltk.pos_tag(sent) then we can easily switch to that. Right now NLTK is used over a fairly large filespace making adjustments of that sort difficult. 
  - Review all my logging notes. See what should be dropped, changed, etc. 
+ - Make sure the bot defaults to commenting about formatting even if there's no code present
 
 
 #### Deprecate

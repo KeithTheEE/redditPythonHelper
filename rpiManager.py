@@ -130,8 +130,13 @@ class restartButtonThread(threading.Thread):
 
 
 
+def startupSwitchFlag():
+    action = 'F0'
+    
 
 
+
+    return action
 
 def is_connected():
     REMOTE_SERVER = "www.google.com"
@@ -251,6 +256,18 @@ if __name__ == "__main__":
     # F0: Continue as is
     # F1: Pull code from repo origin master
     # F2: Do not begin program
+    action = startupSwitchFlag()
+    logging.debug('Startup Action: '+ action)
+    if action == 'F1':
+        # Pull source
+        logging.debug("Pulling Source from Origin Master")
+        pull_from_github()
+    elif action == 'F2':
+        logging.debug("As per startup Switch Flag, exiting program and not running")
+        sys.exit(0) # Successful exit
+    # 
+
+
 
 
     # Importing here to prevent the "import logging"

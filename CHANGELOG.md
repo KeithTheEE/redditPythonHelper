@@ -37,15 +37,17 @@ Primary focus is bug identification and fixes from the 0.2.00 udate.
 #### Added
  - Added 'ResponseException' in archieveAndUpdateReddit to the except statement on the server error level. Apperently ServerError is not the only exception thrown for 500 errors, though response exception is classified as a server error. For some reason catching serverError does not catch responseException as I had previously interpurted the documentation 
  - Added 'APIException' from praw.exceptions in archieveAndUpdateReddit. This then checks the exception to see if it was a rate limit error that reddit threw, and if it was it retries after a backoff time for rate limiting, and if not it escelates the error out of the exception catch. 
+ - Generate Karma Plot: under bot summons, if an approved user (currently only myself) messages the bot, it will generate and email a plot for karma vs time. This is used to double check if a post looks to be naturally gaining karma or judge if there's manipulation behind it. Functions added are in botSummons, botMetrics, and textSupervision
 
 #### Changed
- - Bug Fix [ed7e6c6]: getReadyToComment now passes quietMode
- - Bug Fix [fd35a7c]: removed prefix 'botHelperFunctions' from a get_learning_sub_Names() call since the calling function now resides in botHelperFunction Module as well
- - Bug Fix [9edca52]: learningSubmissionClassifiers should import itself to itself
- - Bug Fix [0890b4d]: Adjusted bot summons so capitalization of username doesn't matter
- - Bug Fix [9d4dfba]: Key Phrase Autoreply oldPosts now is set to setOfPosts.copy().  was never triggering because oldPosts automatically updated as new posts were added to setOfPosts due to a shallow copy. 
- - Bug Fix [14133ff]: in formatCode the summoning message was saved with no stripping of newline characters. That is no longer the case as newline characters should now be replaced with a space character
- - Adjusted max age of a reformat summons from 2 hours to 4 hours. While I like two hours better, I'm just not likely to notice and respond to an error in 2 unless I'm lucky. 4 isn't too old but it gives me a chance to get the message reformatted after an error crops up
+ - Bug Fix [56be1fc]: getReadyToComment now passes quietMode
+ - Bug Fix [c8897b0]: removed prefix 'botHelperFunctions' from a get_learning_sub_Names() call since the calling function now resides in botHelperFunction Module as well
+ - Bug Fix [21def4c]: learningSubmissionClassifiers should import itself to itself
+ - Bug Fix [37765bd]: Adjusted bot summons so capitalization of username doesn't matter
+ - Bug Fix [d760d1f]: Key Phrase Autoreply oldPosts now is set to setOfPosts.copy().  was never triggering because oldPosts automatically updated as new posts were added to setOfPosts due to a shallow copy. 
+ - Bug Fix [dc9d4d9]: in formatCode the summoning message was saved with no stripping of newline characters. That is no longer the case as newline characters should now be replaced with a space character
+ - Adjusted max age of a reformat summons from 2 hours to 4 hours. While I like two hours better, I'm just not likely to notice and respond to an error in 2 unless I'm lucky. 4 hours isn't too old but it gives me a chance to get the message reformatted after an error crops up
+ - Added line length as a feature to the code V text classifier. Hopefully it's not classifying just on this and also not ignoring this, but it seems to be doing well in early testing. (update: It's hard to tell but it doesn't appear to be impacting the classification)
 
 #### Deprecated
 #### Removed
@@ -480,3 +482,16 @@ Empty
 ### user_agents.py
 
 ### Tests 
+
+
+***
+
+> TV Reporter: "It's just gone 8 o'clock and time for the penguin on top of your television set to explode."
+
+> *Boom*
+
+> Woman watching TV: "How did he know that was going to happen?"
+
+> TV Reporter: "It was an inspired guess."
+
+Episode 22 in Monty Python's Flying Circus
