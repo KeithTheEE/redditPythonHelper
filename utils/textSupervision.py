@@ -133,7 +133,7 @@ def send_karma_plot(outgoingMsg, outMedia, sbjLine, recipAddrMMS=mmstoaddr, reci
             kmmessage.mms_message_Send(recipAddrMMS,outgoingMsg,outMedia)
             break
         except Exception as err:
-            logging.info("Caught exception\n" + err)
+            logging.info("Caught exception\n" + str(err))
 
         # Grow the amount of time it tries
         if time.time()-startTime > maxTotalWaitTime:
