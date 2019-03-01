@@ -214,6 +214,7 @@ def processKarmaRequest(msg, setOfPosts, quietMode, ageLimitHours=4):
     temp(?) and send to me
     '''
     idTarget = msg.body.split(':')[-1].strip()
+    input_subject_Line = msg.subject.lower()
     match = False
     for key in setOfPosts:
         submission, user = setOfPosts[key]
@@ -229,8 +230,8 @@ def processKarmaRequest(msg, setOfPosts, quietMode, ageLimitHours=4):
         title = "Karma for post " + str(submission.id) + " by " + str(user.name)
 
 
-        plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d %H:%M')) 
-        plt.gcf().autofmt_xdate()
+        #plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d %H:%M')) 
+        #plt.gcf().autofmt_xdate()
         # Deal with weird x min/max bug (without, scale will be improperly set to +- ~ 2 months)
         # See:
         # https://github.com/matplotlib/matplotlib/issues/5963
@@ -247,6 +248,9 @@ def processKarmaRequest(msg, setOfPosts, quietMode, ageLimitHours=4):
         axarr[1].set_xlabel("Timestamp")
         
 
+        plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d %H:%M')) 
+        plt.gcf().autofmt_xdate()
+
         dirName = 'redditData/scoreDisplay'
         outMedia = os.path.join(dirName, str(submission.id) + '.png')
         plt.savefig(outMedia, bbox_inches='tight')
@@ -255,4 +259,4 @@ def processKarmaRequest(msg, setOfPosts, quietMode, ageLimitHours=4):
         # Send the info!!!
         outgoingMsg = title
         sbjLine = "Here's a pretty plot for you!"
-        textSupervision.send_karma_plot(outgoingMsg, outMedia, sbjLine)
+        textSupervision.send_karma_plot(outgoingMsg, outMedia, sbjLine, input_subject_Line)

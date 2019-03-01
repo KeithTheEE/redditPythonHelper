@@ -116,7 +116,7 @@ def send_update(outgoingMsg, recipAddr=smstoaddr):
         i += 1
     return 
 
-def send_karma_plot(outgoingMsg, outMedia, sbjLine, recipAddrMMS=mmstoaddr, recipAddrEmail=emailtoaddr):
+def send_karma_plot(outgoingMsg, outMedia, sbjLine, recipAddrMMS=mmstoaddr, recipAddrEmail=emailtoaddr, input_subject_Line=""):
     # Message User
     
     maxTotalWaitTime = 5*60*60
@@ -124,13 +124,31 @@ def send_karma_plot(outgoingMsg, outMedia, sbjLine, recipAddrMMS=mmstoaddr, reci
     maxBackoffTime = 60*60
     i = 0
     startTime = time.time()
+
+    if ('mms' in input_subject_Line) and ('email' in input_subject_Line):
+        out_email = True
+        out_mms = True
+    elif ('mms' in input_subject_Line):
+        out_email = False
+        out_mms = True
+    elif ('email' in input_subject_Line):
+        out_email = True
+        out_mms = False
+    else:
+        out_mms = True
+        out_email = True
+
+
+
     while True:
         try:
-            logging.debug("Sending Karma Plot: Email")
-            kmmessage.message_Send_Full_Email([recipAddrEmail], sbjLine, outgoingMsg, files=[outMedia])
-            time.sleep(1)
-            logging.debug("Sending Karma Plot: MMS")
-            kmmessage.mms_message_Send(recipAddrMMS,outgoingMsg,outMedia)
+            if out_email:
+                logging.debug("Sending Karma Plot: Email")
+                kmmessage.message_Send_Full_Email([recipAddrEmail], sbjLine, outgoingMsg, files=[outMedia])
+                time.sleep(1)
+            if out_mms:
+                logging.debug("Sending Karma Plot: MMS")
+                kmmessage.mms_message_Send(recipAddrMMS,outgoingMsg,outMedia)
             break
         except Exception as err:
             logging.info("Caught exception\n" + str(err))
