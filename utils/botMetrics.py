@@ -259,4 +259,4 @@ def processKarmaRequest(msg, setOfPosts, quietMode, ageLimitHours=4):
         # Send the info!!!
         outgoingMsg = title
         sbjLine = "Here's a pretty plot for you!"
-        textSupervision.send_karma_plot(outgoingMsg, outMedia, sbjLine, input_subject_Line)
+        textSupervision.send_karma_plot(outgoingMsg, outMedia, sbjLine, input_subject_Line=input_subject_Line)
