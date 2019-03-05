@@ -497,6 +497,54 @@ class phb_Reddit_User(object):
     God I hope this takes care of most reddit based errors
     I hope this acts like a padded room for the insanity that is reddit errors
     '''
+
+
+    '''
+Error Caused by User Account that was deleted while the bot was looking at/for it. 
+Rare, but should be handled 
+
+2019-02-28 08:08:49,848 - DEBUG - main.py:getReadyToComment():186 - Processing a valid post
+2019-02-28 08:08:49,848 - DEBUG - botHelperFunctions.py:logPostFeatures():54 - **************************************************
+2019-02-28 08:08:49,849 - DEBUG - botHelperFunctions.py:logPostFeatures():55 - [POST]   | what is python?
+2019-02-28 08:08:49,849 - DEBUG - botHelperFunctions.py:logPostFeatures():56 - [AUTHOR] | shiriyadav
+2019-02-28 08:08:49,849 - DEBUG - botHelperFunctions.py:logPostFeatures():57 - [ID]     | avnkh8
+2019-02-28 08:08:49,849 - DEBUG - botHelperFunctions.py:logPostFeatures():59 -  Post Age: 2:14:43.849659
+2019-02-28 08:08:49,849 - DEBUG - botHelperFunctions.py:logPostFeatures():60 -  Votes: 0
+2019-02-28 08:08:49,850 - DEBUG - botHelperFunctions.py:logPostFeatures():61 -  Upvote Ratio: 0.1
+2019-02-28 08:08:49,850 - DEBUG - sessions.py:_log_request():49 - Fetching: GET https://oauth.reddit.com/comments/avnkh8/
+2019-02-28 08:08:49,851 - DEBUG - sessions.py:_log_request():50 - Data: None
+2019-02-28 08:08:49,851 - DEBUG - sessions.py:_log_request():51 - Params: {'sort': 'best', 'raw_json': 1, 'limit': 2048}
+2019-02-28 08:08:50,014 - DEBUG - connectionpool.py:_make_request():393 - https://oauth.reddit.com:443 "GET /comments/avnkh8/?sort=best&raw_json=1&limit=2048 HTTP/1.1" 200 1526
+2019-02-28 08:08:50,018 - DEBUG - sessions.py:_make_request():100 - Response: 200 (1526 bytes)
+2019-02-28 08:08:50,024 - DEBUG - sessions.py:_log_request():49 - Fetching: GET https://oauth.reddit.com/user/shiriyadav/submitted
+2019-02-28 08:08:50,024 - DEBUG - sessions.py:_log_request():50 - Data: None
+2019-02-28 08:08:50,024 - DEBUG - sessions.py:_log_request():51 - Params: {'sort': 'new', 'raw_json': 1, 'limit': 25}
+2019-02-28 08:08:50,261 - DEBUG - connectionpool.py:_make_request():393 - https://oauth.reddit.com:443 "GET /user/shiriyadav/submitted?sort=new&raw_json=1&limit=25 HTTP/1.1" 404 38
+2019-02-28 08:08:50,265 - DEBUG - sessions.py:_make_request():100 - Response: 404 (38 bytes)
+2019-02-28 08:08:50,265 - ERROR - archiveAndUpdateReddit.py:getUserPosts():618 - Caught Server 500 Error | Specific Error:
+2019-02-28 08:08:50,277 - ERROR - archiveAndUpdateReddit.py:getUserPosts():619 -
+Traceback (most recent call last):
+  File "/home/pi/Documents/filesForProgramming/Reddit/pythonHelpBot2/utils/archiveAndUpdateReddit.py", line 593, in getUserPosts
+    for submission in praw_user.submissions.new(limit=limitCount):
+  File "/usr/local/lib/python2.7/dist-packages/praw/models/listing/generator.py", line 80, in next
+    return self.__next__()
+  File "/usr/local/lib/python2.7/dist-packages/praw/models/listing/generator.py", line 52, in __next__
+    self._next_batch()
+  File "/usr/local/lib/python2.7/dist-packages/praw/models/listing/generator.py", line 62, in _next_batch
+    self._listing = self._reddit.get(self.url, params=self.params)
+  File "/usr/local/lib/python2.7/dist-packages/praw/reddit.py", line 371, in get
+    data = self.request('GET', path, params=params)
+  File "/usr/local/lib/python2.7/dist-packages/praw/reddit.py", line 486, in request
+    params=params)
+  File "/usr/local/lib/python2.7/dist-packages/prawcore/sessions.py", line 182, in request
+    params=params, url=url)
+  File "/usr/local/lib/python2.7/dist-packages/prawcore/sessions.py", line 127, in _request_with_retries
+    raise self.STATUS_EXCEPTIONS[response.status_code](response)
+NotFound: received 404 HTTP response
+
+
+
+    '''
     def __init__(self, praw_user):
 
         vals_Assigned = False

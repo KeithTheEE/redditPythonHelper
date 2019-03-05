@@ -479,6 +479,13 @@ def handleSummons(reddit, msg, codeVTextClassifier, quietMode, ageLimitHours=4):
     return
 
 
-def makeFormatHelpMessage(reddit, msg):
+def makeFormatHelpMessage(reddit, msg, quietMode):
+
+    # Classify Formatting Issues
+
+    # Build message based on specific issues present
+
+    # Craft General Message to cover other bases
+
 
     return

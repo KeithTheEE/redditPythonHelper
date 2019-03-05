@@ -139,16 +139,19 @@ def send_karma_plot(outgoingMsg, outMedia, sbjLine, recipAddrMMS=mmstoaddr, reci
         out_email = True
 
 
-
+    email_Sent = False
+    mms_Sent = False
     while True:
         try:
-            if out_email:
+            if out_email and not email_Sent:
                 logging.debug("Sending Karma Plot: Email")
                 kmmessage.message_Send_Full_Email([recipAddrEmail], sbjLine, outgoingMsg, files=[outMedia])
+                email_Sent = True
                 time.sleep(1)
-            if out_mms:
+            if out_mms and not mms_Sent:
                 logging.debug("Sending Karma Plot: MMS")
                 kmmessage.mms_message_Send(recipAddrMMS,outgoingMsg,outMedia)
+                mms_Sent = True
             break
         except Exception as err:
             logging.info("Caught exception\n" + str(err))
@@ -159,4 +162,5 @@ def send_karma_plot(outgoingMsg, outMedia, sbjLine, recipAddrMMS=mmstoaddr, reci
         wait = min(backoffTime* (2**i), maxBackoffTime)
         time.sleep(wait)
         i += 1
+
     return

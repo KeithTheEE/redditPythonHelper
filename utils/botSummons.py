@@ -22,7 +22,7 @@ def actOnSummons(reddit, msg, command, codeVTextClassifier, quietMode, setOfPost
     if 'reformat' == command.strip().lower():
         formatCode.handleSummons(reddit, msg, codeVTextClassifier, quietMode)
     elif 'format_howto' == command.strip().lower():
-        formatCode.makeFormatHelpMessage(reddit, msg)
+        formatCode.makeFormatHelpMessage(reddit, msg, quietMode)
     elif ('kplot' == command) and (msg.author.lower() == 'iamkindofcreative'):
         botMetrics.processKarmaRequest(msg, setOfPosts, quietMode, ageLimitHours=4)
     else:
