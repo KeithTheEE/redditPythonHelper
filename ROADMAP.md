@@ -22,8 +22,8 @@ Dates follow YYYY-MM-DD format
 
 
 
-## [A0.2.01] 2019-XX-XX
-In Progress
+## [A0.2.01] 2019-03-05
+Official
 ### Contributors
 Keith Murray
 
@@ -36,74 +36,45 @@ Unless otherwise noted, all changes by @kmurrayis
 ### Short Term Roadmap
 
 With the class wrappers in place, archiving should be significantly easier. 
-This next update will probably decide a database structure, and either start archiving posts via the bot on the pi, or a clone bot on my primary computer. Before the so search engine can be rigorously tested, I will need sample data, so archiving is finally a real priority, as oppose to an ideal priority. 
+This next update will probably decide a database structure, and either start archiving posts via the bot on the pi, or a clone bot on my primary computer. Before the SO search engine can be rigorously tested, I will need sample data, so archiving is finally a real priority, as oppose to an ideal priority. 
 
-The bot summoning could use some work. While it's summons works well, it could classify when the bot has been summoned to reformat code that has indent errors,
+The bot summoning could use some work. While it's summons works well, it could classify when the bot has been summoned to reformat code that has indent errors, and say when it expects it can't help with reformatin, but refer to reformatting help
+
 
 
 #### Add
+ - Hardware: USB or USB connected Sata drive.
+ - Migrate most files to usb/usb-sata drive to host. Watch power requirements. 
+ - Build a 'light archive' which will save posts as either xml or json. This should build in db focused structure and function calls, without requiring a db commitment. 
+ - With light archive, build a 'save state' and 'load state' function so records on new posts aren't lost during reboots.
  - Verify the key phrase response checks for self post v image post. Ok this code is written and in learningSubmissionClassifiers, but after looking through the older versions of this, it never was a requirement. And it's usually pretty spot on. The code is commented out, so think on it for a while. 
-
  - loggingSetup.py: a module to be imported first by rpiManager and main, which sets up the logging format so the program can be called by either module on any system and initialize in the same way
-
-
  - botHelperFunctions/botMetrics: Add ram usage check and log it in every 'awake' cycle of program, to try and tease out any possible MemeoryError's kicking up after long periods of time. Might as well save other diagnostics info, maybe call this from the hearbeat thread so it becomes a better representation of runtime
-
  - rpiManager.startupSwitchFlag(): 
  Moving this higher up.
  A function which polls one of the gpio pins to see if it's low (normally high) (or flipped levels). That pin will be tied to a jumper or switch. When set, the bot will not turn on at boot, allowing for simpler diagnostics, updates, etc. 
  Also a pull origin master from github state would be incredibly useful
-
- - Verify reddit post logs by grabbing most recent bot comments. This should reduce risk of two computers commenting on the same post which could happen if databases are de-synced and one computer is not in quiet mode because I typed in the wrong command. Opperator Error Risk Reduction. 
-
+ - Verify reddit post logs by grabbing most recent bot comments. This should reduce risk of two computers commenting on the same post which could happen if databases are de-synced and one computer is not in quiet mode because I typed in the wrong command. Opperator Error Risk Reduction. Only the most recent x+buffer hours of interaction are needed. This does not protect from multiple posts by the same user but should prevent multiple comments on the same post even if the bot runs on different computers. 
  - Full Test Suite: PRIORITY (Ok it'll have to wait until posts have been archived, but it'll still be nice)
-
  - Archive Posts: PRIORITY
     Solidify what values to save, and what to save them with. Probably build an SQL to XML or JSON exporter for third party testing.
-
  - botMetrics.measureUserReaction(): 
  A function focused on seeing if a user did in fact go to
- r/learnpython after the bot made its suggestion. Currently built, now need to add 
+ r/learnpython after the bot made its suggestion. Currently built (kind of, the praw wrappers messed it up a bit), now need to add 
  functionality in main.py to use it
-
- - summarizeText.loadEnglishModel(sourceDataPath=paths["prebuiltEnglishDB"]):
- Prebuild and pickle the output tdm of 
- summarizeText.buildModelFromDocsInFolder(sourceDataPath=paths["englishDB"])
- so the raspberry pi doesn't have to hit memory errors in in main.startupBot()
- load the prebuilt database and build it if the prebuild database does not exist.
- Or just build a custom compression scheme and load that instead of using pickle.
-
- - test.EvaluatePost():
- Given recent restructuring, this should be much easier. Take a post given a post id, then run it through the classifier where the exitpoints are turned off from the functions, forcing it to classify the post in full. Because the praw wrappers are in place, there shouldn't be a concern about forcing full evaluation any more.
-
- - Reply To Common posts:
- Build semi scripted replies to frequently asked questions (probably largely pulled from the sidebar, since that's how the side bar gets populated)
- This includes "How do I install python" and "Is learning python worth it?" (Aka "Why learn python?")--A quality version of this is a full research task. Build off of internal sentence ordering models + soft skills
-
- - local Flask website/dashboard to monitor the status and logs of the bot in realtime
-
- - Continue Documentation
- 
- - Log processing: a set of functions and visualizations to process the log files for various useful tidbits. Something nicer than grep
-
- - formatCode.py: Cleave sentence from comment and first line of code from one another 
- - formatCode.py: Using rewrapClassifications output, check to see if any indentation is present for lines that have been classified as code. If >5 lines of code are present and none of them have indents, classify block as "The reddit text editor royally screwed this one up", adjust comment to say it's unlikely that the code has been indented properly, and enter the special fixer.
- - formatCode.reformatFromHell(): Read in all previous code. Read in current line. If rfh classification Adds indent: current line is a child of the previous line. If it is the same indent level, current line is a sibling. If it is minus indent, line is a sibling of the previous lines parent. 
-   - Previous code is stored in a tree like structure
-   - Leverage sentence ordering ideology to say given the current line and the previous state of the code tree, which level of node in the tree should I be
- This should be an area of linguists where there's plenty of work already completed, look for it. I think Nevil-manning sequitor addresses it briefly, look at that+cited by for other work in the area.
- - Built off of Bot Summons, DM to the bot with 'kplot:'+postID to get karma plotted by time for that post. Hopefully this will make it easier to see vote manipulation. Probably just for me, maybe mods as well
-
+ - Continue Documentation in functions, add documentation files too
+ - [X] Built off of Bot Summons, DM to the bot with 'kplot:'+postID to get karma plotted by time for that post. Hopefully this will make it easier to see vote manipulation. Probably just for me, maybe mods as well
  - A queue which has inputs added to it by functions, and removed by the raspberry pi gpio handler, allowing the bot to change LED status based on what it's doing. Similar to the twitter event bot design (sepperate project).
+ - Deprecate karma scatter plot: or change it post all posts in the past week to minimize size. It's no longer useful or very interesting. Maybe activate it once a week or something too
  
-
- - Numbering system for items in roadmap to clear up what's being worked on and what is completed from an outside perspective. A master numbering system probably is a good idea, vX.X.XX[a,c,d,r,f,s,co]XX, following version, section, and specific roadmap suggestion number. But That seems bloated and unnecessary. (Maybe this isn't worth while, maybe it is and will help catch things in the changelog. Probably wont be seriously considered until alpha)
 
 
 #### Change
+- [X] Rework Roadmap: as the bot has progressed, some short term goals have dropped in priority and can be moved towards long term or dropped completely. (These are largely in the 'add' section) 
  - Move NLP functions from NLTK (used in many files) to a buffer module, allowing for simpler, universal changes to be made. For example, if there is a better POS tagger than nltk.pos_tag(sent) then we can easily switch to that. Right now NLTK is used over a fairly large filespace making adjustments of that sort difficult. 
  - Review all my logging notes. See what should be dropped, changed, etc. 
  - Make sure the bot defaults to commenting about formatting even if there's no code present
+ - When errors occur, or a shutdown button is pressed, attempt to save current reddit info into a temp file. on startup, load that info in then connect with praw to expand the knowledge base. 
 
 
 #### Deprecate
@@ -125,6 +96,27 @@ The bot summoning could use some work. While it's summons works well, it could c
 
  - Develop terms for a walk away condition. Either End of active development and the bot remains online, end of active development and death of bot, or end of active development and project is passed on to others. Terms will almost certainly be changed constantly and the project grows and evolves, but it's nice to have an idea of what I consider to be a "complete" project. 
 
+ - Numbering system for items in roadmap to clear up what's being worked on and what is completed from an outside perspective. A master numbering system probably is a good idea, vX.X.XX[a,c,d,r,f,s,co]XX, following version, section, and specific roadmap suggestion number. But That seems bloated and unnecessary. (Maybe this isn't worth while, maybe it is and will help catch things in the changelog. Probably wont be seriously considered until alpha)
+
+ - summarizeText.loadEnglishModel(sourceDataPath=paths["prebuiltEnglishDB"]):
+ Prebuild and pickle the output tdm of 
+ summarizeText.buildModelFromDocsInFolder(sourceDataPath=paths["englishDB"])
+ so the raspberry pi doesn't have to hit memory errors in in main.startupBot()
+ load the prebuilt database and build it if the prebuild database does not exist.
+ Or just build a custom compression scheme and load that instead of using pickle.
+
+ - test.EvaluatePost():
+ Given recent restructuring, this should be much easier. Take a post given a post id, then run it through the classifier where the exitpoints are turned off from the functions, forcing it to classify the post in full. Because the praw wrappers are in place, there shouldn't be a concern about forcing full evaluation any more. This can be considered to be half completed: the silent mode the bot has helps evaluate posts. 
+ 
+ - Reply To Common posts:
+ Build semi scripted replies to frequently asked questions (probably largely pulled from the sidebar, since that's how the side bar gets populated)
+ This includes "How do I install python" and "Is learning python worth it?" (Aka "Why learn python?")--A quality version of this is a full research task. Build off of internal sentence ordering models + soft skills. Pull text from comments on these posts to build up scripted reply. Look into adapting this (or maybe starting with this) to classifying the posts so their types can be diplayed as tags. 
+ 
+ - local Flask website/dashboard to monitor the status and logs of the bot in realtime. Low priority. 
+ 
+ - Log processing: a set of functions and visualizations to process the log files for various useful tidbits. Something nicer than grep
+
+
 
 
 ### Main
@@ -134,6 +126,11 @@ The bot summoning could use some work. While it's summons works well, it could c
  you have a question like this, consider using r/learnpython" blah blah  blah 
 
 
+### rpiManager.py
+ - update the commented gpio naming and numbering list
+ - update grab-from-github functions
+ - add a queue to work with rpiGPIO for LED displays for various tasks
+ 
 
 
 ### Libraries:
@@ -247,10 +244,20 @@ will be used for other classificaiton, such as "Blog Spam". It could be that top
 in this area can be re-examined and labelled, helping the bot generalize preformance in 
 other areas 
 
+### botSummons.py
+ - Finish makeFormatHelpMessage summons
+### buildComment.py
+### formatBagOfSentences.py
+### formatCode.py
+ - formatCode.py: Cleave sentence from comment and first line of code from one another 
+ - formatCode.py: Using rewrapClassifications output, check to see if any indentation is present for lines that have been classified as code. If >5 lines of code are present and none of them have indents, classify block as "The reddit text editor royally screwed this one up", adjust comment to say it's unlikely that the code has been indented properly, and enter the special fixer.
+ - formatCode.reformatFromHell(): Read in all previous code. Read in current line. If rfh classification Adds indent: current line is a child of the previous line. If it is the same indent level, current line is a sibling. If it is minus indent, line is a sibling of the previous lines parent. 
+   - Previous code is stored in a tree like structure
+   - Leverage sentence ordering ideology to say given the current line and the previous state of the code tree, which level of node in the tree should I be
+ This should be an area of linguists where there's plenty of work already completed, look for it. I think Nevil-manning sequitor addresses it briefly, look at that+cited by for other work in the area.
 
-### getChatBotKeys.py
-### getPythonHelperBotKeys.py
 
+### learningSubmissionClassifiers.py
 
 ### locateDB.py
  - load in path data from a prefernce file, and or take it as input that way the path isn't
@@ -263,6 +270,7 @@ other areas
  - Call a function in this library to recast folder/file calls to the correct os format. Or just redo it everywhere in the code. 
  Whatever works best
 
+### lsalib2.py
 
 ### questionIdentifier.py
 It'd be nice to use stack overflow's user submissions and r/learnpython's 
@@ -278,11 +286,7 @@ This will probably leverage a stack overflow search engine and compare n results
 with k or greater similarity. 
 
 ### rpiGPIOFunctions.py
-### rpiManager.py
- - update the commented gpio naming and numbering list
- - update grab-from-github functions
- - add a queue to work with rpiGPIO for LED displays for various tasks
- 
+### scriptedReply.py
 ### searchStackOverflowWeb.py
  - Scrap and rebuild with approved api and bound it to search for results between 
  local database build date and present day. Not important until after local copy of SO
@@ -298,7 +302,7 @@ with k or greater similarity.
 
  - moqaProgram
 
- - ELMO program
+ - ELMO/BERT programs
 
  - reformat_User_Code():
  a function to identify python code blocks that aren't properly formated, and auto format the code

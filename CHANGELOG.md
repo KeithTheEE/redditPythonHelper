@@ -17,8 +17,8 @@ Dates follow YYYY-MM-DD format
 -- Susan Calvin in "I, Robot" by Isaac Asimov
 
 
-## [A0.2.01] 2019-XX-XX
-In Progress
+## [A0.2.01] 2019-03-05
+Official
 ### Contributors
 Keith Murray
 
@@ -38,6 +38,7 @@ Primary focus is bug identification and fixes from the 0.2.00 udate.
  - Added 'ResponseException' in archieveAndUpdateReddit to the except statement on the server error level. Apperently ServerError is not the only exception thrown for 500 errors, though response exception is classified as a server error. For some reason catching serverError does not catch responseException as I had previously interpurted the documentation 
  - Added 'APIException' from praw.exceptions in archieveAndUpdateReddit. This then checks the exception to see if it was a rate limit error that reddit threw, and if it was it retries after a backoff time for rate limiting, and if not it escelates the error out of the exception catch. 
  - Generate Karma Plot: under bot summons, if an approved user (currently only myself) messages the bot, it will generate and email a plot for karma vs time. This is used to double check if a post looks to be naturally gaining karma or judge if there's manipulation behind it. Functions added are in botSummons, botMetrics, and textSupervision
+ - in archiveAndUpdateReddit, function updateYoungerThanXPosts: a function which is handed set of posts and updates all post younger than x hours, allowing for a higher resolution of upvotes/downvotes for young posts than older posts. 
 
 #### Changed
  - Bug Fix [56be1fc]: getReadyToComment now passes quietMode
@@ -47,36 +48,47 @@ Primary focus is bug identification and fixes from the 0.2.00 udate.
  - Bug Fix [d760d1f]: Key Phrase Autoreply oldPosts now is set to setOfPosts.copy().  was never triggering because oldPosts automatically updated as new posts were added to setOfPosts due to a shallow copy. 
  - Bug Fix [dc9d4d9]: in formatCode the summoning message was saved with no stripping of newline characters. That is no longer the case as newline characters should now be replaced with a space character
  - Adjusted max age of a reformat summons from 2 hours to 4 hours. While I like two hours better, I'm just not likely to notice and respond to an error in 2 unless I'm lucky. 4 hours isn't too old but it gives me a chance to get the message reformatted after an error crops up
- - Added line length as a feature to the code V text classifier. Hopefully it's not classifying just on this and also not ignoring this, but it seems to be doing well in early testing. (update: It's hard to tell but it doesn't appear to be impacting the classification)
+ - Added line length as a feature to the code V text classifier. Hopefully it's not classifying just on this and also not ignoring this, but it seems to be doing well in early testing. (update: It doesn't appear to be impacting the classification)
 
 #### Deprecated
 #### Removed
-
+ - In main: idealQuery(), stackOverflowInfo(),buildHelpfulComment_DEPRECATED(), xrequest_Key_Word_Filter(), xbasicQuestionClassify(), xgetSubsUsersInteractsIn(), xbasicUserClassify(), xuser_Already_Took_Advice(), xpopOldSpammers(), AND xrunBotX() 
 #### Fixed
 #### Security
 
 
 ### Main
+ - Old functions which were previously deprecated were removed: idealQuery(), stackOverflowInfo(),buildHelpfulComment_DEPRECATED(), xrequest_Key_Word_Filter(), xbasicQuestionClassify(), xgetSubsUsersInteractsIn(), xbasicUserClassify(), xuser_Already_Took_Advice(), xpopOldSpammers(), AND xrunBotX(). They have all been officially removed as they were moved in v a0.2.00, and the move did not break the code so the old copy was no longer useful. 
 
 ### rpiManager.py
-
+ - under if main added structure to read a gpio switch to change startup behavior so the bot can either act as normal, pull from github on starup, or exit the program preventing automatic running on a reboot. Code is not yet active.
 
 ### Util Libraries
 
 #### archiveAndUpdateReddit.py
+ - function updateYoungerThanXPosts: a function which is handed set of posts and updates all post younger than x hours, allowing for a higher resolution of upvotes/downvotes for young posts than older posts. In the future this will be used to help the bot decide to comment on a post earlier.
 
 #### botHelperFunctions.py
 #### botMetrics.py
+ - userTookAdvice is currently commented out. 
+ - processKarmaRequest(): Given a submission ID, checks current set of posts for a matching ID. If there's one, it takes the score history and plots it by time. 
+#### botSummons.py
+ - added kplot summon via direct message to the bot. This lets me look at upvote/downvotes for a post by time. 
+#### buildComment.py
 #### formatBagOfSentences.py
 #### formatCode.py
+ - created a few hollow functions for more useful code formatting. 
+#### learningSubmissionClassifiers.py
 #### locateDB.py
 #### lsalib2.py
 #### questionIdentifier.py
 #### rpiGPIOFunctions.py
+ - Building out startup switch functions. Define a few new pins to check on startup, and define them as input. 
 #### scriptedReply.py
 #### searchStackOverflowWeb.py
 #### summarizeText.py
 #### textSupervision.py
+ - send_karma_plot() added. The karma plot is sent either via email or mms (or both) depending on the subject line of the summoning dm. 
 #### updateLocalSubHistory.py
 #### user_agents.py
 
