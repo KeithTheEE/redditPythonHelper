@@ -6,15 +6,14 @@ from praw.exceptions import APIException
 from prawcore import RequestException, ResponseException, ServerError
 from asecretplace import getPythonHelperBotKeys
 import sqlite3
+import json
 import os
 import logging
-
-
-
 import subprocess
 import traceback
 import socket
 
+import kmlistfi
 
 # In all certainty this will be redone with sqlite3 or something similar
 #  But until then, I just want to get past this
@@ -38,80 +37,88 @@ class phb_Reddit_Submission(object):
     God I hope this takes care of most reddit based errors
     I hope this acts like a padded room for the insanity that is reddit errors
     '''
-    def __init__(self, praw_sub):
-        vals_Assigned = False
-        self.directed_to_learning_sub = False
-        self.mod_removed_for_learning = False
-        self.said_thanks_or_it_worked = False
-        self.deleted_or_removed = False
-        
-        # Prep for errors
-        maxTotalWaitTime = 5*60*60
-        requestBackoffTime = 60 # starting amount of time required to wait after an error. it will then double
-        serverBackoffTime = 5 
-        maxBackoffTime = 5*60
-        startTime = time.time()
+    def __init__(self, praw_sub, loaded_dict=None):
+        if loaded_dict == None:
+            vals_Assigned = False
+            self.directed_to_learning_sub = False
+            self.mod_removed_for_learning = False
+            self.said_thanks_or_it_worked = False
+            self.deleted_or_removed = False
+            
+            # Prep for errors
+            maxTotalWaitTime = 5*60*60
+            requestBackoffTime = 60 # starting amount of time required to wait after an error. it will then double
+            serverBackoffTime = 5 
+            maxBackoffTime = 5*60
+            startTime = time.time()
 
-        while True:
-            if vals_Assigned:
-                break
-            try:
-                now = datetime.datetime.utcnow()
+            while True:
+                if vals_Assigned:
+                    break
                 try:
-                    self.author = praw_sub.author.name
-                except AttributeError:
-                    # Author has deleted the post or been removed and can't be identified
-                    self.author = '[deleted]'
-                self.created_utc = datetime.datetime.utcfromtimestamp(praw_sub.created_utc)
-                self.id = praw_sub.id
-                self.url = praw_sub.url
-                self.score = praw_sub.score
-                self.upvote_ratio =  praw_sub.upvote_ratio
-                self.title = praw_sub.title
-                self.selftext = praw_sub.selftext
-                self.subreddit = praw_sub.subreddit.display_name
-                self.link_flair_text = praw_sub.link_flair_text
-                self.score_History = [[self.score, self.upvote_ratio, now]]
-                self.edit_History = []
-                vals_Assigned = True
-                break
-            except RequestException as e:
-                logging.error("Caught Server Rate Limit Hit | Specific Error:")
-                logging.error("\n"+traceback.format_exc())
-                requestBackoffTime = self._backoff(requestBackoffTime)
-                if time.time()-startTime > maxTotalWaitTime:
-                    logging.error("I've tried this too much, escalating error")
-                    raise e
-            except APIException as e:
-                if "RATELIMIT" in traceback.format_exc():
-                    logging.error("Caught Server Rate Limit Hit By API | Specific Error:")
+                    now = datetime.datetime.utcnow()
+                    try:
+                        self.author = praw_sub.author.name
+                    except AttributeError:
+                        # Author has deleted the post or been removed and can't be identified
+                        self.author = '[deleted]'
+                    self.created_utc = datetime.datetime.utcfromtimestamp(praw_sub.created_utc)
+                    self.id = praw_sub.id
+                    self.url = praw_sub.url
+                    self.score = praw_sub.score
+                    self.upvote_ratio =  praw_sub.upvote_ratio
+                    self.title = praw_sub.title
+                    self.selftext = praw_sub.selftext
+                    self.subreddit = praw_sub.subreddit.display_name
+                    self.num_comments = praw_sub.num_comments
+                    self.link_flair_text = praw_sub.link_flair_text
+                    self.score_History = [[self.score, self.upvote_ratio, self.num_comments, now]]
+                    self.edit_History = []
+                    vals_Assigned = True
+                    break
+                except RequestException as e:
+                    logging.error("Caught Server Rate Limit Hit | Specific Error:")
                     logging.error("\n"+traceback.format_exc())
                     requestBackoffTime = self._backoff(requestBackoffTime)
                     if time.time()-startTime > maxTotalWaitTime:
                         logging.error("I've tried this too much, escalating error")
                         raise e
-                else:
-                    raise e
-            except (ServerError, ResponseException) as e:
-                logging.error("Caught Server 500 Error | Specific Error:")
-                logging.error("\n"+traceback.format_exc())
-                serverBackoffTime = self._backoff(serverBackoffTime)
-                if time.time()-startTime > maxTotalWaitTime:
-                    logging.error("I've tried this too much, escalating error")
-                    raise e
+                except APIException as e:
+                    if "RATELIMIT" in traceback.format_exc():
+                        logging.error("Caught Server Rate Limit Hit By API | Specific Error:")
+                        logging.error("\n"+traceback.format_exc())
+                        requestBackoffTime = self._backoff(requestBackoffTime)
+                        if time.time()-startTime > maxTotalWaitTime:
+                            logging.error("I've tried this too much, escalating error")
+                            raise e
+                    else:
+                        raise e
+                except (ServerError, ResponseException) as e:
+                    logging.error("Caught Server 500 Error | Specific Error:")
+                    logging.error("\n"+traceback.format_exc())
+                    serverBackoffTime = self._backoff(serverBackoffTime)
+                    if time.time()-startTime > maxTotalWaitTime:
+                        logging.error("I've tried this too much, escalating error")
+                        raise e
 
-            except Exception as e:
-                internet = is_connected()
-                if internet:
-                    # I'm connected and There's some problem. Figure it out and pass it along
-                    logging.error("I'm connected to the internet and recieving this error")
-                    logging.error("\n"+traceback.format_exc())
-                    raise e 
-                else:
-                    # no internet, figure out what to do here
-                    logging.error("I'm not connected to the internet escalating this error")
-                    logging.error("\n"+traceback.format_exc())
-                    raise e
+                except Exception as e:
+                    internet = is_connected()
+                    if internet:
+                        # I'm connected and There's some problem. Figure it out and pass it along
+                        logging.error("I'm connected to the internet and recieving this error")
+                        logging.error("\n"+traceback.format_exc())
+                        raise e 
+                    else:
+                        # no internet, figure out what to do here
+                        logging.error("I'm not connected to the internet escalating this error")
+                        logging.error("\n"+traceback.format_exc())
+                        raise e
+        else:
+            self.directed_to_learning_sub = False
+            self.mod_removed_for_learning = False
+            self.said_thanks_or_it_worked = False
+            self.deleted_or_removed = False
+            self.load_from_dict(loaded_dict)
 
     def _backoff(self, backoffTime, maxBackoffTime = 5*60):
         backoffTime = min(backoffTime, maxBackoffTime)
@@ -138,10 +145,11 @@ class phb_Reddit_Submission(object):
                 self.score = praw_sub.score
                 self.upvote_ratio =  praw_sub.upvote_ratio
                 self.link_flair_text = praw_sub.link_flair_text
+                self.num_comments = praw_sub.num_comments
                 if self.selftext != praw_sub.selftext:
                     self.edit_History.append(self.selftext)
                     self.selftext = praw_sub.selftext
-                self.score_History.append([self.score, self.upvote_ratio, now])
+                self.score_History.append([self.score, self.upvote_ratio, self.num_comments, now])
                 vals_Assigned = True
                 break
 
@@ -182,6 +190,9 @@ class phb_Reddit_Submission(object):
                     logging.error("\n"+traceback.format_exc())
                     raise e
 
+
+    def make_shortlink(self):
+        return 'https://redd.it/'+self.id
 
     def _print_Full(self):
         msg = self.title
@@ -320,6 +331,44 @@ class phb_Reddit_Submission(object):
 
         # Of a submission
         return reclassedComments
+
+    def export_to_dict(self):
+        submission_d = {}
+        submission_d['author'] = self.author
+        submission_d['created_utc'] = self.created_utc
+        submission_d['id'] = self.id
+        submission_d['url'] = self.url
+        submission_d['score'] = self.score
+        submission_d['upvote_ratio'] = self.upvote_ratio 
+        submission_d['title'] = self.title 
+        submission_d['selftext'] = self.selftext 
+        submission_d['subreddit'] = self.subreddit 
+        submission_d['num_comments'] = self.num_comments 
+        submission_d['link_flair_text'] = self.link_flair_text 
+        submission_d['score_History'] = self.score_History 
+        submission_d['edit_History'] = self.edit_History 
+        return submission_d
+    def load_from_dict(self, submission_d):
+        '''
+        This currently does not have protections under the assumption that if 
+        there is a keyerror, it needs to be raised
+        '''
+        self.author = submission_d['author'] 
+        self.created_utc = submission_d['created_utc'] 
+        self.id = submission_d['id'] 
+        self.url = submission_d['url'] 
+        self.score = submission_d['score'] 
+        self.upvote_ratio = submission_d['upvote_ratio'] 
+        self.title = submission_d['title'] 
+        self.selftext = submission_d['selftext'] 
+        self.subreddit = submission_d['subreddit'] 
+        self.num_comments = submission_d['num_comments'] 
+        self.link_flair_text = submission_d['link_flair_text'] 
+        self.score_History = submission_d['score_History'] 
+        self.edit_History = submission_d['edit_History'] 
+        return
+        
+
 
 class phb_Reddit_Comment(object):
     '''
@@ -621,6 +670,8 @@ NotFound: received 404 HTTP response
         '''
         Grabs users most recent submissions, up to either a count limit, back a 
         specific number of hours in the past, or back to a specific time.
+
+        Check for ban error
         '''
 
         vals_Assigned = False
@@ -1255,15 +1306,15 @@ def getNewPosts(reddit, sub="python", submissionList={}, ageLimitHours=12):
 
     return submissionList
 
-def grabAndUpdateNewPosts(reddit, sub="python", submissionList={}, ageLimitHours=12):
-    submissionList = removeOldPosts(submissionList, ageLimitHours)
+def grabAndUpdateNewPosts(reddit,  phbArcPaths={}, sub="python", submissionList={}, ageLimitHours=12):
+    submissionList = removeOldPosts(submissionList, ageLimitHours,  phbArcPaths=phbArcPaths,)
     submissionList = updatePostFeatures(reddit, submissionList)
 
     submissionList = getNewPosts(reddit, sub="python", submissionList={}, ageLimitHours=12)
     return submissionList
 
-def updatePosts(reddit, sub="python", submissionList={}, ageLimitHours=12):
-    submissionList = removeOldPosts(submissionList, ageLimitHours)
+def updatePosts(reddit,  phbArcPaths={},  sub="python", submissionList={}, ageLimitHours=12):
+    submissionList = removeOldPosts(submissionList, ageLimitHours,  phbArcPaths=phbArcPaths)
     submissionList = updatePostFeatures(reddit, submissionList)
     return submissionList
 
@@ -1441,8 +1492,25 @@ def markSummonsAsReadMessages(reddit, msgIDs = []):
 
 # ~~~~~~~ reddit bot database files: less general reddit stuff ~~~~~~~~~ #
 
+def joinAndMakeDir(parent, child):
+    newDir = os.path.join(parent, child)
+    if not os.path.exists(newDir):
+        os.makedirs(newDir)
+    return newDir
 
-def startupDatabase():
+def createFile(flpath, flname):
+    fullflname = os.path.join(flpath, flname)
+    fl = open(fullflname, 'a')
+    fl.close()
+    return fullflname
+
+def getFLSize(flpath):
+    return os.path.getsize(flpath)
+
+
+
+
+def startupDatabase(archive_Locations):
     dirName = "redditData"
     postCommentedOn = "postHistory.txt"
     usersInteractedWith = "UsernamessList.txt"
@@ -1455,6 +1523,59 @@ def startupDatabase():
     fl.close()
     fl = open(os.path.join(dirName, postCommentedOn), 'a')
     fl.close()
+
+
+    archive = archive_Locations[0]
+    backup = archive_Locations[1]
+    '''
+    Archive Structure:
+    phbArchive
+    |-submissions
+    |  |-JSONLike
+    |    |-submissions01.qjson
+    |    |-submissions02.qjson
+    |    ..
+    |    |-submissionsn.qjson
+    |  |-SQL
+    |-submissionsAndComments
+    |  |-JSONLike
+    |    |-sac01.qjson
+    |    |-sac02.qjson
+    |    ..
+    |    |-sacn.qjson
+    |-modActions
+    |  |-JSONLike
+    |    |-modComments01.qjson
+    |    ..
+    |-phbActions
+    |  |-postHistory.txt
+    |  |-summoningHistory.txt
+    |  |-UsernameList.txt
+    |  |-FullActionSet.txt
+    '''
+    # phb Archive On Primary Drive:
+    #   Builds out archive structure if it doesn't already exist
+    phbArchivePath = joinAndMakeDir(archive, 'phbArchive')
+
+    phbSubmissionPath = joinAndMakeDir(phbArchivePath, 'submissions')
+    phbSubJsonPath = joinAndMakeDir(phbSubmissionPath, 'JSONLike')
+    phbSubSQLPath = joinAndMakeDir(phbSubmissionPath, 'SQL')
+
+    phbSubAndCommentsPath = joinAndMakeDir(phbArchivePath, 'submissionsAndComments')
+    phbSubAndComJsonPath = joinAndMakeDir(phbSubAndCommentsPath, 'JSONLike')
+
+    phbModActionsPath = joinAndMakeDir(phbArchivePath, 'modActions')
+    phbModActionsJsonPath = joinAndMakeDir(phbModActionsPath, 'JSONLike')
+
+    phbActionsPath = joinAndMakeDir(phbArchivePath, 'phbActions')
+
+    phbArcPaths ={}
+    phbArcPaths['subJson'] = phbSubJsonPath
+    phbArcPaths['subSQL'] = phbSubSQLPath
+    phbArcPaths['subComJson'] = phbSubAndComJsonPath
+    phbArcPaths['modActionsJson'] = phbModActionsJsonPath
+    phbArcPaths['phbActionsDir'] = phbActionsPath
+
 
 
     # Load comment history and user interaction history
@@ -1470,7 +1591,7 @@ def startupDatabase():
         postHistory.append(line.strip())
     fl.close()
 
-    return userNames, postHistory
+    return userNames, postHistory, phbArcPaths
 
 
 def updateUserNameDB(username):
@@ -1498,32 +1619,63 @@ def updateDatabase(username, post_id):
     
     return
     
+def getModifiedDate(fl):
+    return os.stat(fl).st_mtime
+def sortFilesByModification(fls):
+    return sorted(fls, key=getModifiedDate, reverse=True)
 
+def saveClassJson(class_Struct, database_path):
+    # Check if database has been created, and if there is,
+    # check it's size. If too large or if none exist, create DB 
+    fls = kmlistfi.les(database_path)
+    newFile = False
+    if len(fls) == 0:
+        youngestFile = createFile(database_path, datetime.datetime.now().strftime("%Y%m%d-%H%M%S")+'.json')
+        newFile = True
+    else:
+        youngestFile = sortFilesByModification(fls)[0]
+        maxBytes = 50* 1024**2 # 50 Mb
+        if os.stat(youngestFile).st_size > maxBytes:
+            # End old json file with closing bracket
+            with open(youngestFile, 'a') as ofl:
+                ofl.write('\n]') # Makes file complete json
+            youngestFile = createFile(database_path, datetime.datetime.now().strftime("%Y%m%d-%H%M%S")+'.json')
+            newFile = True
 
-def saveSubmissions(submission, database):
-    # Check if database has been created, if no
-    # Create DB
-
-    
     # Into database save submission keyfeatures:
+    jsonText = export_dict_to_json(class_Struct.export_to_dict())
+
+    with open(youngestFile, 'a') as ofl:
+        if not newFile:
+            ofl.write(',\n')
+        else: 
+            ofl.write('[\n')
+        ofl.write(jsonText)
     
 
+    # I am going to hate myself for this block of code, but the perfect
+    #  implementation is never worth it if you never get it written
     return
 
 
 
-def removeOldPosts(submissionList, ageLimitHours):
+def removeOldPosts(submissionList, ageLimitHours, phbArcPaths,  archive=True):
+
+    # Get Archive Location:
+    # -Handled at startup
     
     popList = []
     for key in submissionList:
         submission, user = submissionList[key]
         if datetime.datetime.utcnow() - submission.created_utc > datetime.timedelta(hours=ageLimitHours):
-            # Archive post
-            # TODO
-            # Pop it!
             popList.append(key)
+
     for popit in popList:
-        temp = submissionList.pop(popit)
+        submission, user = submissionList.pop(popit)
+        if archive:
+            # Submission
+            saveClassJson(submission, phbArcPaths['subJson'])
+            # Submission And Comments
         pass
 
     return submissionList
@@ -1548,3 +1700,25 @@ def archiveAndRemoveOldSubmissions(reddit, submissionList={}):
 
     return
 
+
+## ~ Archive Format Transforms ~ ##
+
+def export_dict_to_json(class_as_dict):
+    return json.dumps(class_as_dict, indent=4, sort_keys=True, default=str)
+
+
+
+def reDateTimeify_submission(submission_d):
+    if 'created_utc' in submission_d:
+        print(submission_d['created_utc']) 
+        submission_d['created_utc'] = datetime.datetime.strptime(submission_d['created_utc'], "%Y-%m-%d %H:%M:%S")
+    if 'score_History' in submission_d:
+        for x in submission_d['score_History']:
+            x[-1] = datetime.datetime.strptime(x[-1], "%Y-%m-%d %H:%M:%S.%f")
+    return submission_d
+
+def load_submission_from_json(jsonDump):
+    jsLoad  = json.loads(jsonDump)
+    loadedSubD = reDateTimeify_submission(submission_d=jsLoad)
+    loadedSubmission = phb_Reddit_Submission(None, loaded_dict=loadedSubD)
+    return loadedSubmission

@@ -7,19 +7,38 @@ Keith Murray
 email: kmurrayis@gmail.com
 '''
 
+def archiveDB():
+    '''
+    This is a special database, there's going to be a few locations to find 
+    values in
+    One thumb drive is for all saving,
+    One thumb drive is for frequent backups (once every two days or so)
+    and one SSD is for general databases, wiki, so, and q&a
+    '''
+    archive=['/media/keith/hdd01/Databases/Reddit/',
+             '/media/pi/F401-12DE/']
+    backup = ['/media/keith/hdd01/Databases/Reddit/phbSubmissionsBackup/',
+              '/media/pi/F401-12DE1/phbSubmissionsBackup/']
+    return archive, backup
+
 def check_through_these():
     
-    amazonQuestionDBSources = ["D:/TempDownload/jMcAuleyAmazon/", "nowhere", "Also/nowhere"]
+    amazonQuestionDBSources = ["D:/TempDownload/jMcAuleyAmazon/", "nowhere", "Also/nowhere",
+                                '/mnt/ssd01/Databases/jMcAuleyAmazon/']
     englishLangDBSourcess = ["C:/Users/kmurr/Documents/filesForProgramming/reddit/GutTop100Books/", 
-                            'D:/Databases/GutTop100Books',
+                            'D:/Databases/GutTop100Books/',
                              '/home/pi/Documents/filesForProgramming/Reddit/GutTop100Books',
-                             '/media/keith/hdd01/Databases/GutTop100Books']
+                             '/media/keith/hdd01/Databases/GutTop100Books/',
+                             '/mnt/ssd01/Databases/GutTop100Books']
     codeForCodeAndText = ['misc/pyProgramTrainingLines.txt']
+    archive, backup = archiveDB()
 
     check_here = {
         "amazonQ":amazonQuestionDBSources,
         "englishDB":englishLangDBSourcess,
-        "codeText":codeForCodeAndText
+        "codeText":codeForCodeAndText,
+        "archive":archive,
+        "backup":backup
     }
 
     return check_here

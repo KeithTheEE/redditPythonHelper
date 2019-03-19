@@ -204,7 +204,14 @@ def measureUserReaction(post, user, suggestionTime):
     #return tookAdvice
 
 
-
+def modActions(mods):
+    '''
+    Function is used to record posts mods have commented on about 
+    removal, as well as the message associated with the removal.
+    This will be used to build a labeled set of 'learning' posts
+    '''
+    for mod in mods: 
+        pass 
 
 def processKarmaRequest(msg, setOfPosts, quietMode, ageLimitHours=4):
     ''' 
@@ -225,9 +232,8 @@ def processKarmaRequest(msg, setOfPosts, quietMode, ageLimitHours=4):
     if match:
         karmaScore = [x[0] for x in submission.score_History]
         upvoteRatio = [x[1] for x in submission.score_History]
-        date = [x[2] for x in submission.score_History]
-
-        title = "Karma for post " + str(submission.id) + " by " + str(user.name)
+        date = [x[3] for x in submission.score_History]
+        title = "Karma for post " + str(submission.make_shortlink()) + " by " + str(user.name)
 
 
         #plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d %H:%M')) 

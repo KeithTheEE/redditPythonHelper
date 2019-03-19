@@ -219,6 +219,12 @@ def startupBot():
     paths = locateDB.get_db_file_locations()
     #print "File Path Keys: ", paths.keys()
     #print paths
+    #archive = paths['archive']
+    #backup = paths['backup']
+    archive_Locations = [paths['archive'], paths['backup']]
+    # Py SQL Database 
+    userNames, postHistory, phbArcPaths = archiveAndUpdateReddit.startupDatabase(archive_Locations)
+
     # Make some form of error check for the path variable 
     #assert paths[enlishDB] is not False
 
@@ -236,19 +242,17 @@ def startupBot():
                      password=keySet[2], user_agent=keySet[3],
                     username=keySet[4])
 
-    # Py SQL Database 
-    userNames, postHistory = archiveAndUpdateReddit.startupDatabase()
     # Ignore all mod posts: they know what they're doing
     for mod in reddit.subreddit('python').moderator():
         userNames.append(str(mod))
     
 
     logging.debug( "Loaded. Running...")
-    return reddit, classifier, codeVTextClassifier, tdm, userNames, postHistory
+    return reddit, classifier, codeVTextClassifier, tdm, userNames, postHistory, phbArcPaths
 
 
 
-def runBot(reddit, classifier, codeVTextClassifier, tdm, userNames, postHistory, quietMode=False):
+def runBot(reddit, classifier, codeVTextClassifier, tdm, userNames, postHistory,  phbArcPaths={}, quietMode=False):
     
     phrase_set = botHelperFunctions.load_autoreply_key_phrases(fl_path='misc/autoreplyKeyPhrases.txt')
     
@@ -282,7 +286,7 @@ def runBot(reddit, classifier, codeVTextClassifier, tdm, userNames, postHistory,
         if datetime.datetime.now() - lastFifteenMin > datetime.timedelta(seconds=fifteenMin*60):
             #print("15 mins")
             # Update posts
-            setOfPosts = archiveAndUpdateReddit.updatePosts(reddit, submissionList=setOfPosts) 
+            setOfPosts = archiveAndUpdateReddit.updatePosts(reddit, submissionList=setOfPosts,   phbArcPaths=phbArcPaths) 
 
             # reclassify posts
             commentOnThese += handleSetOfSubmissions(reddit, setOfPosts, postHistory, classifier)
@@ -292,6 +296,8 @@ def runBot(reddit, classifier, codeVTextClassifier, tdm, userNames, postHistory,
             lastFifteenMin = datetime.datetime.now()
             logging.debug( "15 minute region is Sleeping..." + str(datetime.datetime.now()))
 
+            # TESTING
+            archiveAndUpdateReddit.removeOldPosts(submissionList=setOfPosts, ageLimitHours=1, phbArcPaths=phbArcPaths,  archive=True) 
 
         # Comment on all classified submissions
         userNames, postHistory, antiSpamList =  getReadyToComment(reddit, setOfPosts, userNames, postHistory, commentOnThese, antiSpamList, codeVTextClassifier, quietMode)
@@ -339,9 +345,9 @@ if __name__ == "__main__":
     if quietMode:
         logging.debug("Running in Quiet Mode")
 
-    reddit, classifier, codeVTextClassifier, tdm, userNames, postHistory = startupBot()
+    reddit, classifier, codeVTextClassifier, tdm, userNames, postHistory, phbArcPaths = startupBot()
     try:
-        runBot(reddit, classifier, codeVTextClassifier, tdm, userNames, postHistory, quietMode=quietMode)
+        runBot(reddit, classifier, codeVTextClassifier, tdm, userNames, postHistory,  phbArcPaths=phbArcPaths, quietMode=quietMode)
     except KeyboardInterrupt:
         print("Concluding Program")
         logging.debug("Keyboard Interrupt: Ending Program")

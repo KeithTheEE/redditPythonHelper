@@ -1,6 +1,6 @@
 
 
-# CHANGELOG: Python Helper Bot Version pre Alpha A0.2.01
+# CHANGELOG: Python Helper Bot Version pre Alpha A0.3.00
 All notable changes to this project will be documented in this file.
 
 The format is loosely based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
@@ -15,6 +15,73 @@ Dates follow YYYY-MM-DD format
 > the explanation known, and that’s why we can only guess -- and keep on guessing.”
 
 -- Susan Calvin in "I, Robot" by Isaac Asimov
+
+
+
+## [A0.3.00] 2019-XX-XX
+In Progress
+### Contributors
+Keith Murray
+
+email: kmurrayis@gmail.com |
+twitter: [@keithTheEE](https://twitter.com/keithTheEE) |
+github: [CrakeNotSnowman](https://github.com/CrakeNotSnowman)
+
+Unless otherwise noted, all changes by @kmurrayis
+
+This project is not currently looking for other contributors
+
+#### Big Picture: What happened, what was worked on
+
+
+
+#### Added
+ - archiveAndUpdateReddit submission class now has a num_comments attribute. This impacts the karma plots because this attribute gets updated as well.
+ - archiveAndUpdateReddit submission class now has make_shortlink() returns short url for submission
+ - archiveAndUpdateReddit submission class now has export_to_dict() and load_from_dict(submission_dict) to help archiving
+#### Changed
+ - submission class score_History is reordered, now each element in history reflects: [self.score, self.upvote_ratio, self.num_comments, now]
+ - submission class now has an added feature to load from dict instead of populating from a praw class. It assumes the popuation call will be next
+#### Deprecated
+#### Removed
+#### Fixed
+#### Security
+
+
+### Main
+
+### rpiManager.py
+
+
+### Util Libraries
+
+#### archiveAndUpdateReddit.py
+ - num_comments attribute has been added to submissions class. This should be an interesting metric which could help classification. Note that due to removed or deleted comments, this might not reflect the actual count of comments because they don't appear but are still counted
+ - make_shortlink() is simple and should prove useful, especially when refering to a post in a text message status update
+ - export_to_dict() converts the class features into a dictionary structure. This should allow for simple implementations of various archiving methods, (sql, xml, or json) which should let me try multiple structures during pre alpha and alpha and decide on what works best later on. Seperate functions can take the dictionary and move it straight to the end data structure in a more modular fashion
+ - load_from_dict(submission_dict) will be used to pull and populate from archives. This includes the ability to have a 'save state' for reboots/updates that way data is lost less frequently.
+ - submission class score_History is reordered, now each element in history reflects: [self.score, self.upvote_ratio, self.num_comments, now]
+#### botHelperFunctions.py
+#### botMetrics.py
+#### botSummons.py
+#### buildComment.py
+#### formatBagOfSentences.py
+#### formatCode.py
+#### learningSubmissionClassifiers.py
+#### locateDB.py
+ - SSD, and two thumb drives have been added to the pi. The databases will be for wiki and SO on the ssd, and a post archive and archive backup on the thumb drives
+#### lsalib2.py
+#### questionIdentifier.py
+#### rpiGPIOFunctions.py
+#### scriptedReply.py
+#### searchStackOverflowWeb.py
+#### summarizeText.py
+#### textSupervision.py
+#### updateLocalSubHistory.py
+#### user_agents.py
+
+### Tests 
+
 
 
 ## [A0.2.01] 2019-03-05

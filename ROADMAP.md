@@ -22,6 +22,327 @@ Dates follow YYYY-MM-DD format
 
 
 
+## [A0.3.00] 2019-XX-XX
+In Progress
+### Contributors
+Keith Murray
+
+email: kmurrayis@gmail.com |
+twitter: [@keithTheEE](https://twitter.com/keithTheEE) |
+github: [CrakeNotSnowman](https://github.com/CrakeNotSnowman)
+
+Unless otherwise noted, all changes by @kmurrayis
+
+### Short Term Roadmap
+
+With the class wrappers in place, archiving should be significantly easier. 
+This next update will probably decide a database structure, and either start archiving posts via the bot on the pi, or a clone bot on my primary computer. Before the SO search engine can be rigorously tested, I will need sample data, so archiving is finally a real priority, as oppose to an ideal priority. 
+
+The bot summoning could use some work. While it's summons works well, it could classify when the bot has been summoned to reformat code that has indent errors, and say when it expects it can't help with reformatin, but refer to reformatting help
+
+
+
+#### Add
+ - [X] Hardware: USB or USB connected Sata drive.
+ - Migrate most files to usb/usb-sata drive to host. Watch power requirements. 
+ - Build a 'light archive' which will save posts as either xml or json (json has been selected). This should build in db focused structure and function calls, without requiring a db commitment. 
+ - With light archive, build a 'save state' and 'load state' function so records on new posts aren't lost during reboots.
+ - [X] (NO CHANGE MADE) Verify the key phrase response checks for self post v image post. Ok this code is written and in learningSubmissionClassifiers, but after looking through the older versions of this, it never was a requirement. And it's usually pretty spot on. The code is commented out, so think on it for a while. [Update] While it comments on non self posts, these are pretty accurate and I don't view this as an issue. I'll allow it to continue to post on non self posts if a key phrase is used
+ - loggingSetup.py: a module to be imported first by rpiManager and main, which sets up the logging format so the program can be called by either module on any system and initialize in the same way
+ - botHelperFunctions/botMetrics: Add ram usage check and log it in every 'awake' cycle of program, to try and tease out any possible MemeoryError's kicking up after long periods of time. Might as well save other diagnostics info, maybe call this from the hearbeat thread so it becomes a better representation of runtime
+ - rpiManager.startupSwitchFlag(): 
+ Moving this higher up.
+ A function which polls one of the gpio pins to see if it's low (normally high) (or flipped levels). That pin will be tied to a jumper or switch. When set, the bot will not turn on at boot, allowing for simpler diagnostics, updates, etc. 
+ Also a pull origin master from github state would be incredibly useful
+ - Verify reddit post logs by grabbing most recent bot comments. This should reduce risk of two computers commenting on the same post which could happen if databases are de-synced and one computer is not in quiet mode because I typed in the wrong command. Opperator Error Risk Reduction. Only the most recent x+buffer hours of interaction are needed. This does not protect from multiple posts by the same user but should prevent multiple comments on the same post even if the bot runs on different computers. 
+ - Full Test Suite: PRIORITY (Ok it'll have to wait until posts have been archived, but it'll still be nice)
+ - Archive Posts: PRIORITY
+    Solidify what values to save, and what to save them with. Probably build an SQL to XML or JSON exporter for third party testing.
+ - botMetrics.measureUserReaction(): 
+ A function focused on seeing if a user did in fact go to
+ r/learnpython after the bot made its suggestion. Currently built (kind of, the praw wrappers messed it up a bit), now need to add 
+ functionality in main.py to use it
+ - Continue Documentation in functions, add documentation files too
+ - A queue which has inputs added to it by functions, and removed by the raspberry pi gpio handler, allowing the bot to change LED status based on what it's doing. Similar to the twitter event bot design (sepperate project).
+ - Deprecate karma scatter plot: or change it post all posts in the past week to minimize size. It's no longer useful or very interesting. Maybe activate it once a week or something too
+ - Consider creating praw rewrapper (prawRegift) to hold all praw focused wrappers and sepperate it from the phb functions. This will make it easier to have the same protections on other bots as necessary. 
+ 
+
+
+#### Change
+ - Move NLP functions from NLTK (used in many files) to a buffer module, allowing for simpler, universal changes to be made. For example, if there is a better POS tagger than nltk.pos_tag(sent) then we can easily switch to that. Right now NLTK is used over a fairly large filespace making adjustments of that sort difficult. 
+ - Review all my logging notes. See what should be dropped, changed, etc. 
+ - Make sure the bot defaults to commenting about formatting even if there's no code present
+ - When errors occur, or a shutdown button is pressed, attempt to save current reddit info into a temp file. on startup, load that info in then connect with praw to expand the knowledge base. 
+
+
+#### Deprecate
+
+#### Remove
+
+#### Fix
+ - Standardize function name style. Either underscore or camelcase, just not both
+ Probably preferable to use underscore, the despite camelcase being faster..
+
+#### Security
+#### Consider
+
+
+
+---
+
+### General to Long Term Expansion
+
+ - Develop terms for a walk away condition. Either End of active development and the bot remains online, end of active development and death of bot, or end of active development and project is passed on to others. Terms will almost certainly be changed constantly and the project grows and evolves, but it's nice to have an idea of what I consider to be a "complete" project. 
+
+ - Numbering system for items in roadmap to clear up what's being worked on and what is completed from an outside perspective. A master numbering system probably is a good idea, vX.X.XX[a,c,d,r,f,s,co]XX, following version, section, and specific roadmap suggestion number. But That seems bloated and unnecessary. (Maybe this isn't worth while, maybe it is and will help catch things in the changelog. Probably wont be seriously considered until alpha)
+
+ - summarizeText.loadEnglishModel(sourceDataPath=paths["prebuiltEnglishDB"]):
+ Prebuild and pickle the output tdm of 
+ summarizeText.buildModelFromDocsInFolder(sourceDataPath=paths["englishDB"])
+ so the raspberry pi doesn't have to hit memory errors in in main.startupBot()
+ load the prebuilt database and build it if the prebuild database does not exist.
+ Or just build a custom compression scheme and load that instead of using pickle.
+
+ - test.EvaluatePost():
+ Given recent restructuring, this should be much easier. Take a post given a post id, then run it through the classifier where the exitpoints are turned off from the functions, forcing it to classify the post in full. Because the praw wrappers are in place, there shouldn't be a concern about forcing full evaluation any more. This can be considered to be half completed: the silent mode the bot has helps evaluate posts. 
+ 
+ - Reply To Common posts:
+ Build semi scripted replies to frequently asked questions (probably largely pulled from the sidebar, since that's how the side bar gets populated)
+ This includes "How do I install python" and "Is learning python worth it?" (Aka "Why learn python?")--A quality version of this is a full research task. Build off of internal sentence ordering models + soft skills. Pull text from comments on these posts to build up scripted reply. Look into adapting this (or maybe starting with this) to classifying the posts so their types can be diplayed as tags. 
+ 
+ - local Flask website/dashboard to monitor the status and logs of the bot in realtime. Low priority. 
+ 
+ - Log processing: a set of functions and visualizations to process the log files for various useful tidbits. Something nicer than grep
+
+
+
+
+### Main
+ - alreadyAnswered():
+ Parse through OPs comments on the thread, and search for text that implies the question
+ has been answered. Adjust comment on submission accordingly, probably to say, "Next time
+ you have a question like this, consider using r/learnpython" blah blah  blah 
+
+
+### rpiManager.py
+ - update the commented gpio naming and numbering list
+ - update grab-from-github functions
+ - add a queue to work with rpiGPIO for LED displays for various tasks
+ 
+
+
+### Libraries:
+
+
+### archiveAndUpdateReddit.py
+Most of the 'light' archive functionallity is currently being built out, rendering a large chunk of this section of the roadmap either completed, in progress, or dismissed. It is also no longer in the realm of 'long term'. 
+
+[x] The big set of functions necessary in this module are database creation, and update functions.
+There might be two databases: one of just posts, and another comprising of posts, and comments.
+
+ARCHIVE FUNCTIONS
+TODO: Saves it into sqlite3 table after it's passed the time threshold to "not in 
+use" 
+
+"not in use" is probably going to be defined as 8 hours. Past that point the 
+post will be either 'successful', 'mild', or 'unsuccessful', defined as 
+x >= 8 points, 8 > x >= 1, 1 > x 
+
+Adjust it so 'not in use' is not defined as 8 hours, but instead defined as 
+a varible, which changes based on the time of day (either defined by utc or
+cdt--cdt being my current local time) that the posts was made. 'Late at night' as
+defined by the time where the fewest users/ r/python 'actions' (posts, upvotes, 
+comments) are made, adjusted according to the day of the week and or holiday 
+(unlikely that this bot will need to be that specific) the post is made on.
+
+ r/learnpython is another source of data: 
+
+it will act as a source of useful questions, and will allow the bot to direct
+users to other reddit based questions rather than simply stack overflow (this
+distinction should help allow the bot to be generalizable) 
+posts between 3 and 8 upvotes will be determined as 'basic questions' and
+will be used as suggested solutions if the similarity between the new r/python
+post and the old r/learpython post is greater than some threshold
+
+
+### botHelperFunctions.py
+
+### botMetrics.py
+
+ - measureUserReaction(): 
+to see if redditor does post to r/learnpython. The post will have to be strongly similar
+to their r/python post, and be posted not long after the python sub post
+
+- questionAndAnswer(query): to attempt to reply to semi-scripted questions
+
+- buildConfusionMatrix(): to measure performance
+
+#### Confusion Matrix Traits
+##### True Positive: 
+[The bot has commented,] And
+[[Either a mod has removed the post due to 'learning'], 
+Or [the redditor posts their question on r/learnpython]]
+
+##### False Negative: 
+[The bot did not comment after 8 hours] And
+[[Either a mod has removed the post due to learning,] 
+Or, [[someone else has commented r/learnpython] and [has greater than 2 upvotes after 8 to 24 
+hours after commenting,]]
+Or, [the user posted their question on r/learnpython]]
+
+##### False Positive: 
+[The bot has commented],And [has less than -1 comment karma after 8 to 24 hours,]
+And [[the post is not removed due to learning within 8-24 hours] or [by mods recent 
+activity plus some threshold.]]
+And [[the user does not make a similar post to r/learnpython within a timespan of 8
+hours] or [4 hours after their next user activity monitored for no more than a week]]
+
+##### True Negative:
+[The bot did not comment after 8 hours] And
+[[No mod has removed the post using a reference to 'learning' after 8 to 24 hours] or 
+by mods recent activity plus some threshold.] And
+[[No commenter has post made a post which contains 'r/learnpython'] And [has more than 2 upvotes]]
+
+##### Fuzzy:
+All Else. 
+This class will be either require human moderation to place into the confusion matrix, Or
+will be used for other classificaiton, such as "Blog Spam". It could be that topics placed 
+in this area can be re-examined and labelled, helping the bot generalize preformance in 
+other areas 
+
+### botSummons.py
+ - Finish makeFormatHelpMessage summons
+### buildComment.py
+### formatBagOfSentences.py
+### formatCode.py
+ - formatCode.py: Cleave sentence from comment and first line of code from one another 
+ - formatCode.py: Using rewrapClassifications output, check to see if any indentation is present for lines that have been classified as code. If >5 lines of code are present and none of them have indents, classify block as "The reddit text editor royally screwed this one up", adjust comment to say it's unlikely that the code has been indented properly, and enter the special fixer.
+ - formatCode.reformatFromHell(): Read in all previous code. Read in current line. If rfh classification Adds indent: current line is a child of the previous line. If it is the same indent level, current line is a sibling. If it is minus indent, line is a sibling of the previous lines parent. 
+   - Previous code is stored in a tree like structure
+   - Leverage sentence ordering ideology to say given the current line and the previous state of the code tree, which level of node in the tree should I be
+ This should be an area of linguists where there's plenty of work already completed, look for it. I think Nevil-manning sequitor addresses it briefly, look at that+cited by for other work in the area.
+
+
+### learningSubmissionClassifiers.py
+
+### locateDB.py
+ - load in path data from a prefernce file, and or take it as input that way the path isn't
+ 1. Hard coded and
+ 2. Hard coded in the module 
+ Generic is better if it's generally useful. 
+
+ That said, "check_though_these():" is a pretty good and simple function to move out of "locateDB.py" and into main.py
+
+ - Call a function in this library to recast folder/file calls to the correct os format. Or just redo it everywhere in the code. 
+ Whatever works best
+
+### lsalib2.py
+
+### questionIdentifier.py
+It'd be nice to use stack overflow's user submissions and r/learnpython's 
+submissions compared to 'successful' r/python submissions to build a 'programmers 
+question' classifier (and expand the classifier to blogspammers). This would
+make it generalizable so posts which are questions or requests ("HELP ME CODE") 
+are directed to r/learnpython, posts which are clearly for click/ads are commented
+on as such, and good posts are 'ignored': allowing redditors to act on it as they
+choose. This is not an easy goal to acheive and is incredibly arbitary. but there
+are still certain factors which can be measured and acted on. 
+
+This will probably leverage a stack overflow search engine and compare n results 
+with k or greater similarity. 
+
+### rpiGPIOFunctions.py
+### scriptedReply.py
+### searchStackOverflowWeb.py
+ - Scrap and rebuild with approved api and bound it to search for results between 
+ local database build date and present day. Not important until after local copy of SO
+ is up and running 
+### summarizeText.py
+ - Improve the english language model for topic modeling, and focus on programming topic modeling.
+### textSupervision.py
+### updateLocalSubHistory.py
+### user_agents.py
+
+### OTHER
+(This is all functions that don't have a clear parent module)
+
+ - moqaProgram
+
+ - ELMO/BERT programs
+
+ - reformat_User_Code():
+ a function to identify python code blocks that aren't properly formated, and auto format the code
+ for other reddit users. Might live it its own module.
+ Currently being worked on.
+
+ - Leverage reformat user code with automatic Q&A: Use classified code regions to match SO code regions, classified text regions to match SO text regions. Hopefully this improves the search engine and cuts the risk of added noise by a text to code block increasing precieved distance between the user query and the SO database post.
+ Next If a majority of highly matching SO posts have sample code in the question, but the reddit query does not, strongly suggest adding the example code that caused the issue to the next itteration of the query.
+
+
+ - question_topic_Modeling():
+ This is going to take a few parts. 
+   - Identify all related learning subreddits:
+
+   - Model the topics of stack overflow questions. 
+
+   - Model the topics in the learning subs
+ Do network analysis to find the most active sub that addresses a topic: probably pagerank since it's simple and it works. It doesn't need to be state of the art, and if it can run on the pi, that's even better
+
+   - Next take in the question, extract topics, feed the topics in the network, identify the sub that will get the best answer fastest. This means there also has to be some knowledge of the subs activity score
+
+ - sub_Activity_Measure():
+ Or score.. 
+ This will probably return some arbatrary number that only makes sense in the context of other measures
+ It might be a function of:
+ The distance between the top 25 posts on Hot and the top 25 posts in New, where 'top' refers to 
+ reddits ranking. 
+ The number of comments and the absolute value of karma of those comments
+ the number of unique users in those 25 posts
+ The time between each activity
+
+ Comparing the intersection of hot to new posts shows a glimps of how active the sub is without requiring the bot to look at the sub at multiple times. 
+
+ This function would be useful with the question_topic_modeling() function and wouldn't need to run frequently. Though over multiple runs, it would have a solid understanding of how active a sub is at different times of day, which might encourage the bot to direct a user to a learning sub that is 
+ active at that time. 
+
+
+ - Auto Reply to common questions (Functional FAQ as it were)
+  (This is probably going to be an early test of soft skills)
+  * ["Possibly wanting to learn Python, is it worth it?"](https://www.reddit.com/r/Python/comments/917zxd/)
+
+ - Use Automatic Sentence Ordering to construct the bots autoreply, reducing the mess of the code there. Should be mildly simple (ha, sure...), and allow for much more flexible commenting. Target is to have a defined intro, a 'bag of sentences' for the body, and a defined signature. The 'mildly simple' notion is built off the idea that there will be little the program can do incorrectly with that scaffolding. Look at two metrics: absolute sentence ordering, and new paragraph insertion. Maybe train on a ton of readme's, or wiki data for the new paragraph insertion. 
+
+
+#### Question & Answer
+Resources to draw from:
+ - Stack Overflow (Primary)
+ - Python Docs (Secondary)
+ - Python Blog Posts (Out of Focus)
+ - Scraped Github Code (Out of Focus)
+
+Think about using a subset of highly matching SO posts code to OPs source code and using bayes in a MSAlignment fashion to guess on solution.
+Most likely this is especially useful with syntax errors and stack traces. 
+
+
+### Generalizing the bot: 
+These are features which an ideal bot-mod would have, but which are not directly linked to a question-answer-and-redirector bot like u/pythonHelperBot (as of mid July 2018)
+ - sub_Toxicisty_Score():
+ Alternatively a friendly score. Bit ambigous, and doesn't immeadetly fit into the bot, but just a measure of how kind or standoffish or toxic a sub is. Certain communities tend to forget that not everyone knows everything, and it'd be nice to avoid recommending those subs.
+
+ - blog_Spam_Flagger():
+ This is actually a large but distant future goal for the bot. There's often complaints about blog spam on the python sub, and it'd be nice to have a programmatic way to define it. Even if the spammy site sees the definition, and works around it, the definition can either be altered, or the work around can be allowed. Most redditors want to see good content, so the best way around an ideal blog spam filter would be to have variable, high quality content. In which case everyone wins. Using that idea, we can start to outline the basic components of what blog spam might be. 
+
+ High quality content is safe. High quality with respect to the python sub is probably some function of what generally does well
+
+ Low quality can be caused by a few reasons: r/python is not the proper sub for that: ie questions
+ It was recently posted: this is probably best defined as content theft, though repost is a common name for it. 
+
+ I'm tired, I'll come back to this. 
+
+### Tests 
+
+
 ## [A0.2.01] 2019-03-05
 Official
 ### Contributors
