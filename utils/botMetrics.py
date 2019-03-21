@@ -204,16 +204,52 @@ def measureUserReaction(post, user, suggestionTime):
     #return tookAdvice
 
 
-def modActions(reddit, phbArcPaths):
+def archiveModActions(reddit, phbArcPaths, sub="Python"):
     '''
     Function is used to record posts mods have commented on about 
     removal, as well as the message associated with the removal.
-    This will be used to build a labeled set of 'learning' posts
+    This will be used to build a 'crowd sourced' labeled set of 
+    'learning' posts.
     '''
+    
+    # Load last recorded comment for mod
+    ifl = os.path.join(phbArcPaths['modActions'], 'lastRecModAction.txt')
+    lastArchivedModAction = {}
+    if os.path.isfile(ifl):
+        with open(ifl,'r') as fl:
+            for line in fl:
+                line = line.strip().split('\t')
+                modName = line[0]
+                dtString =  datetime.datetime.strptime(line[1], "%Y-%m-%d %H:%M:%S")
+
+    # Get all but automod
     mods = []
-    mods = archiveAndUpdateReddit.getMods(reddit)
+    excludeMods = ['AutoModerator']
+    mods = [mod for mod in archiveAndUpdateReddit.getMods(reddit, sub=sub) if mod.name not in excludeMods]
+
     for mod in mods: 
-        pass 
+        if mod.name in lastArchivedModAction:
+            comments = mod.getUsersComments(reddit=reddit, limitCount=100, ageLimitHours=None, ageLimitTime=lastArchivedModAction[mod.name])
+        else:
+            # Grab mod actions over the past 48 hours, we've never seen this mod before
+            comments = mod.getUsersComments(reddit=reddit, limitCount=100, ageLimitHours=48)
+
+        for comment in comments:
+            if comment.subreddit == sub:
+                #modActionComments.append(comment)
+                archiveAndUpdateReddit.saveClassJson(comment, database_path=phbArcPaths['modActionsJson'])
+            if mod.name not in lastArchivedModAction:
+                lastArchivedModAction[mod.name] = comment.created_utc
+            elif comment.created_utc > lastArchivedModAction[mod.name]:
+                lastArchivedModAction[mod.name] = comment.created_utc
+
+
+    # Save most recent mod action
+    with open(ifl, 'w') as ofl:
+        for key in lastArchivedModAction:
+            ofl.write(key + "\t" + str(lastArchivedModAction[key]) + '\n')
+
+    return
 
 def processKarmaRequest(msg, setOfPosts, quietMode, ageLimitHours=4):
     ''' 

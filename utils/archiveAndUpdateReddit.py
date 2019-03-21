@@ -723,6 +723,14 @@ NotFound: received 404 HTTP response
                 praw_user = reddit.redditor(self.name)
                 for submission in praw_user.submissions.new(limit=limitCount):
                     sub = phb_Reddit_Submission(submission)
+                    if (ageLimitHours != None) or (ageLimitTime != None):
+                        if ageLimitHours != None:
+                            if datetime.datetime.utcnow() - sub.created_utc > datetime.timedelta(hours=ageLimitHours):
+                                break
+                        if ageLimitTime != None:
+                            if sub.created_utc < ageLimitTime:
+                                # This does assume age limit time is give in utc
+                                break
                     submissionList.append(sub)
                 return submissionList
                 
@@ -764,9 +772,10 @@ NotFound: received 404 HTTP response
                     logging.error("I'm not connected to the internet escalating this error")
                     logging.error("\n"+traceback.format_exc())
                     raise e
+        return submissionList
 
 
-    def getUsersComments(self, reddit, limitCount=25):
+    def getUsersComments(self, reddit, limitCount=25, ageLimitHours=None, ageLimitTime=None):
         # most recent `limitCount` comments by this user
         
         vals_Assigned = False
@@ -785,6 +794,14 @@ NotFound: received 404 HTTP response
                 praw_user = reddit.redditor(self.name)
                 for comment in praw_user.comments.new(limit=limitCount):
                     comment = phb_Reddit_Comment(comment)
+                    if (ageLimitHours != None) or (ageLimitTime != None):
+                        if ageLimitHours != None:
+                            if datetime.datetime.utcnow() - comment.created_utc > datetime.timedelta(hours=ageLimitHours):
+                                break
+                        if ageLimitTime != None:
+                            if comment.created_utc < ageLimitTime:
+                                # This does assume age limit time is give in utc
+                                break
                     commentList.append(comment)                
                 vals_Assigned = True
                 break
@@ -1664,6 +1681,7 @@ def startupDatabase(archive_Locations):
     phbArcPaths['subJson'] = phbSubJsonPath
     phbArcPaths['subSQL'] = phbSubSQLPath
     phbArcPaths['subComJson'] = phbSubAndComJsonPath
+    phbArcPaths['modActions'] = phbModActionsPath
     phbArcPaths['modActionsJson'] = phbModActionsJsonPath
     phbArcPaths['phbActionsDir'] = phbActionsPath
 

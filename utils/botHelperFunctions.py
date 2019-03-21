@@ -173,3 +173,9 @@ def getSubsUsersInteractsIn(reddit, user, limitCount=25):
         
     return redditSubs, hasSuggestedLearnPython, postsInLearningSubs
     
+def updateBotsRecentComments():
+    '''
+    Grabs recent comments from the bot to help reduce risk
+    of multiple instances of the bot commenting on the same post
+    '''
+    pass

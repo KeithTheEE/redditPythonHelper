@@ -246,6 +246,7 @@ def startupBot():
     mods = archiveAndUpdateReddit.getMods(reddit, sub="python")
     for mod in mods:
         userNames.append(str(mod.name)) 
+    #recentComments = botHelperFunctions.updateBotsRecentComments(reddit)
     
 
     logging.debug( "Loaded. Running...")
@@ -266,6 +267,8 @@ def runBot(reddit, classifier, codeVTextClassifier, tdm, userNames, postHistory,
     lastThreeMin = datetime.datetime.now() - datetime.timedelta(seconds=threeMin*60)
     fifteenMin = 15
     lastFifteenMin = datetime.datetime.now() - datetime.timedelta(seconds=fifteenMin*60)
+    twelveHours = 12
+    last12Hours = datetime.datetime.now() - datetime.timedelta(seconds=twelveHours*60*60)
 
     while True:
         commentOnThese = [] 
@@ -298,7 +301,11 @@ def runBot(reddit, classifier, codeVTextClassifier, tdm, userNames, postHistory,
             logging.debug( "15 minute region is Sleeping..." + str(datetime.datetime.now()))
 
             # TESTING
-            archiveAndUpdateReddit.removeOldPosts(reddit, submissionList=setOfPosts, ageLimitHours=1, phbArcPaths=phbArcPaths,  archive=True) 
+            #archiveAndUpdateReddit.removeOldPosts(reddit, submissionList=setOfPosts, ageLimitHours=1, phbArcPaths=phbArcPaths,  archive=True) 
+
+        if datetime.datetime.now() - last12Hours > datetime.timedelta(seconds=twelveHours*60*60):
+            # Rare actions
+            botMetrics.archiveModActions(reddit, phbArcPaths=phbArcPaths, sub='Python')
 
         # Comment on all classified submissions
         userNames, postHistory, antiSpamList =  getReadyToComment(reddit, setOfPosts, userNames, postHistory, commentOnThese, antiSpamList, codeVTextClassifier, quietMode)
