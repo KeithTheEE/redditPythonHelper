@@ -175,9 +175,12 @@ def karmaPlotstoGif(outfileName="redditBotKarma.mp4", filePath = "karma"):
 
     return 
     
+def predictUserReaction(reddit, user, phbArcPaths):
+
+    return
 
 
-def measureUserReaction(post, user, suggestionTime):
+def measureUserReaction(reddit, submission, user, suggestionTime):
     '''
     For every user u/pythonHelperBot has interacted with,
     Check to see if they posted in r/learnpython a certain time 
@@ -187,7 +190,7 @@ def measureUserReaction(post, user, suggestionTime):
     '''
     limitCount = 10
     learningSubs = botHelperFunctions.get_learning_sub_Names()
-    #submissionList = user.getUserPosts(user, limitCount=limitCount)
+    submissionList = user.getUserPosts(reddit, limitCount=limitCount)
     #tookAdvice = False
     #for submission in submissionList:
     #    if str(submission.subreddit).lower() in learningSubs:
@@ -251,7 +254,7 @@ def archiveModActions(reddit, phbArcPaths, sub="Python"):
 
     return
 
-def processKarmaRequest(msg, setOfPosts, quietMode, ageLimitHours=4):
+def processKarmaRequest(msg, setOfPosts, quietMode, phbArcPaths, ageLimitHours=4):
     ''' 
     By this point we know message is by an approved user, and is asking
     for a karma plot. We have to verify is the id associated with the
@@ -295,7 +298,7 @@ def processKarmaRequest(msg, setOfPosts, quietMode, ageLimitHours=4):
         plt.gca().xaxis.set_major_formatter(mdates.DateFormatter('%Y-%m-%d %H:%M')) 
         plt.gcf().autofmt_xdate()
 
-        dirName = 'redditData/scoreDisplay'
+        dirName = phbArcPaths['phbScoreDisplay']
         outMedia = os.path.join(dirName, str(submission.id) + '.png')
         plt.savefig(outMedia, bbox_inches='tight')
         plt.close()

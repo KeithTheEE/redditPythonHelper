@@ -12,6 +12,7 @@ import logging
 import subprocess
 import traceback
 import socket
+from shutil import copyfile
 
 import kmlistfi
 
@@ -1676,6 +1677,7 @@ def startupDatabase(archive_Locations):
     phbModActionsJsonPath = joinAndMakeDir(phbModActionsPath, 'JSONLike')
 
     phbActionsPath = joinAndMakeDir(phbArchivePath, 'phbActions')
+    phbScoreDisplay = joinAndMakeDir(phbActionsPath, 'scoreDisplay')
 
     phbArcPaths ={}
     phbArcPaths['subJson'] = phbSubJsonPath
@@ -1684,7 +1686,22 @@ def startupDatabase(archive_Locations):
     phbArcPaths['modActions'] = phbModActionsPath
     phbArcPaths['modActionsJson'] = phbModActionsJsonPath
     phbArcPaths['phbActionsDir'] = phbActionsPath
+    phbArcPaths['phbScoreDisplay']= phbScoreDisplay
 
+
+
+    # Special condition where reddit data was built without arcive present
+    # Must make sure the two are equal copies
+    if not os.path.isfile(os.path.join(phbArcPaths['phbActionsDir'], postCommentedOn)):
+        srcPost = os.path.join(dirName, postCommentedOn)
+        srcUser = os.path.join(dirName, usersInteractedWith)
+        srcSummons = os.path.join(dirName, 'summoningHistory.txt')
+        dstPost = os.path.join(phbArcPaths['phbActionsDir'], postCommentedOn)
+        dstUser = os.path.join(phbArcPaths['phbActionsDir'], usersInteractedWith)
+        dstSummons = os.path.join(phbArcPaths['phbActionsDir'], 'summoningHistory.txt')
+        copyfile(srcPost, dstPost)
+        copyfile(srcUser, dstUser)
+        copyfile(srcSummons, dstSummons)
 
 
     # Load comment history and user interaction history
@@ -1704,6 +1721,7 @@ def startupDatabase(archive_Locations):
 
 
 def updateUserNameDB(username):
+    # DEPRECATE
     dirName = "redditData"
     usersInteractedWith = "UsernamessList.txt"
     fl = open(os.path.join(dirName, usersInteractedWith), 'a')
@@ -1712,7 +1730,7 @@ def updateUserNameDB(username):
     return
 
 
-def updateDatabase(username, post_id):
+def updateDatabase(username, post_id, phbArcPaths):
     # Right now it's a flat database, soon it'll be not so flat 
     dirName = "redditData"
     postCommentedOn = "postHistory.txt"
@@ -1725,6 +1743,15 @@ def updateDatabase(username, post_id):
     fl = open(os.path.join(dirName, postCommentedOn), 'a')
     fl.write(str(post_id)+'\n')
     fl.close()
+
+    
+    # Archive Location
+    fl = open(os.path.join(phbArcPaths['phbActionsDir'], usersInteractedWith), 'a')
+    fl.write(str(username)+'\n')
+    fl.close()
+    fl = open(os.path.join(phbArcPaths['phbActionsDir'], postCommentedOn), 'a')
+    fl.write(str(post_id)+'\n')
+    fl.close()
     
     return
     
@@ -1733,7 +1760,7 @@ def getModifiedDate(fl):
 def sortFilesByModification(fls):
     return sorted(fls, key=getModifiedDate, reverse=True)
 
-def saveClassJson(class_Struct, database_path, max_MB=50):
+def saveClassJson(class_Struct, database_path, max_MB=10):
     # Check if database has been created, and if there is,
     # check it's size. If too large or if none exist, create DB 
     fls = kmlistfi.les(database_path)
@@ -1743,7 +1770,7 @@ def saveClassJson(class_Struct, database_path, max_MB=50):
         newFile = True
     else:
         youngestFile = sortFilesByModification(fls)[0]
-        maxBytes = max_MB* 1024**2 # 50 Mb
+        maxBytes = max_MB* 1024**2 # 10 Mb
         if os.stat(youngestFile).st_size > maxBytes:
             # End old json file with closing bracket
             with open(youngestFile, 'a') as ofl:

@@ -1,6 +1,7 @@
 
 import nltk
 import time
+import os
 import datetime
 import gzip
 import kmlistfi
@@ -395,12 +396,13 @@ def saveSummoningAction(sourcefl,saveLine):
 
     return 
 
-def handleSummons(reddit, msg, codeVTextClassifier, quietMode, ageLimitHours=4):
+def handleSummons(reddit, msg, codeVTextClassifier, quietMode, phbArcPaths, ageLimitHours=4):
     # Add more logging info to see who summoned etc
     # This is the reformat summons
 
     # Get necessary values:
     # Summoning Comment
+    summonDBPath = os.path.join(phbArcPaths['phbActionsDir'], 'summoningHistory.txt')
     if msg.was_comment:
         summoning_comment = archiveAndUpdateReddit.get_comment_by_ID(reddit, comment_id= msg.id)
         if datetime.datetime.utcnow() - summoning_comment.created_utc > datetime.timedelta(hours=ageLimitHours):
@@ -427,7 +429,7 @@ def handleSummons(reddit, msg, codeVTextClassifier, quietMode, ageLimitHours=4):
             
         # Verify that I haven't already reformated the parent comment 
         #print(parent.id, summoning_comment.id, summoning_comment.created_utc)
-        submissions, reformatted, summoners = loadSummoningHistory("redditData/summoningHistory.txt")
+        submissions, reformatted, summoners = loadSummoningHistory(summonDBPath)
         if summoning_comment.link_id in submissions:
             if submissions[summoning_comment.link_id] >= 3:
                 logging.info("I've commented on this thread too many times, I'm ignoring all other summons")
@@ -467,7 +469,7 @@ def handleSummons(reddit, msg, codeVTextClassifier, quietMode, ageLimitHours=4):
 
             logging.debug(saveLine)
             if codePresent and changesMade:
-                saveSummoningAction("redditData/summoningHistory.txt", saveLine)
+                saveSummoningAction(summonDBPath, saveLine)
                 archiveAndUpdateReddit.commentOnComment(summoning_comment, msg, reddit, quietMode)
                 logging.debug(msg.encode('ascii', 'ignore'))
             else:
@@ -479,7 +481,7 @@ def handleSummons(reddit, msg, codeVTextClassifier, quietMode, ageLimitHours=4):
     return
 
 
-def makeFormatHelpMessage(reddit, msg, quietMode):
+def makeFormatHelpMessage(reddit, msg, quietMode, phbArcPaths):
 
     # Classify Formatting Issues
 

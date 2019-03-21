@@ -34,7 +34,8 @@ act = "JUST CODE IT"
 print(act[:5]+ act[6:8][::-1]+act[9:])
 '''
 
-def buildHelpfulComment(submission, user, reddit, suggested, crossPosted, answered, codePresent, correctlyFormatted, quietMode):
+def buildHelpfulComment(submission, user, reddit, suggested, crossPosted, answered, 
+                        codePresent, correctlyFormatted, quietMode, phbArcPaths):
     supervised = False
     underDev = True
     
@@ -86,7 +87,7 @@ def buildHelpfulComment(submission, user, reddit, suggested, crossPosted, answer
     # Quiet Mode is used to debug, and avoid
     if not quietMode:
         archiveAndUpdateReddit.commentOnSubmmission(submission, msg, reddit, quietMode)
-        archiveAndUpdateReddit.updateDatabase(user.name, submission.id)
+        archiveAndUpdateReddit.updateDatabase(user.name, submission.id, phbArcPaths=phbArcPaths)
         logging.debug( '\t\tCommented.')
     else:
         logging.debug("Quiet Mode is on, no actual post was made")
@@ -174,7 +175,7 @@ def handleSetOfSubmissions(reddit, setOfPosts, postHistory, classifier):
     return submissionsToCommentOn_BC
 
 
-def getReadyToComment(reddit, setOfPosts, userNames, postHistory, commentOnThese, antiSpamList, codeVTextClassifier, quietMode):
+def getReadyToComment(reddit, setOfPosts, userNames, postHistory, commentOnThese, antiSpamList, codeVTextClassifier, quietMode, phbArcPaths):
 
     # Remove Duplicates as a precaution
     #commentOnThese = list(set(commentOnThese))
@@ -202,7 +203,7 @@ def getReadyToComment(reddit, setOfPosts, userNames, postHistory, commentOnThese
                         correctlyFormatted=False
                         msg, changesMade, codePresent, correctlyFormatted = formatCode.reformat(submission.selftext, codeVTextClassifier)
 
-                        buildHelpfulComment(submission, user, reddit, suggested, crossPosted, answered, codePresent, correctlyFormatted, quietMode)
+                        buildHelpfulComment(submission, user, reddit, suggested, crossPosted, answered, codePresent, correctlyFormatted, quietMode, phbArcPaths=phbArcPaths) 
                         userNames.append(str(user.name))
                         postHistory.append(str(submission.id))
 
@@ -259,7 +260,7 @@ def runBot(reddit, classifier, codeVTextClassifier, tdm, userNames, postHistory,
     phrase_set = botHelperFunctions.load_autoreply_key_phrases(fl_path='misc/autoreplyKeyPhrases.txt')
     
     setOfPosts = archiveAndUpdateReddit.grabAndUpdateNewPosts(reddit)
-    unreadCount = botSummons.handleInbox(reddit, codeVTextClassifier,  setOfPosts=setOfPosts, quietMode=quietMode)
+    unreadCount = botSummons.handleInbox(reddit, codeVTextClassifier, phbArcPaths=phbArcPaths,  setOfPosts=setOfPosts, quietMode=quietMode)
     antiSpamList = {} # Used in basicUserClassify to only text me once per submission by a repeat user
 
   
@@ -275,7 +276,7 @@ def runBot(reddit, classifier, codeVTextClassifier, tdm, userNames, postHistory,
         if datetime.datetime.now() - lastThreeMin > datetime.timedelta(seconds=threeMin*60):
             #print("3 mins")
             # Handle Inbox
-            unreadCount = botSummons.handleInbox(reddit, codeVTextClassifier, setOfPosts=setOfPosts, unreadCount=unreadCount, sendText= True, quietMode=quietMode)
+            unreadCount = botSummons.handleInbox(reddit, codeVTextClassifier, phbArcPaths=phbArcPaths,  setOfPosts=setOfPosts, unreadCount=unreadCount, sendText= True, quietMode=quietMode)
 
             # Update karma score for posts under 2 hours old
             setOfPosts = archiveAndUpdateReddit.updateYoungerThanXPosts(reddit, submissionList=setOfPosts) 
@@ -308,7 +309,7 @@ def runBot(reddit, classifier, codeVTextClassifier, tdm, userNames, postHistory,
             botMetrics.archiveModActions(reddit, phbArcPaths=phbArcPaths, sub='Python')
 
         # Comment on all classified submissions
-        userNames, postHistory, antiSpamList =  getReadyToComment(reddit, setOfPosts, userNames, postHistory, commentOnThese, antiSpamList, codeVTextClassifier, quietMode)
+        userNames, postHistory, antiSpamList =  getReadyToComment(reddit, setOfPosts, userNames, postHistory, commentOnThese, antiSpamList, codeVTextClassifier, quietMode, phbArcPaths=phbArcPaths)
 
         time.sleep(30)
 

@@ -17,14 +17,14 @@ def summonCommands():
     '''
     return ['reformat']
 
-def actOnSummons(reddit, msg, command, codeVTextClassifier, quietMode, setOfPosts):
+def actOnSummons(reddit, msg, command, codeVTextClassifier, quietMode, setOfPosts, phbArcPaths): 
 
     if 'reformat' == command.strip().lower():
-        formatCode.handleSummons(reddit, msg, codeVTextClassifier, quietMode)
+        formatCode.handleSummons(reddit, msg, codeVTextClassifier, quietMode,phbArcPaths=phbArcPaths)
     elif 'format_howto' == command.strip().lower():
-        formatCode.makeFormatHelpMessage(reddit, msg, quietMode)
+        formatCode.makeFormatHelpMessage(reddit, msg, quietMode, phbArcPaths=phbArcPaths)
     elif ('kplot' == command) and (msg.author.lower() == 'iamkindofcreative'):
-        botMetrics.processKarmaRequest(msg, setOfPosts, quietMode, ageLimitHours=4)
+        botMetrics.processKarmaRequest(msg, setOfPosts, quietMode, phbArcPaths=phbArcPaths, ageLimitHours=4)
     else:
         logging.info("No know command associated with summons command")
 
@@ -54,7 +54,7 @@ def checkForSummons(msg):
     return summonID, command
 
 
-def handleInbox(reddit, codeVTextClassifier, setOfPosts={}, unreadCount=None, sendText = True, quietMode=False):
+def handleInbox(reddit, codeVTextClassifier, phbArcPaths, setOfPosts={}, unreadCount=None, sendText = True, quietMode=False):
     # Mark all messages as read after notification has been sent
     rawInboxMessages = archiveAndUpdateReddit.checkForMessages(reddit)
     sendText = True
@@ -78,7 +78,7 @@ def handleInbox(reddit, codeVTextClassifier, setOfPosts={}, unreadCount=None, se
             # mark summoning as read
             summonMsgs.append(msg)
             summonedIDs.append(summoned)
-            actOnSummons(reddit, msg, command, codeVTextClassifier, quietMode, setOfPosts)
+            actOnSummons(reddit, msg, command, codeVTextClassifier, quietMode, setOfPosts, phbArcPaths=phbArcPaths)
         else:
             inboxMessages.append(msg)
 
