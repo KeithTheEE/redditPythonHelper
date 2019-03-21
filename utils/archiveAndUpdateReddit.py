@@ -284,9 +284,9 @@ class phb_Reddit_Submission(object):
                 break
             try:
                 praw_sub = reddit.submission(id=self.id)
-                commentList = praw_sub.comments.replace_more(limit=None)
+                praw_sub.comments.replace_more(limit=None) # Loads all comments
                 reclassedComments = []
-                for comment in commentList.list():
+                for comment in praw_sub.comments.list():
                     reclassedComments.append(phb_Reddit_Comment(comment))
                 vals_Assigned = True
                 break
@@ -532,9 +532,41 @@ class phb_Reddit_Comment(object):
     def __repr__(self):
         return self._print_Full()
 
-    #def get_top_level_comments(self, sub):
 
-    #def get_all_comments(self, sub):
+    def export_to_dict(self):
+        comment_d = {}
+        comment_d['author'] = self.author
+        comment_d['created_utc'] = self.created_utc
+        comment_d['body'] = self.body 
+        comment_d['id'] = self.id
+        comment_d['is_submitter'] = self.is_submitter
+        comment_d['link_id'] = self.link_id
+        comment_d['parent_id'] = self.parent_id
+        comment_d['url'] = self.url
+        comment_d['score'] = self.score
+        comment_d['subreddit'] = self.subreddit
+        comment_d['score_History'] = self.score_History 
+        comment_d['edit_History'] = self.edit_History 
+        return comment_d
+    def load_from_dict(self, comment_d):
+        '''
+        This currently does not have protections under the assumption that if 
+        there is a keyerror, it needs to be raised
+        '''
+        self.author = comment_d['author'] 
+        self.created_utc = comment_d['created_utc'] 
+        self.body = comment_d['body']
+        self.id = comment_d['id'] 
+        self.is_submitter = comment_d['is_submitter']
+        self.link_id = comment_d['link_id']
+        self.parent_id = comment_d['parent_id']
+        self.url = comment_d['url'] 
+        self.score = comment_d['score'] 
+        self.subreddit = comment_d['subreddit'] 
+        self.score_History = comment_d['score_History'] 
+        self.edit_History = comment_d['edit_History'] 
+        return
+        
 
 class phb_Reddit_User(object):
     '''
@@ -616,7 +648,7 @@ NotFound: received 404 HTTP response
                     self.name = praw_user.name
                 except AttributeError:
                     # Author has deleted the post or been removed and can't be identified
-                    self.author = '[deleted]'
+                    self.name = '[deleted]'
                 self.created_utc = datetime.datetime.utcfromtimestamp(praw_user.created_utc)
                 self.id = praw_user.id
                 self.link_karma = praw_user.link_karma
@@ -794,6 +826,7 @@ NotFound: received 404 HTTP response
                     raise e
 
         return commentList
+
 
 class phb_Reddit_Msg(object):
     '''
@@ -1307,14 +1340,14 @@ def getNewPosts(reddit, sub="python", submissionList={}, ageLimitHours=12):
     return submissionList
 
 def grabAndUpdateNewPosts(reddit,  phbArcPaths={}, sub="python", submissionList={}, ageLimitHours=12):
-    submissionList = removeOldPosts(submissionList, ageLimitHours,  phbArcPaths=phbArcPaths,)
+    submissionList = removeOldPosts(reddit, submissionList, ageLimitHours,  phbArcPaths=phbArcPaths,)
     submissionList = updatePostFeatures(reddit, submissionList)
 
     submissionList = getNewPosts(reddit, sub="python", submissionList={}, ageLimitHours=12)
     return submissionList
 
 def updatePosts(reddit,  phbArcPaths={},  sub="python", submissionList={}, ageLimitHours=12):
-    submissionList = removeOldPosts(submissionList, ageLimitHours,  phbArcPaths=phbArcPaths)
+    submissionList = removeOldPosts(reddit, submissionList, ageLimitHours,  phbArcPaths=phbArcPaths)
     submissionList = updatePostFeatures(reddit, submissionList)
     return submissionList
 
@@ -1342,12 +1375,70 @@ def updateYoungerThanXPosts(reddit, sub="python", submissionList={}, ageLimitHou
 
     return holdSubmissions
 
+def getMods(reddit, sub="python"):
+    
+    maxTotalWaitTime = 5*60*60
+    requestBackoffTime = 60 # starting amount of time required to wait after an error. it will then double
+    serverBackoffTime = 5 
+    startTime = time.time()
 
+    vals_Assigned = False
+
+    while True:
+        if vals_Assigned:
+            break
+        try:
+            mods = []
+            for mod in reddit.subreddit(sub).moderator():
+                mods.append(phb_Reddit_User(mod))
+            vals_Assigned = True
+            break
+        except RequestException as e:
+            logging.error("Caught Server Rate Limit Hit | Specific Error:")
+            logging.error("\n"+traceback.format_exc())
+            requestBackoffTime = _backoff_Sleeper(requestBackoffTime)
+            if time.time()-startTime > maxTotalWaitTime:
+                logging.error("I've tried this too much, escalating error")
+                raise e
+        except APIException as e:
+            if "RATELIMIT" in traceback.format_exc():
+                logging.error("Caught Server Rate Limit Hit By API | Specific Error:")
+                logging.error("\n"+traceback.format_exc())
+                requestBackoffTime = _backoff_Sleeper(requestBackoffTime)
+                if time.time()-startTime > maxTotalWaitTime:
+                    logging.error("I've tried this too much, escalating error")
+                    raise e
+            else:
+                raise e
+        except (ServerError, ResponseException) as e:
+            logging.error("Caught Server 500 Error | Specific Error:")
+            logging.error("\n"+traceback.format_exc())
+            serverBackoffTime = _backoff_Sleeper(serverBackoffTime)
+            if time.time()-startTime > maxTotalWaitTime:
+                logging.error("I've tried this too much, escalating error")
+                raise e
+        except Exception as e:
+            internet = is_connected()
+            if internet:
+                # I'm connected and There's some problem. Figure it out and pass it along
+                logging.error("I'm connected to the internet and recieving this error")
+                logging.error("\n"+traceback.format_exc())
+                raise e 
+            else:
+                # no internet, figure out what to do here
+                logging.error("I'm not connected to the internet escalating this error")
+                logging.error("\n"+traceback.format_exc())
+                raise e
+
+    # Archive and filter out posts that are too old 
+    return mods
+    
 # ~~~~~~~~~ Monitoring and Metrics ~~~~~~~~~~ # 
 
 
 
 def makeCommentKarmaReport(user, reddit):
+    # Deprecate soon
     karma = []
     date = []  
     #commentList = getUsersComments(user, limitCount=1000)
@@ -1624,7 +1715,7 @@ def getModifiedDate(fl):
 def sortFilesByModification(fls):
     return sorted(fls, key=getModifiedDate, reverse=True)
 
-def saveClassJson(class_Struct, database_path):
+def saveClassJson(class_Struct, database_path, max_MB=50):
     # Check if database has been created, and if there is,
     # check it's size. If too large or if none exist, create DB 
     fls = kmlistfi.les(database_path)
@@ -1634,7 +1725,7 @@ def saveClassJson(class_Struct, database_path):
         newFile = True
     else:
         youngestFile = sortFilesByModification(fls)[0]
-        maxBytes = 50* 1024**2 # 50 Mb
+        maxBytes = max_MB* 1024**2 # 50 Mb
         if os.stat(youngestFile).st_size > maxBytes:
             # End old json file with closing bracket
             with open(youngestFile, 'a') as ofl:
@@ -1659,7 +1750,7 @@ def saveClassJson(class_Struct, database_path):
 
 
 
-def removeOldPosts(submissionList, ageLimitHours, phbArcPaths,  archive=True):
+def removeOldPosts(reddit, submissionList, ageLimitHours, phbArcPaths,  archive=True):
 
     # Get Archive Location:
     # -Handled at startup
@@ -1676,6 +1767,11 @@ def removeOldPosts(submissionList, ageLimitHours, phbArcPaths,  archive=True):
             # Submission
             saveClassJson(submission, phbArcPaths['subJson'])
             # Submission And Comments
+            saveClassJson(submission, phbArcPaths['subComJson'])
+            comments = submission.get_all_comments(reddit)
+            for comment in comments:
+                saveClassJson(comment, phbArcPaths['subComJson'])
+
         pass
 
     return submissionList

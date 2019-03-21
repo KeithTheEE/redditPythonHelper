@@ -243,8 +243,9 @@ def startupBot():
                     username=keySet[4])
 
     # Ignore all mod posts: they know what they're doing
-    for mod in reddit.subreddit('python').moderator():
-        userNames.append(str(mod))
+    mods = archiveAndUpdateReddit.getMods(reddit, sub="python")
+    for mod in mods:
+        userNames.append(str(mod.name)) 
     
 
     logging.debug( "Loaded. Running...")
@@ -297,7 +298,7 @@ def runBot(reddit, classifier, codeVTextClassifier, tdm, userNames, postHistory,
             logging.debug( "15 minute region is Sleeping..." + str(datetime.datetime.now()))
 
             # TESTING
-            archiveAndUpdateReddit.removeOldPosts(submissionList=setOfPosts, ageLimitHours=1, phbArcPaths=phbArcPaths,  archive=True) 
+            archiveAndUpdateReddit.removeOldPosts(reddit, submissionList=setOfPosts, ageLimitHours=1, phbArcPaths=phbArcPaths,  archive=True) 
 
         # Comment on all classified submissions
         userNames, postHistory, antiSpamList =  getReadyToComment(reddit, setOfPosts, userNames, postHistory, commentOnThese, antiSpamList, codeVTextClassifier, quietMode)

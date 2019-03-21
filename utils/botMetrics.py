@@ -204,12 +204,14 @@ def measureUserReaction(post, user, suggestionTime):
     #return tookAdvice
 
 
-def modActions(mods):
+def modActions(reddit, phbArcPaths):
     '''
     Function is used to record posts mods have commented on about 
     removal, as well as the message associated with the removal.
     This will be used to build a labeled set of 'learning' posts
     '''
+    mods = []
+    mods = archiveAndUpdateReddit.getMods(reddit)
     for mod in mods: 
         pass 
 
