@@ -176,6 +176,20 @@ def karmaPlotstoGif(outfileName="redditBotKarma.mp4", filePath = "karma"):
     return 
     
 def predictUserReaction(reddit, user, phbArcPaths):
+    # get recent user comments
+    logging.debug("Saving users responses to comments to gauge their responsiveness to the bot")
+    comments = user.getUsersComments(reddit=reddit, limitCount=15)
+    commentCouples = []
+    for comment in comments:
+        if comment.parent_id != comment.link_id:
+            parent_ID = comment.parent_id.split('_')[-1]
+            parentComment = archiveAndUpdateReddit.get_comment_by_ID(reddit, parent_ID)
+            commentCouples.append(parentComment)
+            commentCouples.append(comment)
+
+    phbArcPaths['userReactions']
+    for comment in commentCouples:
+        archiveAndUpdateReddit.saveClassJson(comment, phbArcPaths['userReactions'])
 
     return
 
@@ -214,6 +228,7 @@ def archiveModActions(reddit, phbArcPaths, sub="Python"):
     This will be used to build a 'crowd sourced' labeled set of 
     'learning' posts.
     '''
+    logging.debug("Getting Mod Actions")
     
     # Load last recorded comment for mod
     ifl = os.path.join(phbArcPaths['modActions'], 'lastRecModAction.txt')
@@ -224,6 +239,7 @@ def archiveModActions(reddit, phbArcPaths, sub="Python"):
                 line = line.strip().split('\t')
                 modName = line[0]
                 dtString =  datetime.datetime.strptime(line[1], "%Y-%m-%d %H:%M:%S")
+                lastArchivedModAction[modName] = dtString
 
     # Get all but automod
     mods = []

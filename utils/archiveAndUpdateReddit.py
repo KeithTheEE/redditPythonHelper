@@ -999,6 +999,9 @@ def get_comment_by_ID(reddit, comment_id):
 
     vals_Assigned = False
 
+    if '_' in comment_id:
+        comment_id = comment_id.split('_')[-1]
+
     while True:
         if vals_Assigned:
             break
@@ -1605,6 +1608,7 @@ def joinAndMakeDir(parent, child):
     newDir = os.path.join(parent, child)
     if not os.path.exists(newDir):
         os.makedirs(newDir)
+        logging.debug("Making new directory: " + newDir)
     return newDir
 
 def createFile(flpath, flname):
@@ -1679,6 +1683,10 @@ def startupDatabase(archive_Locations):
     phbActionsPath = joinAndMakeDir(phbArchivePath, 'phbActions')
     phbScoreDisplay = joinAndMakeDir(phbActionsPath, 'scoreDisplay')
 
+    phbUserRecords = joinAndMakeDir(phbArchivePath, 'users')
+    phbUserHistory = joinAndMakeDir(phbUserRecords, 'userInfo')
+    phbUserReactions = joinAndMakeDir(phbUserRecords, 'userReactions')
+
     phbArcPaths ={}
     phbArcPaths['subJson'] = phbSubJsonPath
     phbArcPaths['subSQL'] = phbSubSQLPath
@@ -1687,12 +1695,15 @@ def startupDatabase(archive_Locations):
     phbArcPaths['modActionsJson'] = phbModActionsJsonPath
     phbArcPaths['phbActionsDir'] = phbActionsPath
     phbArcPaths['phbScoreDisplay']= phbScoreDisplay
+    phbArcPaths['userInfo']= phbUserHistory
+    phbArcPaths['userReactions']= phbUserReactions
 
 
 
     # Special condition where reddit data was built without arcive present
     # Must make sure the two are equal copies
     if not os.path.isfile(os.path.join(phbArcPaths['phbActionsDir'], postCommentedOn)):
+        logging.debug("Copying reddit data to archive location")
         srcPost = os.path.join(dirName, postCommentedOn)
         srcUser = os.path.join(dirName, usersInteractedWith)
         srcSummons = os.path.join(dirName, 'summoningHistory.txt')
@@ -1719,15 +1730,6 @@ def startupDatabase(archive_Locations):
 
     return userNames, postHistory, phbArcPaths
 
-
-def updateUserNameDB(username):
-    # DEPRECATE
-    dirName = "redditData"
-    usersInteractedWith = "UsernamessList.txt"
-    fl = open(os.path.join(dirName, usersInteractedWith), 'a')
-    fl.write(str(username)+'\n')
-    fl.close()
-    return
 
 
 def updateDatabase(username, post_id, phbArcPaths):
@@ -1810,14 +1812,17 @@ def removeOldPosts(reddit, submissionList, ageLimitHours, phbArcPaths,  archive=
         submission, user = submissionList.pop(popit)
         if archive:
             # Submission
+            logging.debug("Saving Submission.. " + str(submission.id))
             saveClassJson(submission, phbArcPaths['subJson'])
             # Submission And Comments
+            logging.debug("Saving Submission and Comments..")
             saveClassJson(submission, phbArcPaths['subComJson'])
             comments = submission.get_all_comments(reddit)
             for comment in comments:
                 saveClassJson(comment, phbArcPaths['subComJson'])
+    
+    logging.debug("Saving Complete.")
 
-        pass
 
     return submissionList
 

@@ -203,6 +203,9 @@ def getReadyToComment(reddit, setOfPosts, userNames, postHistory, commentOnThese
                         correctlyFormatted=False
                         msg, changesMade, codePresent, correctlyFormatted = formatCode.reformat(submission.selftext, codeVTextClassifier)
 
+                        # Gauge user reactions (right now only archiving)
+                        botMetrics.predictUserReaction(reddit, user, phbArcPaths)
+
                         buildHelpfulComment(submission, user, reddit, suggested, crossPosted, answered, codePresent, correctlyFormatted, quietMode, phbArcPaths=phbArcPaths) 
                         userNames.append(str(user.name))
                         postHistory.append(str(submission.id))
@@ -307,6 +310,8 @@ def runBot(reddit, classifier, codeVTextClassifier, tdm, userNames, postHistory,
         if datetime.datetime.now() - last12Hours > datetime.timedelta(seconds=twelveHours*60*60):
             # Rare actions
             botMetrics.archiveModActions(reddit, phbArcPaths=phbArcPaths, sub='Python')
+            last12Hours = datetime.datetime.now()
+            logging.debug("12 Hour Region is Sleeping...")
 
         # Comment on all classified submissions
         userNames, postHistory, antiSpamList =  getReadyToComment(reddit, setOfPosts, userNames, postHistory, commentOnThese, antiSpamList, codeVTextClassifier, quietMode, phbArcPaths=phbArcPaths)
