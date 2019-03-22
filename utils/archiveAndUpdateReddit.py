@@ -1608,7 +1608,7 @@ def joinAndMakeDir(parent, child):
     newDir = os.path.join(parent, child)
     if not os.path.exists(newDir):
         os.makedirs(newDir)
-        logging.debug("Making new directory: " + newDir)
+        logging.info("Making new directory: " + newDir)
     return newDir
 
 def createFile(flpath, flname):
