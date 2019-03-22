@@ -1,5 +1,5 @@
 
-# Reddit Helper Bot: Version Pre Alpha A0.2.01
+# Reddit Helper Bot: Version Pre Alpha A0.3.00
 pythonHelperBot is a reddit bot built to analyze r/python post and determine if 
 they're better suited for the r/learnpython sub. 
 If they are it suggests that the user post to that sub rather than to r/python.
@@ -29,7 +29,7 @@ But first it'll look through the top level comments to see if there's already so
 ## Summoning The Bot
 ### Commands:
  - `/u/pythonHelperBot !reformat`
- - `/u/pythonHelperBot !format_howto`
+ - `/u/pythonHelperBot !format_howto` (not yet active)
 
 ### `/u/pythonHelperBot !reformat`
 The bot can be summomed to reformat text blocks that have code in them. To summon the bot, simply type `/u/pythonHelperBot !reformat` as a comment below the post/comment you want to see reformatted. The bot will reply to your comment with a reformated version of the parent text if it thinks a change can be made. There are some edge cases the bot misses, but it can help users autoformat their comments if the user wasn't aware of reddit formatting. 
@@ -52,7 +52,7 @@ The bot is currently in a pre alpha stage. This means that the founding goals of
 #### Pre Alpha Goals:
  - [X] Simply comment on redditors posts who look like they should post in r/learnpython
  - [X] Run on the raspberry pi
- - Archive reddit posts for future classification evaluation
+ - [X] Archive reddit posts for future classification evaluation
  - Build a local Stack Overflow Search Engine
  - Use Stack Overflow to gauge the simplicity of a redditors question
  - Use Stack Overflow to implement a naive Question and Answer system

@@ -18,8 +18,10 @@ Dates follow YYYY-MM-DD format
 
 
 
-## [A0.3.00] 2019-XX-XX
-In Progress
+## [A0.3.00] 2019-03-22
+
+Official 
+
 ### Contributors
 Keith Murray
 
@@ -33,12 +35,20 @@ This project is not currently looking for other contributors
 
 #### Big Picture: What happened, what was worked on
 
-
+Archiving for submissions, comments, reddit bot actions, mod actions, and a collection of users responses to comments and the source comment has been added. A majority of these archives are in json and they're now saved to an external drive to reduce the risk of a short sd card lifespan on the raspberry pi. Front end bot functionality should be relatively unchanged, but the backend got a lot of updates. 
 
 #### Added
  - archiveAndUpdateReddit submission class now has a num_comments attribute. This impacts the karma plots because this attribute gets updated as well.
  - archiveAndUpdateReddit submission class now has make_shortlink() returns short url for submission
- - archiveAndUpdateReddit submission class now has export_to_dict() and load_from_dict(submission_dict) to help archiving
+ - archiveAndUpdateReddit submission and comment class now has export_to_dict() and load_from_dict(submission_dict) to help archiving
+ - a block of code which runs once every 12 hours has been added in the main runBot() loop, allowing for mod action archive to be run. A similar function will be added for the database backup soon.
+ - A whole bunch of functionality in archiveAndUpdateReddit which finally makes the module archive reddit related things! Specifics below. 
+ - A submission focused archive has been created
+ - A combined submission and comments archive has been created
+ - A mod action archive has been created for bot training/classificaiton
+ - A bot action archive has been created for redundancy in case of sd card failure
+ - A user reaction archive has been created for future machine learning goals to help the bot adjust its comments as needed. 
+ - locateDB() now looks for external drives. One drive is intended to host a local copy of stackoverflow and the indexing needed to quickly search it, and two other usb drives are intended to be the reddit focused archive. This structured is intended to isolate a majority of the high frequency write processes followed by a less frequent backup write process, and keep it away from the sd card hosting the pi os, and away from the large SO database as well. 
 #### Changed
  - submission class score_History is reordered, now each element in history reflects: [self.score, self.upvote_ratio, self.num_comments, now]
  - submission class now has an added feature to load from dict instead of populating from a praw class. It assumes the popuation call will be next
@@ -49,7 +59,9 @@ This project is not currently looking for other contributors
 
 
 ### Main
-
+ - phbArchPaths is returned from archiveAndUpdateReddit.startupDatabase() and has been added as an input to a number of functions, including runBot, buildHelpfulComment, getReadyToComment, botSummons.handleInbox, archiveAndUpdateReddit.updatePosts
+ - list of mods is now grabbed from archiveAndUpdateReddit.getMods(reddit, sub='python') for redundancy and reddit error isolation
+ - if the bot comments on a submission, botMetrics.predictUserReaction(reddit, user, phbArcPaths) is called for a later project. 
 ### rpiManager.py
 
 
@@ -61,15 +73,45 @@ This project is not currently looking for other contributors
  - export_to_dict() converts the class features into a dictionary structure. This should allow for simple implementations of various archiving methods, (sql, xml, or json) which should let me try multiple structures during pre alpha and alpha and decide on what works best later on. Seperate functions can take the dictionary and move it straight to the end data structure in a more modular fashion
  - load_from_dict(submission_dict) will be used to pull and populate from archives. This includes the ability to have a 'save state' for reboots/updates that way data is lost less frequently.
  - submission class score_History is reordered, now each element in history reflects: [self.score, self.upvote_ratio, self.num_comments, now]
+ - json module has been added
+ - shutil's copyfile module has been added
+ - kmlistfi module has been added
+ - export_to_dict and load_from_dict functions have been added to the submission and comment class
+ - Fixed a bug with submission.get_all_comments, now successfully gets all comments (praw object 'submission' does not return a list of comments when submission.comments.replace_more(limit=None) is envoked, so to itterate through you itterate over praw object submission.comments.list())
+ - Fixed a bug with custom User class where if a user is deleted, it populated that info to self.author when it should actually be self.name. Now self.name gets populated. 
+ - Using keyword arguements ageLimitHours and ageLimitTime in user.getUserPosts() and user.getUserComments() it's now possible to get users submissions and comments from x hours in the past up until now, and from a datetime instance up to now. (this assumes they have commented or submitted fewer times than the limit keyword arguement is set to)
+ - get_comment_by_ID now splits on an underscore character hopefully making it easier to pass comment IDs directely from parent_IDs. It does need an added check that the prefix to the underscore is the prefix of a comment though
+ - phbArchPaths is returned from archiveAndUpdateReddit.startupDatabase() and has been added as an input to a number of functions, including grabAndUpdateNewPosts(), updatePosts()
+ - getMods() has been added which returns a list of moderators in a subreddit when provided with a praw reddit instance and keyword arguement sub. In this case it's default is python.
+ - makeCommentKarmaReport will be deprecated soon. But I figure I'll wait just a bit longer. The scatter plots aren't needed, though the line plot will be maintained. This is noted because there's comments along this set of function calls about deprecation.
+ - joinAndMakeDir() has been added to flexibly generate an archive file structure in a provided folder location. With respect to the pi, it'll be the USB drive.
+ - createFile() has been added which opens a file for appending and closes it right away to ensure a file with the input name exists
+ - startupDatabase now takes in archive_Locations which has the path to the root of the archive and root of the backup which are outputs of the database focused portion of locateDB.
+ - In startupDatabase() the archive file structure is (mostly) laid out. All currently needed subdirectories to the archive are generated, and if the archive does not have a copy of the bot actions (postHistory.txt, summoningHistory.txt, and UsernamessList.txt (which I'm now noticing has a typo)), the files are copied to the archive. The archive paths are bundled and returned as phbArchPaths along with the previous returns of userNames and postHistory.
+ - updateDatabase() now takes in phbArcPaths and updates the username and postHistory files in the archive as well as in the previous location for redundancy.
+ - getModifiedDate() and sortFileByModification() are added for saveClassJson()
+ - saveClassJson() takes in a class_struct, database_path, and max_MB (with a default size of 10). Given a path for a json database, the function grabs a list of all files at that location, and grabs the most recently modified file. Then it checks if the file is too large, if so it closes the file with a end bracket ']' so the file is full json. Then it creates a new nearly json file. Class_struct is expected to have an export to dict function, then the saveClassJson with take that dictionary, convert it to a json string, and save that string to the file.
+ - in removeOldPosts for each popped post, it saves the submission, and submission and comments into the archive.
+ - export_dict_to_json() converts a dictionary to a json string, and if there's an unknown datatype it's classed as a string (this is enacted on datetime classes)
+ - reDateTimeify_submission() takes a dictionary that was converted into one from a json string and grabs the datetime strings and reclasses them as datetime instances
+ - load_submission_from_json() takes a json string and returns it to a submission class. 
 #### botHelperFunctions.py
 #### botMetrics.py
+ - predictUserReaction() takes a user and grabs their 15 most recent comments. It then checks if the comment is a reply to another comment. If so, it grabs and saves to the archive the parent comment and the user comment.
+ - archiveModActions() takes the python mods and their last recorded actions and grabs all comments since then, then records all comments in the python sub. This will be used for crowd sourced classification of learning posts, and used to measure the bots usefulness. Automod is excluded from this list for obvious reasons. 
+ - processKarmaRequest now takes in phbArchPaths and saves the plot to the archive location rather than the sd card.
 #### botSummons.py
+- actOnSummons() and handleInbox() now take phbArchPaths as inputs
 #### buildComment.py
 #### formatBagOfSentences.py
 #### formatCode.py
+ - os module is now imported
+ - handleSummons() and makeFormatHelpMessage() now take phbArchPaths as inputs.
+ - handleSummons() loads and saves summoning history to and from the archive
 #### learningSubmissionClassifiers.py
 #### locateDB.py
  - SSD, and two thumb drives have been added to the pi. The databases will be for wiki and SO on the ssd, and a post archive and archive backup on the thumb drives
+ - archiveDB() has been added for this express purpose
 #### lsalib2.py
 #### questionIdentifier.py
 #### rpiGPIOFunctions.py

@@ -66,6 +66,7 @@ The bot summoning could use some work. While it's summons works well, it could c
  - A queue which has inputs added to it by functions, and removed by the raspberry pi gpio handler, allowing the bot to change LED status based on what it's doing. Similar to the twitter event bot design (sepperate project).
  - Deprecate karma scatter plot: or change it post all posts in the past week to minimize size. It's no longer useful or very interesting. Maybe activate it once a week or something too
  - Consider creating praw rewrapper (prawRegift) to hold all praw focused wrappers and sepperate it from the phb functions. This will make it easier to have the same protections on other bots as necessary. 
+ - botMetrics.predictUserReaction(): A function to go through users comment history, look at the parent comments, and from that gauge how the user will respond to the bots help. In the future adjust how the bot replies based on the predicted responsiveness. For now, it'll just build an archive of users responses to previous comments. 
  
 
 
@@ -74,6 +75,7 @@ The bot summoning could use some work. While it's summons works well, it could c
  - Review all my logging notes. See what should be dropped, changed, etc. 
  - Make sure the bot defaults to commenting about formatting even if there's no code present
  - When errors occur, or a shutdown button is pressed, attempt to save current reddit info into a temp file. on startup, load that info in then connect with praw to expand the knowledge base. 
+ - The archive and update reddit module has become unwieldy. It should be broken into two modules, one which handles the recasting of the praw classes, and one which deals with them as needed. 
 
 
 #### Deprecate
@@ -169,6 +171,7 @@ post and the old r/learpython post is greater than some threshold
 ### botHelperFunctions.py
 
 ### botMetrics.py
+ - predictUserReaction(): used for the bot gauge how receptive the user will be towards a r/learnpython suggestion. If it predicts combative, it'll make it's comment short and to the point. If it predicts receptive it'll expand on highlighted points such as formatting. If neither it'll contiue as is. 
 
  - measureUserReaction(): 
 to see if redditor does post to r/learnpython. The post will have to be strongly similar
