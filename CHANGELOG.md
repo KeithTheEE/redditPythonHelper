@@ -18,6 +18,64 @@ Dates follow YYYY-MM-DD format
 
 
 
+## [A0.3.01] 2019-07-26
+
+In Progress 
+
+### Contributors
+Keith Murray
+
+email: kmurrayis@gmail.com |
+twitter: [@keithTheEE](https://twitter.com/keithTheEE) |
+github: [CrakeNotSnowman](https://github.com/CrakeNotSnowman)
+
+Unless otherwise noted, all changes by @kmurrayis
+
+This project is not currently looking for other contributors
+
+#### Big Picture: What happened, what was worked on
+The bot was commenting multiple times on the same post if a ratelimit error occured, and a bodge is now in place to check this behavior 
+
+
+#### Added
+ - Bug Fix [Issue 1](https://github.com/CrakeNotSnowman/redditPythonHelper/issues/1#issue-473053676): To address Issue 1, in Archive and Update Reddit: comment_duplication_by_ratelimit_check() which takes in reddit and the submission, grabs an instance of the bot as a user, and checks the 2 most recent comments link id against the submission in question's id. 
+#### Changed
+ - In commentOnSubmmission: RateLimitError Catch now checks if comment went through anyway. If so, it breaks out of the try again loop. 
+#### Deprecated
+#### Removed
+#### Fixed
+#### Security
+
+
+### Main
+
+### rpiManager.py
+
+
+### Util Libraries
+
+#### archiveAndUpdateReddit.py
+#### botHelperFunctions.py
+#### botMetrics.py
+#### botSummons.py
+#### buildComment.py
+#### formatBagOfSentences.py
+#### formatCode.py
+#### learningSubmissionClassifiers.py
+#### locateDB.py
+#### lsalib2.py
+#### questionIdentifier.py
+#### rpiGPIOFunctions.py
+#### scriptedReply.py
+#### searchStackOverflowWeb.py
+#### summarizeText.py
+#### textSupervision.py
+#### updateLocalSubHistory.py
+#### user_agents.py
+
+### Tests 
+
+
 ## [A0.3.00] 2019-03-22
 
 Official 

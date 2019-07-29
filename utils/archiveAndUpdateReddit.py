@@ -18,7 +18,7 @@ import kmlistfi
 
 # In all certainty this will be redone with sqlite3 or something similar
 #  But until then, I just want to get past this
-#  'just code it'
+#  'just code it' 
 
 
 
@@ -1133,6 +1133,34 @@ def is_connected():
     return False
 
 
+def comment_duplication_by_ratelimit_check(reddit, submission):
+    '''
+    This is a bodge check to see if the bots comment went through
+    and was posted despite catching a ratelimit error which directed
+    the bot to try again
+
+    See issue 
+    https://github.com/CrakeNotSnowman/redditPythonHelper/issues/1#issue-473053676
+    '''
+    timeDelay = 5 # seconds
+    logging.debug("Got Rate Limit Error, Waiting and checking if comment went through")
+    time.sleep(timeDelay)
+    phbot = get_redditor_by_name(reddit, 'pythonHelperBot')
+    comments = phbot.getUsersComments(reddit, limitCount=2)
+    already_commented = False
+    for comment in comments:
+        # comments link id begins with 't3_'
+        formatted_Cid = comment.link_id.split('_')[-1]
+        if  formatted_Cid == submission.id:
+            already_commented = True
+    if already_commented:
+        logging.info("Comment went through despite error message")
+    else:
+        logging.info("After " +str(timeDelay)+ " seconds the comment was not registered")
+
+    return already_commented
+
+
 def commentOnSubmmission(submission, msg, reddit, quietMode):
     # Post message to reddit submission
     #testingsubmissionID = '8nvbf3'
@@ -1167,6 +1195,11 @@ def commentOnSubmmission(submission, msg, reddit, quietMode):
                 if "RATELIMIT" in traceback.format_exc():
                     logging.error("Caught Server Rate Limit Hit By API | Specific Error:")
                     logging.error("\n"+traceback.format_exc())
+                    # Bodge
+                    already_commented = comment_duplication_by_ratelimit_check(reddit, submission)
+                    if already_commented:
+                        vals_Assigned = True
+                        break
                     requestBackoffTime = _backoff_Sleeper(requestBackoffTime)
                     if time.time()-startTime > maxTotalWaitTime:
                         logging.error("I've tried this too much, escalating error")
