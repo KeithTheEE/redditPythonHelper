@@ -1135,6 +1135,8 @@ def is_connected():
 
 def comment_duplication_by_ratelimit_check(reddit, submission):
     '''
+    Repurpose this to check the submission, not bots history
+
     This is a bodge check to see if the bots comment went through
     and was posted despite catching a ratelimit error which directed
     the bot to try again
@@ -1142,19 +1144,31 @@ def comment_duplication_by_ratelimit_check(reddit, submission):
     See issue 
     https://github.com/CrakeNotSnowman/redditPythonHelper/issues/1#issue-473053676
     '''
-    timeDelay = 5 # seconds
+    timeDelay = 60 # seconds
     logging.debug("Got Rate Limit Error, Waiting and checking if comment went through")
     time.sleep(timeDelay)
-    phbot = get_redditor_by_name(reddit, 'pythonHelperBot')
-    comments = phbot.getUsersComments(reddit, limitCount=2)
+    #phbot = get_redditor_by_name(reddit, 'pythonHelperBot')
+    # comments = phbot.getUsersComments(reddit, limitCount=2)
+    # Turns out this problem doesn't update the bots submissions, and just
+    # lives on the submission page
+    user_name = 'pythonHelperBot'
+    comments = submission.get_top_level_comments(reddit)
     already_commented = False
+    comments_by_bot = []
     for comment in comments:
         # comments link id begins with 't3_'
-        formatted_Cid = comment.link_id.split('_')[-1]
-        if  formatted_Cid == submission.id:
+        # formatted_Cid = comment.link_id.split('_')[-1]
+        # if  formatted_Cid == submission.id:
+        #     already_commented = True
+        if comment.author == user_name:
+            comments_by_bot.append(comment)
             already_commented = True
+
+
     if already_commented:
         logging.info("Comment went through despite error message")
+        if len(comments_by_bot)>1:
+            logging.error("recorded " + str(len(comments_by_bot) ) + " comments")
     else:
         logging.info("After " +str(timeDelay)+ " seconds the comment was not registered")
 
@@ -1195,6 +1209,7 @@ def commentOnSubmmission(submission, msg, reddit, quietMode):
                 if "RATELIMIT" in traceback.format_exc():
                     logging.error("Caught Server Rate Limit Hit By API | Specific Error:")
                     logging.error("\n"+traceback.format_exc())
+                    logging.error("Submission ID: " + str(submission.id))
                     # Bodge
                     already_commented = comment_duplication_by_ratelimit_check(reddit, submission)
                     if already_commented:
@@ -1204,6 +1219,10 @@ def commentOnSubmmission(submission, msg, reddit, quietMode):
                     if time.time()-startTime > maxTotalWaitTime:
                         logging.error("I've tried this too much, escalating error")
                         raise e
+                    # Temp Patch: Bodge is failing 
+                    if vals_Assigned == False:
+                        logging.warning("Bypassing this block, auto assuming bot has commented, and server is having issues")
+                        vals_Assigned = True
                 else:
                     raise e
             except (ServerError, ResponseException) as e:

@@ -1,6 +1,6 @@
 
 
-# CHANGELOG: Python Helper Bot Version pre Alpha A0.3.00
+# CHANGELOG: Python Helper Bot Version pre Alpha A0.3.02
 All notable changes to this project will be documented in this file.
 
 The format is loosely based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
@@ -18,9 +18,68 @@ Dates follow YYYY-MM-DD format
 
 
 
+## [A0.3.02] 2019-09-16
+
+Official.
+
+### Contributors
+Keith Murray
+
+email: kmurrayis@gmail.com |
+twitter: [@keithTheEE](https://twitter.com/keithTheEE) |
+github: [CrakeNotSnowman](https://github.com/CrakeNotSnowman)
+
+Unless otherwise noted, all changes by @kmurrayis
+
+This project is not currently looking for other contributors
+
+#### Big Picture: What happened, what was worked on
+The bot was commenting multiple times on the same post if a ratelimit error occured, and a bodge is now in place to check this behavior, the previous page checked its own comment history to minimize api calls (assuming grabbing the most recent 2 bot comments was enough). However, when reddit's servers have an issue it became apparent that the bots user history and the submission's comments do not necessarily match up. 
+
+Now the bot checks the submission for multiple comments, and also automatically assumes that the comment went through just in case.
+
+
+#### Added
+#### Changed
+ - Bug Fix [Issue 1](https://github.com/CrakeNotSnowman/redditPythonHelper/issues/1#issue-473053676): To address Issue 1, in Archive and Update Reddit: comment_duplication_by_ratelimit_check() which takes in reddit and the submission,  and now grabs an instance of the submissions top level comments. It then itterates through the comments checking for a match with its own username, and if that is found, it adds it to a list of its comments on that submission. In the event that multiple comments by the bot are found, it logs an error
+ - The bot then ignores the previous bug fix and assumes the comment went through. This change should be reverted eventually, but until another server issue occurs, I can't see how the bot will behave and as such have to assume that despite the 500 error, the server will show the comment eventually. 
+#### Deprecated
+#### Removed
+#### Fixed
+#### Security
+
+
+### Main
+
+### rpiManager.py
+
+
+### Util Libraries
+
+#### archiveAndUpdateReddit.py
+#### botHelperFunctions.py
+#### botMetrics.py
+#### botSummons.py
+#### buildComment.py
+#### formatBagOfSentences.py
+#### formatCode.py
+#### learningSubmissionClassifiers.py
+#### locateDB.py
+#### lsalib2.py
+#### questionIdentifier.py
+#### rpiGPIOFunctions.py
+#### scriptedReply.py
+#### searchStackOverflowWeb.py
+#### summarizeText.py
+#### textSupervision.py
+#### updateLocalSubHistory.py
+#### user_agents.py
+
+### Tests 
+
 ## [A0.3.01] 2019-07-26
 
-In Progress 
+Official.
 
 ### Contributors
 Keith Murray
