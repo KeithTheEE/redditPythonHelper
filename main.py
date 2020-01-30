@@ -135,14 +135,42 @@ def checkForSummons(msg):
     
     return summonID
 
-def check_for_help_tag(submission):
+def check_for_help_flair(submission):
     '''
-    Checks for new help tag 
+    Checks for help flair on submissions 
     '''
     if submission.link_flair_text == 'Help':
-        logging.debug("New Post Tagged as Help")
+        logging.debug("Post Tagged as Help")
         return True
     return False
+
+def grab_set_of_submissions_flair(setOfPosts):
+    '''
+    Returns a dictionary of submission id's and associated 
+    flair, making it easy to check if flair has been updated
+    '''
+    flairs = {}
+    for key in setOfPosts:
+        submission, user = setOfPosts[key]
+        flairs[key] = submission.link_flair_text
+    return flairs
+
+def check_for_help_flair_update(setOfPosts, old_flairs):
+    '''
+    Returns a list of posts where the help flair has been added
+    but previously was not on the submission
+    '''
+    submissionsToCommentOn_HF = []
+    for key in setOfPosts:
+        submission, user = setOfPosts[key]
+        if submission.link_flair_text != old_flairs[key]:
+            if check_for_help_flair(submission):
+                logging.debug('Post '+str(key)+' has updated to help flair')
+                submissionsToCommentOn_HF.append(key)
+    return submissionsToCommentOn_HF
+
+
+
 
 def check_for_key_phrase(submission, phrase_set):
     botHelperFunctions.logPostFeatures(submission)
@@ -158,7 +186,7 @@ def lookForKeyPhrasePosts(reddit, setOfPosts, phrase_set):
         if key not in oldPosts:
             submission, user = setOfPosts[key]
             request_Made = check_for_key_phrase(submission, phrase_set)
-            help_tag = check_for_help_tag(submission)
+            help_tag = check_for_help_flair(submission)
             if request_Made or help_tag:
                 submissionsToCommentOn_KP.append(key)
 
@@ -289,8 +317,11 @@ def runBot(reddit, classifier, codeVTextClassifier, tdm, userNames, postHistory,
             # Handle Inbox
             unreadCount = botSummons.handleInbox(reddit, codeVTextClassifier, phbArcPaths=phbArcPaths,  setOfPosts=setOfPosts, unreadCount=unreadCount, sendText= True, quietMode=quietMode)
 
-            # Update karma score for posts under 2 hours old
+            # Update karma score for posts under 2 hours old, and check for help flair
+            old_flairs = grab_set_of_submissions_flair(setOfPosts)
             setOfPosts = archiveAndUpdateReddit.updateYoungerThanXPosts(reddit, submissionList=setOfPosts) 
+            submissionsToCommentOn_HF = check_for_help_flair_update(setOfPosts, old_flairs)
+            commentOnThese += submissionsToCommentOn_HF
 
             # Get new posts, respond to keywords
             setOfPosts, submissionsToCommentOn = lookForKeyPhrasePosts(reddit, setOfPosts, phrase_set)

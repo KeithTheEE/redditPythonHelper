@@ -1364,9 +1364,16 @@ def getNewPosts(reddit, sub="python", submissionList={}, ageLimitHours=12):
                 #except: 
                 #    pass
                 time.sleep(1) # Try to reduce rate limit issues
-                submissionList[submission.id] = [phb_Reddit_Submission(submission)]
-                user = phb_Reddit_User(reddit.redditor(submission.author.name))
-                submissionList[submission.id].append(user)
+                try:
+                    post = phb_Reddit_Submission(submission)
+                    user = phb_Reddit_User(reddit.redditor(submission.author.name))
+                    submissionList[submission.id] = [post, user]
+                except AttributeError as e:
+                    "User Probably deleted the post before the bot got to it | Specific Error:"
+                    logging.error("\n"+traceback.format_exc())
+                # submissionList[submission.id] = [phb_Reddit_Submission(submission)]
+                # user = phb_Reddit_User(reddit.redditor(submission.author.name))
+                # submissionList[submission.id].append(user)
             # ********************************
 
             vals_Assigned = True
