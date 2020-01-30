@@ -135,7 +135,14 @@ def checkForSummons(msg):
     
     return summonID
 
-
+def check_for_help_tag(submission):
+    '''
+    Checks for new help tag 
+    '''
+    if submission.link_flair_text == 'Help':
+        logging.debug("New Post Tagged as Help")
+        return True
+    return False
 
 def check_for_key_phrase(submission, phrase_set):
     botHelperFunctions.logPostFeatures(submission)
@@ -151,7 +158,8 @@ def lookForKeyPhrasePosts(reddit, setOfPosts, phrase_set):
         if key not in oldPosts:
             submission, user = setOfPosts[key]
             request_Made = check_for_key_phrase(submission, phrase_set)
-            if request_Made:
+            help_tag = check_for_help_tag(submission)
+            if request_Made or help_tag:
                 submissionsToCommentOn_KP.append(key)
 
     return setOfPosts, submissionsToCommentOn_KP
