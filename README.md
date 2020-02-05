@@ -1,5 +1,5 @@
 
-# Reddit Helper Bot: Version Pre Alpha A0.3.02
+# Reddit Helper Bot: Version Pre Alpha A0.4.00
 pythonHelperBot is a reddit bot built to analyze r/python post and determine if 
 they're better suited for the r/learnpython sub. 
 If they are it suggests that the user post to that sub rather than to r/python.
@@ -15,6 +15,7 @@ If those two basic conditions are met, it'll probably comment.
 
  A bit more in depth,
  -  it'll read the title of the post, if there's a keyphrase present, build a helpful comment. 
+ - It'll read the flair of the post, and if in the first two hours the post is flaired as 'Help', it'll comment. 
  - If not, then wait a while.
  - If a post is scoring poorly after a bit, check to see if there's a question in either the title or the body of the submission. 
  - If the submission body is a url that is not the same as the url you'd get if you selected the comments on the thread, (ie if the submission is a 'link post') then the post is ignored. If not, then the post is a 'self post'.
@@ -27,6 +28,8 @@ But first it'll look through the top level comments to see if there's already so
 
  
 ## Summoning The Bot
+While the bot can be summoned for some small tasks, it really isn't a feature that is being used nor is it a feature that I feel offers much to the end user.
+
 ### Commands:
  - `/u/pythonHelperBot !reformat`
  - `/u/pythonHelperBot !format_howto` (not yet active)
@@ -38,7 +41,7 @@ The bot is only allowed to make three reformatting comments on the same submissi
 
 
 #### `/u/pythonHelperBot !format_howto`
-Will Be Active Soon
+Currently inactive.
 
 The bot can also be summoned to display a helpful message about how to format code for reddit. This message will appear below the summoning comment, and tag the part post/comment in its message. Because of this, it tags a user unprompted, it's only allowed to interact with that user once, unless the summoner and parent post/comment are by the same user. 
 
@@ -53,6 +56,7 @@ The bot is currently in a pre alpha stage. This means that the founding goals of
  - [X] Simply comment on redditors posts who look like they should post in r/learnpython
  - [X] Run on the raspberry pi
  - [X] Archive reddit posts for future classification evaluation
+ - Build a reddit post classifier using the archive and LDA
  - Build a local Stack Overflow Search Engine
  - Use Stack Overflow to gauge the simplicity of a redditors question
  - Use Stack Overflow to implement a naive Question and Answer system
@@ -98,10 +102,10 @@ This bot is intended to make a healthy recommendation that the user go to the ap
 
 Therefore, this bot should not be spammy. 
 
-This is enforced by never allowing the bot to suggest r/learnpython to a user more than once, as it is assumed that after that point the user should be aware of the sub. 
-This assumption is known to be invalid because I've been on the internet before, and [people really are just the worst](https://www.youtube.com/watch?v=m0KFY6o6unw) ([further](https://www.youtube.com/watch?v=fZv_TARX3lI)). 
+This is enforced by almost never allowing the bot to suggest r/learnpython to a user more than once, as it is assumed that after that point the user should be aware of the sub. 
+This assumption is known to be invalid because I've been on the internet before, and [people really are just the worst](https://www.youtube.com/watch?v=m0KFY6o6unw) ([further](https://www.youtube.com/watch?v=fZv_TARX3lI)). The currently allowed exception to this is if they flair their submission as 'Help', as that is a self applied classification and the bot can be confident in it's actions.
 
-Unless a key phrase is used in the title of the post, the bot is not allowed to comment on a post until a certain amount of time has passed, which allows votes to be added to the feature vector as a secondary classification step. 
+Unless a key phrase is used in the title of the post, or the post has 'Help' flair, the bot is not allowed to comment on a post until a certain amount of time has passed, which allows votes to be added to the feature vector as a secondary classification step. 
 
 The bot is not currently allowed to remove a comment after it's clearly made a mistake. This is typically defined as having a comment score of less than -3 and the post having a karma score of greater than 1
 

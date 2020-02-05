@@ -11,7 +11,8 @@ If those two basic conditions are met, it'll probably comment.
 
 
  A bit more in depth,
- -  it'll read the title of the post, if there's a keyphrase present, build a helpful comment. 
+ - It'll read the title of the post, if there's a keyphrase present, build a helpful comment. 
+ - It'll read the flair of the post, and if in the first two hours the post is flaired as 'Help', it'll comment. 
  - If not, then wait a while.
  - If a post is scoring poorly after a bit, check to see if there's a question in either the title or the body of the submission. 
  - If the submission body is a url that is not the same as the url you'd get if you selected the comments on the thread, (ie if the submission is a 'link post') then the post is ignored. If not, then the post is a 'self post'.
@@ -25,7 +26,7 @@ But first it'll look through the top level comments to see if there's already so
 
 
 #### Why didn't the bot comment on this post? 
-There could be a number of reasons the bot doesn't comment on any given post. 
+There could be a number of reasons the bot doesn't comment on any given post. In fact, there's probably more reasons the bot doesn't comment than reasons the bot comments. 
 
 The post could be performing well enough that the bot classifies the post as a 'possibly interesting question'. What "is" and "isn't" interesting is not really for the bot to decide, so it looks to the post karma to help make that decision. 
 
@@ -33,6 +34,8 @@ If the post isn't performing well enough to be 'possibly interesting', it looks 
 The post could be written in a way that the classifier is unable to classify a sentences as a question, which is a fairly common problem. The person could be also requesting help as oppose to asking for help. While it's easy for a human to understand that there isn't a major, functional difference between those types of posts, the bot has trouble. 
 
 The bot keeps a list of users who's posts it has commented on. To prevent spam the bot doesn't comment on posts made by those users in the future. (This is under the assumption that once someone is aware of the r/learnpython, they'll use it in the future. This assumption has proven to be rather strongly false and I'm reevaluating this action, but for now I'm maintaining this behavior.) 
+
+If a user has already posted in r/learnpython by the time the bot decides to comment, but the post wasn't made at about the same time as the original, the bot decides its comment isn't needed.
 
 
 
@@ -43,6 +46,10 @@ There are also key phrases that auto-trigger the bot, because they're ngrams whi
 
 Acknowledging these issues, the bot is set to have fewer false positives than false negatives, so hopefully this isn't a frequent issue. 
 
+If the bot really shouldn't have commented, downvote it. This gives the bot a metric that's more useful than 'good bot'/'bad bot' comments as more users vote than comment. 
+
+#### I'm not learning python, I'm asking an advanced question
+r/learnpython isn't a subreddit for beginners. While it might be specifically geared so that questions common to new programmers are easily addressed, the sub functions as a sister sub to r/python. Together one handles most news based submissions, and the other handles most questions. There is of course some overlap, but being a capable python programmer does not prevent anyone from asking a question and getting an answer on r/learnpython.
 
 #### Shouldn't the bot Direct Message the OP rather than commenting? 
 I thought about private messaging, but then you'll have multiple people (or bots) performing the same action without anyone being able to see. From the perspective of anyone on the receiving end, this could be a massive amount of spam.
@@ -66,6 +73,9 @@ Right of the bat I'd say probably not. Unpurified chocolate (Or would it be puri
 If you purified it down to its base element, carbon, you might be able to make something useful out of it. [This paper](https://www.sciencedirect.com/science/article/pii/S025405840700675X) appears to describe a similar methodology, but used rice husk char instead of chocolate. If the methodology is robust enough to handle some front end changes to process the chocolate, you might be able to produce something functional. 
 
 The most important thing to consider here is the fact that I have no idea what I'm talking about, and shouldn't be listened to on the topic of material engineering. 
+
+#### Why comment when someone else already directed the user to r/learnpython
+The bot decides to acknowledge the user but still comment in this case because the bot has a scripted 'help' note that emphasizes how to ask the question, and includes helpful links to help format the code. Its important to make sure new programmers understand how to ask a question and what information they need to help others help them.
 
 
 #### The question was already answered, why did the bot still comment
@@ -124,4 +134,4 @@ When I get to that point, I'll probably just have folks tackle specific elements
 They seem cool. I've got no problem with them.
 
 
-#### Version Pre Alpha A0.3.02
+#### Version Pre Alpha A0.4.00

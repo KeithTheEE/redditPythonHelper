@@ -1,6 +1,6 @@
 
 
-# CHANGELOG: Python Helper Bot Version pre Alpha A0.3.02
+# CHANGELOG: Python Helper Bot Version pre Alpha A0.3.03
 All notable changes to this project will be documented in this file.
 
 The format is loosely based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
@@ -16,6 +16,101 @@ Dates follow YYYY-MM-DD format
 
 -- Susan Calvin in "I, Robot" by Isaac Asimov
 
+
+
+## [A0.4.00] 2020-XX-XX
+
+In Progress
+
+### Contributors
+Keith Murray
+
+email: kmurrayis@gmail.com |
+twitter: [@keithTheEE](https://twitter.com/keithTheEE) |
+github: [CrakeNotSnowman](https://github.com/CrakeNotSnowman)
+
+Unless otherwise noted, all changes by @kmurrayis
+
+This project is not currently looking for other contributors
+
+#### Big Picture: What happened, what was worked on
+The python subreddit has undergone some changes, and now includes flair
+on posts. This allows the bot to have a third classifier which it uses to instantly reply on in much the same way the keyword classifier functions. If a post has the 'Help' flair and it was applied within two hours of the original submission, the bot now auto comments on it, presuming it's never commented on that user before.
+
+If a user has had the bot comment on them before, but uses the help tag, the bot is now allowed to comment again. 
+
+The help message has been adjusted to have all caps on the block which talks about formatting your code. 
+
+Logging has been changed to reduce notes from modules outside of the bot (praw and requests now only shows warnings or higher)
+
+Some tests have also been added, however it does not cover a majority of the bot yet. 
+
+
+#### Added
+ - check_for_help_flair in main: a function that looks to see if the new flair is being used on the submission and if it's 'Help'. 
+ - grab_set_of_submissions_flair in main: given a set of submissions, returns a dictionary with their id as the key, and their attached flair as the value
+ - check_for_help_flair_update: as users can put flair on after they post, the bot needs to be able to compare the old flair with the new flair to see if a 'Help' flair has been added. This check currently runs for two hours after a post has been made. 
+ - The bot now should auto reply to help flair added within two hours of the original submission, using the previously listed tools to keep track 
+ - In utils, startupLoggingCharacteristics now exists. It adjusts non-python helper bot logs to warning level, and sets up the structure of the logs thereafter, defining the log structure use to be covered in main.
+ - Added logging info in archiveAndUpdateReddit's comment_duplication_by_ratelimit_check to make it more useful on review. It's still unclear if this patch solves the issue but this logging should make it easier to notice.
+#### Changed
+ - Updated Year in License
+ - Added Flair auto-reply explaination in README, de-emphasized bot summons to reflect the lack of active development, added a pre-alpha goal of a reddit post classifier, and adjusted the ethics section to acknowledge the newly allowed rule of commenting on a user multiple times under specific conditions.
+ - Expanded on FAQ
+ - Logging should now be more strongly defined by this bot, not sessions and connectionpool, hopefully that'll clean up bug hunts a bit.
+ - Adjusted the format your code comment to make it more noticable 
+ - In botHelperFunctions logPostFeatures: it now records flair
+ - In learningSubmissionClassifiers, basicUserClassify now is allowed to comment on a post by a user who had a prior post the bot commented on IF that user uses the 'Help' flair.
+ - In learningSubmissionClassifiers, basicUserClassify: Bot is now allowed to comment even if user has directed others to learnpython before in the past. 
+ - In botHelperFunctions, added submission_flair_text to the logged post features
+ - Reworded a lot of the bot's comments in buildComments to emphasize that answers aren't instantanious and added emphasis to the format your code link, since that's the most often ignored aspect of users to follow the bots direction. 
+
+#### Deprecated
+#### Removed
+#### Fixed
+ - Under archiveAndUpdateReddit, when evaluating a submission, the bot checks the user of a post and grabs and rewraps it into the wrapper user class. On rare occasions, if a post would be deleted at just the right time, the bot would populate info for the post, the post would be deleted, then the bot would try to populate info for the user which is no longer tied to the now deleted/removed post. A try/except block has been added and now the submissionList waits until both the post and the user info has been successfully built out before it adds it to the list. 
+#### Security
+
+
+### Main
+ - The whole logging structure has been updated so that it's now defined in utils/startupLogginCharacteristics. This helps clean up the main and makes it easier to maintain a logging format through the program, preserve and transfer the format to other projects, and suppress uninformative logging messages by imported modules. 
+ - check_for_help_flair, grab_set_of_submissions_flair, and check_for_help_flair_update have been added as have calls to these functions. This collection of functions helps track flair on posts as they've been added as it is not usually added by users right away. The most common reason the bot misses help flair is if the flair was added more than two hours after the initial submission time--reddit rewrites the post age to reflect the age it should be after subtracting the amount of time the submission was removed for. The bot assumes this doesn't happen and may need another change soon to address this issue as well. 
+ - It now checks flair for the full 24 hours it watches a submission. 
+### rpiManager.py
+
+
+### Util Libraries
+
+#### archiveAndUpdateReddit.py
+ - The user issue had been a rare but fatal problem that required a mod to be actively removing a post while the bot was reviewing the same post. Adding the flair bot as a mod increased the chance of this happening, as more posts were removed within 5 minutes of posting if they didn't add flair. I got lucky and was watching the bot when it died and I'm fairly sure this fix will address it, and increase it's resilancy. However the fix logging comment has yet to be saved so it's not absolutely clear that it'll address the issue as a whole. 
+ - In `comment_duplication_by_ratelimit_check`, I've added some comments and a new logging message to increase the information logged when reddit starts breaking and  sends a 500 error when it tries to comment. It'll now log all usernames it can see on that post. This should help clairify if the bot's comment is logged by reddit. If reddit is super behind on displaying comments, this error/comment duplication will still occur, but hopefully I'll have more information going forward. 
+#### botHelperFunctions.py
+ - Flair is now recorded in logPostFeatures 
+#### botMetrics.py
+#### botSummons.py
+#### buildComment.py
+ - commented_on_before has been added to acknowledge that users have interacted with it before. (This should only activate during help flair--we'll see)
+ - followSubRules has been adjusted to remind users that people take time to answer questions, and they may not get a reply right away
+ - formatCodeAndOS has been adjusted to emphasize the link to how to format your code
+#### formatBagOfSentences.py
+#### formatCode.py
+#### learningSubmissionClassifiers.py
+ - As a result of this version's changes, basic user classify now only prevents comments on users if they've been commented on by the bot before AND are not using the 'Help' Flair. Given this trend, it's reasonable to assume the bot will soon move to comment on users regardless of it's past history with them, as byinlarge the bot is usually correct within a reasonable degree when it's other classifiers activate.
+#### locateDB.py
+#### lsalib2.py
+#### questionIdentifier.py
+#### rpiGPIOFunctions.py
+#### scriptedReply.py
+#### searchStackOverflowWeb.py
+#### startupLoggingCharastics.py
+#### summarizeText.py
+#### textSupervision.py
+#### updateLocalSubHistory.py
+#### user_agents.py
+
+### Tests 
+ - Adding comment tree tests: basically purpose different inputs into buildHelpfulComment under main, and ensure the string needed is present
+ - Added test to make sure test_check_for_help_tag() functions
 
 
 ## [A0.3.02] 2019-09-16
