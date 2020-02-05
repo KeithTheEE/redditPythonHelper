@@ -55,6 +55,7 @@ def logPostFeatures(submission):
     logging.debug('[POST]   | ' + str(submission.title.encode('ascii', 'ignore')))
     logging.debug('[AUTHOR] | ' + str(submission.author))
     logging.debug('[ID]     | ' + str(submission.id))
+    logging.debug('[FLAIR]  | ' + str(submission.link_flair_text))
     postAge = datetime.datetime.utcnow() - submission.created_utc
     logging.debug(  '\t'+"Post Age: "+ str(postAge) )
     logging.debug(  '\t'+ "Votes: "+ str(submission.score))

@@ -1160,9 +1160,12 @@ def comment_duplication_by_ratelimit_check(reddit, submission):
         # formatted_Cid = comment.link_id.split('_')[-1]
         # if  formatted_Cid == submission.id:
         #     already_commented = True
+        # Under phb_Reddit_Comment, comment.author = praw_comment.author.name
+        # This prevents accedientally passing around the author class 
         if comment.author == user_name:
             comments_by_bot.append(comment)
             already_commented = True
+        logging.info("Commenters User Names: "+str(comment.author))
 
 
     if already_commented:
@@ -1792,6 +1795,9 @@ def startupDatabase(archive_Locations):
 
 
 def updateDatabase(username, post_id, phbArcPaths):
+    if phbArcPaths == False:
+        # Testing
+        return
     # Right now it's a flat database, soon it'll be not so flat 
     dirName = "redditData"
     postCommentedOn = "postHistory.txt"

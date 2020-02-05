@@ -1,3 +1,7 @@
+import sys
+from utils import startupLoggingCharacteristics
+import logging
+
 import praw
 import nltk
 import datetime
@@ -5,7 +9,6 @@ import time
 import os
 import argparse, textwrap
 # Logging Info
-import logging
 import traceback
 
 from utils import archiveAndUpdateReddit
@@ -35,7 +38,8 @@ print(act[:5]+ act[6:8][::-1]+act[9:])
 '''
 
 def buildHelpfulComment(submission, user, reddit, suggested, crossPosted, answered, 
-                        codePresent, correctlyFormatted, quietMode, phbArcPaths):
+                        codePresent, correctlyFormatted, past_interaction,  quietMode, 
+                        phbArcPaths):
     supervised = False
     underDev = True
     
@@ -43,15 +47,37 @@ def buildHelpfulComment(submission, user, reddit, suggested, crossPosted, answer
     # Intro
     bagOfSents.append(buildComment.botIntro())
 
-    # User Sittuation Context Awareness
+    '''
+    User Sittuation/Context Awareness:
+    A few things can happen with a user's question,
+    They could have asked it in many subs, including r/learnpython
+        but because they asked it all over the place, so emphasizing the 
+        r/python isn't a place for questions and r/learnpython is is 
+        is important
+    They could already have their answer, and therefore not need to go to 
+        r/learnpython anymore to get an answer. It still matters that they 
+        know going forward to ask there though, so this takes next priority
+    Another user could have beat the bot to the comment. It's a good idea
+        to acknowledge them, but comment anyway to ensure the info in the 
+        comment is relayed to the original poster
+    Finally, none of the above, so we'll need a catch all introduction
+    '''
     if crossPosted:
+        # Takes priority
         bagOfSents.append(buildComment.userCrossPosted())
     elif answered:
+        # Is second because there's no longer a reason to go to r/learnpython
         bagOfSents.append(buildComment.alreadyAnsweredComment())
     elif suggested:
+        # Next tier because someone beat the bot
         bagOfSents.append(buildComment.alreadySuggestedComment())
     else:
+        # Finally the catch all of the bot
         bagOfSents.append(buildComment.standardIntro())
+
+    # Remind them they've seen this before,
+    if past_interaction:
+        bagOfSents.append('\n'+buildComment.commented_on_before())
 
     # Follow rules and help make code clear
     bagOfSents.append(buildComment.followSubRules())
@@ -242,7 +268,10 @@ def getReadyToComment(reddit, setOfPosts, userNames, postHistory, commentOnThese
                         # Gauge user reactions (right now only archiving)
                         botMetrics.predictUserReaction(reddit, user, phbArcPaths)
 
-                        buildHelpfulComment(submission, user, reddit, suggested, crossPosted, answered, codePresent, correctlyFormatted, quietMode, phbArcPaths=phbArcPaths) 
+                        # Check if allowed to comment even if already commented
+                        past_interaction = user.name in userNames
+
+                        buildHelpfulComment(submission, user, reddit, suggested, crossPosted, answered, codePresent, correctlyFormatted, past_interaction, quietMode, phbArcPaths=phbArcPaths) 
                         userNames.append(str(user.name))
                         postHistory.append(str(submission.id))
 
@@ -332,8 +361,11 @@ def runBot(reddit, classifier, codeVTextClassifier, tdm, userNames, postHistory,
 
         if datetime.datetime.now() - lastFifteenMin > datetime.timedelta(seconds=fifteenMin*60):
             #print("15 mins")
-            # Update posts
+            # Update posts And Check Flair
+            old_flairs = grab_set_of_submissions_flair(setOfPosts)
             setOfPosts = archiveAndUpdateReddit.updatePosts(reddit, submissionList=setOfPosts,   phbArcPaths=phbArcPaths) 
+            submissionsToCommentOn_HF = check_for_help_flair_update(setOfPosts, old_flairs)
+            commentOnThese += submissionsToCommentOn_HF
 
             # reclassify posts
             commentOnThese += handleSetOfSubmissions(reddit, setOfPosts, postHistory, classifier)
@@ -389,12 +421,12 @@ if __name__ == "__main__":
         # Fair assumption that the user is watching the terminal during quiet mode
         print("Bot is Running in Quite Mode")
     # Logging Stuff
-    dirName = "logs"
-    if not os.path.exists(dirName):
-        os.makedirs(dirName)
-    logFileName =   'LOG_'+ datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + '.log'
-    filePath = os.path.join(dirName, logFileName) 
-    logging.basicConfig(filename=filePath, level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(filename)s:%(funcName)s():%(lineno)s - %(message)s')
+    # dirName = "logs"
+    # if not os.path.exists(dirName):
+    #     os.makedirs(dirName)
+    # logFileName =   'LOG_'+ datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + '.log'
+    # filePath = os.path.join(dirName, logFileName) 
+    # logging.basicConfig(filename=filePath, level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(filename)s:%(funcName)s():%(lineno)s - %(message)s')
     if quietMode:
         logging.debug("Running in Quiet Mode")
 

@@ -179,15 +179,19 @@ def basicUserClassify(reddit, user, userNames, submission, suggestedTime, antiSp
 
         
     # Don't bother commenting if I've talked to the user before
+    #  UNLESS they used the help flair
     if str(user.name) in userNames:
         logging.info( "\tI've already commented on a post by "+ str(user.name) )
-        msg = "\tI've already commented on a post by " + str(user.name) 
-        print(msg)
-        if submission.id not in antiSpamList:
-            antiSpamList[submission.id] = submission.created_utc
-            msg = msg.strip() + "\n\nPost in Question: "+ botHelperFunctions.shortenRedditURL(submission.url)
-            textSupervision.send_update(msg)
-        return False, [], antiSpamList
+        if submission.link_flair_text != 'Help':
+            msg = "\tI've already commented on a post by " + str(user.name) 
+            print(msg)
+            if submission.id not in antiSpamList:
+                antiSpamList[submission.id] = submission.created_utc
+                msg = msg.strip() + "\n\nPost in Question: "+ botHelperFunctions.shortenRedditURL(submission.url)
+                textSupervision.send_update(msg)
+            return False, [], antiSpamList
+        else:
+            logging.info("But they used the help flair")
 
 
     if accountAge > timeDelt:
@@ -208,6 +212,6 @@ def basicUserClassify(reddit, user, userNames, submission, suggestedTime, antiSp
 
     if directedOthersToLearn:
         logging.info("User " + str(user.name) + " has directed others to r/learnpython")
-        return False, [], antiSpamList
+        #return False, [], antiSpamList
 
     return True, postsInLearningSubs, antiSpamList

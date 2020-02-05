@@ -37,13 +37,18 @@ In the future, I suggest asking questions like this in learning focused subs lik
 r/learnpython, a sub geared towards questions and learning more about python. '''
     return msg
 
+def commented_on_before():
+    msg = '''I'm sure you've seen this information before, but just in case here it is as a reminder: 
+    '''
+    return msg
 
 def baseComment():
     msg = '''Please follow the subs rules and guidelines when you do post there, it'll help you get better answers faster. 
 
 Show /r/learnpython the code you have tried and describe where you are stuck. 
-**[Be sure to format your code for reddit](https://www.reddit.com/r/learnpython/wiki/faq#wiki_how_do_i_format_code.3F)** 
-and include which version of python and what OS you are using.
+If you are getting an error message, include the full block of text it spits out.
+**[Here is HOW TO FORMAT YOUR CODE For Reddit](https://www.reddit.com/r/learnpython/wiki/faq#wiki_how_do_i_format_code.3F)** 
+and be sure to include which version of python and what OS you are using.
 
 You can also ask this question in the [Python discord](https://discord.gg/3Abzge7), 
 a large, friendly community focused around the Python programming language, open to those who wish to learn the language 
@@ -54,12 +59,14 @@ or improve their skills, as well as those looking to help others.
 def followSubRules():
     msg = '''Please follow the subs rules and guidelines when you do post there, it'll help you get better answers faster.
 
-Show /r/learnpython the code you have tried and describe where you are stuck. '''
+Show /r/learnpython **the code you have tried and describe in detail where you are stuck.** 
+If you are getting an error message, include the full block of text it spits out.
+Quality answers take time to write out, and many times other users will need to ask clarifying questions. Be patient and help them help you. '''
     return msg
 
 def formatCodeAndOS():
-    msg = '''**[Be sure to format your code for reddit](https://www.reddit.com/r/learnpython/wiki/faq#wiki_how_do_i_format_code.3F)** 
-and include which version of python and what OS you are using.
+    msg = '''**[Here is HOW TO FORMAT YOUR CODE For Reddit](https://www.reddit.com/r/learnpython/wiki/faq#wiki_how_do_i_format_code.3F)** 
+and be sure to include which version of python and what OS you are using.
 '''
     return msg
 
