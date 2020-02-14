@@ -100,12 +100,15 @@ def handleInbox(reddit, codeVTextClassifier, phbArcPaths, setOfPosts={}, unreadC
         commentReplies = 0
         directMessages = 0
         userNameMentions = 0
+        ids_to_comments = []
         for msg in inboxMessages:
             if msg.was_comment:
                 if msg.subject == "username mention":
                     userNameMentions += 1
+                    ids_to_comments.append(msg.id)
                 else: 
                     commentReplies += 1
+                    ids_to_comments.append(msg.id)
             else:
                 # Check to see if it was a karma summons
                 directMessages += 1

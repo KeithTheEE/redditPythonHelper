@@ -6,6 +6,9 @@ If they are it suggests that the user post to that sub rather than to r/python.
 
 - [FAQ](https://github.com/CrakeNotSnowman/redditPythonHelper/blob/master/FAQ.md)
 
+The current incarnation of the bot is aimed at encouraging the use of the r/learnpython sub.
+It may flag all learning posts, but it only comments if it (in a naive way) determines that the user does not know about or chooses not to use the learning sub.
+
 ## What is it doing? 
 
 

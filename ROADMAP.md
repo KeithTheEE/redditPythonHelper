@@ -1,6 +1,6 @@
 
 
-# ROADMAP: Python Helper Bot Version pre Alpha A0.3.02
+# ROADMAP: Python Helper Bot Version pre Alpha A0.4.00
 Future expansions are considered in this file. 
 Their presence is not a promise that they'll exist, but rather this file serves as an
 early outline of features this project hopes to add, as well as changes in directions
@@ -23,7 +23,7 @@ Dates follow YYYY-MM-DD format
 
 
 
-## [A0.3.03] 2020-XX-XX
+## [A0.4.00] 2020-XX-XX
 
 In Progress
 
@@ -38,27 +38,21 @@ Unless otherwise noted, all changes by @kmurrayis
 
 ### Short Term Roadmap
 
-Address Flair and being adding tests. When min_spanning_tree program is complete, as well as when 'fix reddit archive' is done, begin rolling out a new classifier using LDA
+Address Flair and begin adding tests. When min_spanning_tree program is complete, as well as when 'fix reddit archive' is done, begin rolling out a new classifier using LDA
 
 #### Add
- - [X] Migrate most files to usb/usb-sata drive to host. Watch power requirements. 
  - With light archive, build a 'save state' and 'load state' function so records on new posts aren't lost during reboots.
- - [X] loggingSetup.py: a module to be imported first by rpiManager and main, which sets up the logging format so the program can be called by either module on any system and initialize in the same way
  - botHelperFunctions/botMetrics: Add ram usage check and log it in every 'awake' cycle of program, to try and tease out any possible MemeoryError's kicking up after long periods of time. Might as well save other diagnostics info, maybe call this from the hearbeat thread so it becomes a better representation of runtime
- - [X] rpiManager.startupSwitchFlag(): IGNORED
  Also a pull origin master from github state would be incredibly useful
  - [X] Verify reddit post logs by grabbing most recent bot comments. This should reduce risk of two computers commenting on the same post which could happen if databases are de-synced and one computer is not in quiet mode because I typed in the wrong command. Opperator Error Risk Reduction. Only the most recent x+buffer hours of interaction are needed. This does not protect from multiple posts by the same user but should prevent multiple comments on the same post even if the bot runs on different computers. 
  - Full Test Suite: PRIORITY (Ok it'll have to wait until posts have been archived, but it'll still be nice)
- - [X] Archive Posts: PRIORITY
-    Solidify what values to save, and what to save them with. Probably build an SQL to XML or JSON exporter for third party testing.
  - botMetrics.measureUserReaction(): 
  A function focused on seeing if a user did in fact go to
  r/learnpython after the bot made its suggestion. Currently built (kind of, the praw wrappers messed it up a bit), now need to add 
  functionality in main.py to use it
  - Continue Documentation in functions, add documentation files too
- - A queue which has inputs added to it by functions, and removed by the raspberry pi gpio handler, allowing the bot to change LED status based on what it's doing. Similar to the twitter event bot design (sepperate project).
- - Deprecate karma scatter plot: or change it post all posts in the past week to minimize size. It's no longer useful or very interesting. Maybe activate it once a week or something too
- - [X] Consider creating praw rewrapper (prawRegift) to hold all praw focused wrappers and sepperate it from the phb functions. This will make it easier to have the same protections on other bots as necessary. 
+ - LED Status: A queue which has inputs added to it by functions, and removed by the raspberry pi gpio handler, allowing the bot to change LED status based on what it's doing. Similar to the twitter event bot design (sepperate project).
+ - [X] Deprecate karma scatter plot: or change it post all posts in the past week to minimize size. It's no longer useful or very interesting. Maybe activate it once a week or something too
  - botMetrics.predictUserReaction(): A function to go through users comment history, look at the parent comments, and from that gauge how the user will respond to the bots help. In the future adjust how the bot replies based on the predicted responsiveness. For now, it'll just build an archive of users responses to previous comments. 
  
 
@@ -66,9 +60,10 @@ Address Flair and being adding tests. When min_spanning_tree program is complete
 #### Change
  - Move NLP functions from NLTK (used in many files) to a buffer module, allowing for simpler, universal changes to be made. For example, if there is a better POS tagger than nltk.pos_tag(sent) then we can easily switch to that. Right now NLTK is used over a fairly large filespace making adjustments of that sort difficult. 
  - Review all my logging notes. See what should be dropped, changed, etc. 
- - Make sure the bot defaults to commenting about formatting even if there's no code present
+ - [X] Make sure the bot defaults to commenting about formatting even if there's no code present--It just thinks there's code a touch too often 
+ - If it classifies a line as code, try to validate the expression in a basic form. This might improve the classifier and reduce isThereCode False Positives.
  - When errors occur, or a shutdown button is pressed, attempt to save current reddit info into a temp file. on startup, load that info in then connect with praw to expand the knowledge base. 
- - The archive and update reddit module has become unwieldy. It should be broken into two modules, one which handles the recasting of the praw classes, and one which deals with them as needed. 
+ - The archive and update reddit module has become unwieldy. It should be broken into two modules, one which handles the recasting of the praw classes, and one which deals with them as needed.--Ehh.. Maybe not. It does need to be together to a degree
  - Migrate away from usage of my personal libraries so it's easier for others to get the bot up and running. 
 
 
@@ -93,19 +88,13 @@ Address Flair and being adding tests. When min_spanning_tree program is complete
 
  - Numbering system for items in roadmap to clear up what's being worked on and what is completed from an outside perspective. A master numbering system probably is a good idea, vX.X.XX[a,c,d,r,f,s,co]XX, following version, section, and specific roadmap suggestion number. But That seems bloated and unnecessary. (Maybe this isn't worth while, maybe it is and will help catch things in the changelog. Probably wont be seriously considered until alpha)
 
- - [X] summarizeText.loadEnglishModel(sourceDataPath=paths["prebuiltEnglishDB"]):
- Prebuild and pickle the output tdm of 
- summarizeText.buildModelFromDocsInFolder(sourceDataPath=paths["englishDB"])
- so the raspberry pi doesn't have to hit memory errors in in main.startupBot()
- load the prebuilt database and build it if the prebuild database does not exist.
- Or just build a custom compression scheme and load that instead of using pickle.
-
  - test.EvaluatePost():
  Given recent restructuring, this should be much easier. Take a post given a post id, then run it through the classifier where the exitpoints are turned off from the functions, forcing it to classify the post in full. Because the praw wrappers are in place, there shouldn't be a concern about forcing full evaluation any more. This can be considered to be half completed: the silent mode the bot has helps evaluate posts. 
  
  - Reply To Common posts:
  Build semi scripted replies to frequently asked questions (probably largely pulled from the sidebar, since that's how the side bar gets populated)
  This includes "How do I install python" and "Is learning python worth it?" (Aka "Why learn python?")--A quality version of this is a full research task. Build off of internal sentence ordering models + soft skills. Pull text from comments on these posts to build up scripted reply. Look into adapting this (or maybe starting with this) to classifying the posts so their types can be diplayed as tags. 
+   - When LDA classifier comes into play, this might be a lot easier. Auto-segment posts into topics, ID topic of question, compare question to similar past question, map past answers to new question.
  
  - local Flask website/dashboard to monitor the status and logs of the bot in realtime. Low priority. 
  
@@ -122,7 +111,7 @@ Address Flair and being adding tests. When min_spanning_tree program is complete
 
 
 ### rpiManager.py
- - update the commented gpio naming and numbering list
+ - update the commented gpio naming and numbering list at the top of the file
  - update grab-from-github functions
  - add a queue to work with rpiGPIO for LED displays for various tasks
  
@@ -132,40 +121,12 @@ Address Flair and being adding tests. When min_spanning_tree program is complete
 
 
 ### archiveAndUpdateReddit.py
-Most of the 'light' archive functionallity is currently being built out, rendering a large chunk of this section of the roadmap either completed, in progress, or dismissed. It is also no longer in the realm of 'long term'. 
-
-[x] The big set of functions necessary in this module are database creation, and update functions.
-There might be two databases: one of just posts, and another comprising of posts, and comments.
-
-ARCHIVE FUNCTIONS
-TODO: Saves it into sqlite3 table after it's passed the time threshold to "not in 
-use" 
-
-"not in use" is probably going to be defined as 8 hours. Past that point the 
-post will be either 'successful', 'mild', or 'unsuccessful', defined as 
-x >= 8 points, 8 > x >= 1, 1 > x 
-
-Adjust it so 'not in use' is not defined as 8 hours, but instead defined as 
-a varible, which changes based on the time of day (either defined by utc or
-cdt--cdt being my current local time) that the posts was made. 'Late at night' as
-defined by the time where the fewest users/ r/python 'actions' (posts, upvotes, 
-comments) are made, adjusted according to the day of the week and or holiday 
-(unlikely that this bot will need to be that specific) the post is made on.
-
- r/learnpython is another source of data: 
-
-it will act as a source of useful questions, and will allow the bot to direct
-users to other reddit based questions rather than simply stack overflow (this
-distinction should help allow the bot to be generalizable) 
-posts between 3 and 8 upvotes will be determined as 'basic questions' and
-will be used as suggested solutions if the similarity between the new r/python
-post and the old r/learpython post is greater than some threshold
 
 
 ### botHelperFunctions.py
 
 ### botMetrics.py
- - predictUserReaction(): used for the bot gauge how receptive the user will be towards a r/learnpython suggestion. If it predicts combative, it'll make it's comment short and to the point. If it predicts receptive it'll expand on highlighted points such as formatting. If neither it'll contiue as is. 
+ - predictUserReaction(): used for the bot gauge how receptive the user will be towards a r/learnpython suggestion. If it predicts combative, it'll make it's comment short and to the point. If it predicts receptive it'll expand on highlighted points such as formatting. If neither it'll contiue as is. --There's probably almost no meat to go off of to help make this prediction though, it's most likely a good idea with no path to implementation. 
 
  - measureUserReaction(): 
 to see if redditor does post to r/learnpython. The post will have to be strongly similar
@@ -179,7 +140,7 @@ to their r/python post, and be posted not long after the python sub post
 ##### True Positive: 
 [The bot has commented,] And
 [[Either a mod has removed the post due to 'learning'], 
-Or [the redditor posts their question on r/learnpython]]
+Or [the redditor posts their question on r/learnpython], Or [the bot has >=2 upvotes]]
 
 ##### False Negative: 
 [The bot did not comment after 8 hours] And
@@ -235,6 +196,7 @@ other areas
  Whatever works best
 
 ### lsalib2.py
+Migrate features back into lsalib 
 
 ### questionIdentifier.py
 It'd be nice to use stack overflow's user submissions and r/learnpython's 
@@ -255,11 +217,13 @@ with k or greater similarity.
  - Scrap and rebuild with approved api and bound it to search for results between 
  local database build date and present day. Not important until after local copy of SO
  is up and running 
+### startupLoggingCharastics.py
 ### summarizeText.py
  - Improve the english language model for topic modeling, and focus on programming topic modeling.
 ### textSupervision.py
 ### updateLocalSubHistory.py
 ### user_agents.py
+ - Remove this
 
 ### OTHER
 (This is all functions that don't have a clear parent module)
@@ -268,18 +232,13 @@ with k or greater similarity.
 
  - ELMO/BERT programs
 
- - reformat_User_Code():
- a function to identify python code blocks that aren't properly formated, and auto format the code
- for other reddit users. Might live it its own module.
- Currently being worked on.
-
  - Leverage reformat user code with automatic Q&A: Use classified code regions to match SO code regions, classified text regions to match SO text regions. Hopefully this improves the search engine and cuts the risk of added noise by a text to code block increasing precieved distance between the user query and the SO database post.
  Next If a majority of highly matching SO posts have sample code in the question, but the reddit query does not, strongly suggest adding the example code that caused the issue to the next itteration of the query.
 
 
  - question_topic_Modeling():
  This is going to take a few parts. 
-   - Identify all related learning subreddits:
+   - Identify all related learning subreddits using a topic model
 
    - Model the topics of stack overflow questions. 
 

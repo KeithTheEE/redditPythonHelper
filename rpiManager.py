@@ -12,14 +12,15 @@ it appears that when main.py is run on the pi (currently running py2.7), an impo
 logging ahead of the main settings, causing logging to just be printed
 
 '''
+import sys
+from utils import startupLoggingCharacteristics
+import logging
 
 import subprocess
 import traceback
 import socket
-import sys
 import os
 import time
-import logging
 import threading
 import datetime
 
@@ -245,12 +246,12 @@ def allBotActions():
 
 if __name__ == "__main__":
     # Logging Stuff 
-    dirName = "logs"
-    if not os.path.exists(dirName):
-        os.makedirs(dirName)
-    logFileName =   'LOG_'+ datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + '.log'
-    filePath = os.path.join(dirName, logFileName)
-    logging.basicConfig(filename=filePath, level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(filename)s:%(funcName)s():%(lineno)s - %(message)s')
+    # dirName = "logs"
+    # if not os.path.exists(dirName):
+    #     os.makedirs(dirName)
+    # logFileName =   'LOG_'+ datetime.datetime.now().strftime("%Y%m%d-%H%M%S") + '.log'
+    # filePath = os.path.join(dirName, logFileName)
+    # logging.basicConfig(filename=filePath, level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(filename)s:%(funcName)s():%(lineno)s - %(message)s')
 
     # check GPIO Flags
     # F0: Continue as is

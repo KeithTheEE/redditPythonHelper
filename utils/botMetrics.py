@@ -115,7 +115,7 @@ def performanceVisualization(reddit):
     user = archiveAndUpdateReddit.get_redditor_by_name(reddit, 'pythonHelperBot')
     totalCommentKarma = user.comment_karma
     date, karma = archiveAndUpdateReddit.makeCommentKarmaReport(user, reddit) 
-    karmaPlot(date, karma, totalCommentKarma)
+    #karmaPlot(date, karma, totalCommentKarma)
     return
 
 

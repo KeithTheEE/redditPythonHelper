@@ -16,25 +16,25 @@ def botIntro():
 
 def standardIntro():
     msg = '''It looks to me like your post might be better suited for r/learnpython, 
-a sub geared towards questions and learning more about python. 
+a sub geared towards questions and learning more about python **regardless of how advanced your question might be**. 
 That said, I am a bot and it is hard to tell.'''
     return msg
 def alreadySuggestedComment():
     msg = '''I see someone has already suggested going to r/learnpython, 
-a sub geared towards questions and learning more about python. 
+a sub geared towards questions and learning more about python **regardless of how advanced your question might be**. 
 I highly recommend posting your question there. '''
     return msg
 def alreadyAnsweredComment():
     msg = '''It looks to me like someone might have already answered your question. 
 That said, I am a bot and it is hard to tell. 
 In the future, I suggest asking questions like this in r/learnpython, a sub geared 
-towards questions and learning more about python. '''
+towards questions and learning more about python **regardless of how advanced your question might be**. '''
     return msg
 def userCrossPosted():
     # Figure out what to say to the spray and pray
     msg = '''It looks like you posted this in multiple subs in a short period of time. 
 In the future, I suggest asking questions like this in learning focused subs like 
-r/learnpython, a sub geared towards questions and learning more about python. '''
+r/learnpython, a sub geared towards questions and learning more about python **regardless of how advanced your question might be**. '''
     return msg
 
 def commented_on_before():

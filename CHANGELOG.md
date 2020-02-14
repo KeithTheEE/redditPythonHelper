@@ -1,6 +1,6 @@
 
 
-# CHANGELOG: Python Helper Bot Version pre Alpha A0.3.03
+# CHANGELOG: Python Helper Bot Version pre Alpha A0.4.00
 All notable changes to this project will be documented in this file.
 
 The format is loosely based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
@@ -64,8 +64,10 @@ Some tests have also been added, however it does not cover a majority of the bot
  - In learningSubmissionClassifiers, basicUserClassify: Bot is now allowed to comment even if user has directed others to learnpython before in the past. 
  - In botHelperFunctions, added submission_flair_text to the logged post features
  - Reworded a lot of the bot's comments in buildComments to emphasize that answers aren't instantanious and added emphasis to the format your code link, since that's the most often ignored aspect of users to follow the bots direction. 
+ - Added a comment that r/learnpython is the place for questions regardless of how advanced the question is. 
 
 #### Deprecated
+ - Commented out the call to karmaPlot in botMetrics. It'll need to be more fully removed later on, but the bot no longer needs it.
 #### Removed
 #### Fixed
  - Under archiveAndUpdateReddit, when evaluating a submission, the bot checks the user of a post and grabs and rewraps it into the wrapper user class. On rare occasions, if a post would be deleted at just the right time, the bot would populate info for the post, the post would be deleted, then the bot would try to populate info for the user which is no longer tied to the now deleted/removed post. A try/except block has been added and now the submissionList waits until both the post and the user info has been successfully built out before it adds it to the list. 
