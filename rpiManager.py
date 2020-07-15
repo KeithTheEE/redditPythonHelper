@@ -171,9 +171,9 @@ def pull_from_github():
 def botStuff():
     time.sleep(30)
 
-    reddit, classifier, codeVTextClassifier, tdm, userNames, postHistory, phbArcPaths = main.startupBot()
+    reddit, classifier, codeVTextClassifier, nb_title_classifier, tdm, userNames, postHistory, phbArcPaths = main.startupBot()
     try:
-        main.runBot(reddit, classifier, codeVTextClassifier, tdm, userNames, postHistory, phbArcPaths=phbArcPaths)
+        main.runBot(reddit, classifier, codeVTextClassifier, nb_title_classifier, tdm, userNames, postHistory, phbArcPaths=phbArcPaths)
     except KeyboardInterrupt:
         print("Concluding Program")
         logging.debug("Keyboard Interrupt: Ending Program")

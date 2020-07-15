@@ -11,6 +11,8 @@ import logging
 from nltk.tokenize.treebank import TreebankWordTokenizer, TreebankWordDetokenizer
 from nltk.corpus import brown
 from nltk.metrics import ConfusionMatrix
+import ast
+import codeop
 
 
 from utils import archiveAndUpdateReddit
@@ -97,6 +99,7 @@ def buildTextCodeClassifier(sourceDataPath):
     Takes in a training file filled with coding samples
     and uses the NLTK provided Brown News sentence corpus and builds
     
+    MIGHT SOON BE DEPRECATED
     '''
     
     randomSeed = random.randint(0,1000)
@@ -149,6 +152,44 @@ def buildTextCodeClassifier(sourceDataPath):
     return classifier#, train_set, test_set
 
 
+def astAndCodeopClassifications(line):
+    '''
+    Checks to see if a line of text is valid python syntax
+
+    The two modules it uses are `ast` and `codeop`, both a part of the
+    standard library. 
+    This program checks the line first by using `ast.parse`.
+    If ast throws a syntax error, it tries codeop.
+    If that fails as well, it's deemed not code, although it should be 
+    noted it could be (invalid) code which is only a couple of character
+    translations away from being valid. 
+    '''
+    dedent_triggers = ['elif', 'else', 'except']
+    dedent_triggers += [x+':' for x in dedent_triggers]
+    line=line.strip() # Needed to remove whitespace
+    if line.strip() in ['&#x200B;', '']:
+        return 'emptyline'
+    try:
+        ast.parse(line.strip())
+        c = 'code'
+    except SyntaxError:
+        # Possible it's still code, just the opening of a statement
+        try:
+            comp = codeop.compile_command(line)
+            c = 'code' # regardless of comp being none or code object
+        except SyntaxError:
+            tokens = line.split()
+            if tokens[0] in dedent_triggers and line[-1] == ':':
+                # Need to manually handle dedent case, kinda hand wavey
+                c = 'code'
+            else:
+                c = 'text'
+        except ValueError:
+            # Possible output, not sure how it's triggered though
+            # https://docs.python.org/3/library/codeop.html#codeop.compile_command
+            c = 'text'
+        
+    return c
 
 
 def rewrapClassifications(line):
@@ -258,11 +299,13 @@ def classifyPostLines(textBlock, classifier):
     lines = textBlock.split('\n')
     classifications = []
     rwclassifications = []
+    astClassifieds = []
     for line in lines:
         c = classifier.classify(code_text_features(line))
         classifications.append(c)
         rwc = rewrapClassifications(line)
         rwclassifications.append(rwc)
+        astClassifieds.append(astAndCodeopClassifications(line))
         #print(c, rwc, line)
         '''
         print('\t>',c, line)
@@ -270,10 +313,10 @@ def classifyPostLines(textBlock, classifier):
         for label in dist.samples():
             print("\t\t>%s: %f" % (label, dist.prob(label)))
         '''
-    return classifications, rwclassifications   
+    return classifications, rwclassifications, astClassifieds  
 
 
-def alreadyCorrectlyFormatted(c, rwc):
+def alreadyCorrectlyFormatted(c, rwc, astc):
     '''
     Function itterates through the by rewrapped classifications
     and compares them to the naive bayes classifications. If there 
@@ -287,7 +330,7 @@ def alreadyCorrectlyFormatted(c, rwc):
     codePresent = False
     correctlyFormatted = True
     for i in range(len(rwc)):
-        if rwc[i] == 'code' or c[i] == 'code':
+        if rwc[i] == 'code' or c[i] == 'code' or astc[i] == 'code':
             codePresent = True
         if rwc[i] == 'NA' and c[i] == 'code':
             correctlyFormatted = False
@@ -309,8 +352,8 @@ def reformat(text, classifier):
 """
 
     # Classify the lines in the text
-    c, rwc = classifyPostLines(text, classifier)
-    codePresent, correctlyFormatted = alreadyCorrectlyFormatted(c, rwc)
+    c, rwc, astc = classifyPostLines(text, classifier)
+    codePresent, correctlyFormatted = alreadyCorrectlyFormatted(c, rwc, astc)
     sourceText = text.split('\n')
     #print(len(sourceText), len(c), len(rwc))
     assert (len(sourceText) == len(c)) and (len(c) == len(rwc))
@@ -364,6 +407,46 @@ def reformat(text, classifier):
     msg = msgPrefix + newMSG + msgSuffix
     #logging.info("Code Present: " + str(codePresent) + " | Correctly Formatted" + str(correctlyFormatted))
     return msg, changesMade, codePresent, correctlyFormatted
+
+def remove_code_blocks(text, classifier):
+    '''
+    Strip out all lines of code for the bot to rework 
+    as [code block] for the selftext naive bayes classifier
+
+    Returns the text of the post with the code blocks replaced by
+    the key string 'CODE'
+    '''
+    code_blocked_text = ''
+
+    # Classify the lines in the text
+    c, rwc, astc = classifyPostLines(text, classifier)
+    text = text.split('\n')
+
+    line_types = []
+    for i in range(len(c)):
+        if rwc[i] in ['codeblock'] or astc[i] == 'code':
+            line_types.append('c')
+        elif rwc[i] == 'emptyline':
+            if i > 0:
+                line_types.append(line_types[-1])
+            else:
+                line_types.append('t')
+        else:
+            line_types.append('t')
+
+    cb = False
+    for i in range(len(text)):
+        if line_types[i] == 'c':
+            if cb == False:
+                code_blocked_text += 'CODE\n'
+                cb = True
+        else:
+            code_blocked_text += text[i] + '\n'
+
+
+
+    return code_blocked_text
+
 
 def loadSummoningHistory(sourcefl):
     submissions = {}

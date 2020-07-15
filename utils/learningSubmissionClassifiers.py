@@ -13,6 +13,7 @@ from utils import botHelperFunctions
 from utils import buildComment
 from utils import formatCode
 from utils import locateDB
+from utils import nb_text_classifier
 from utils import questionIdentifier
 from utils import searchStackOverflowWeb
 from utils import summarizeText

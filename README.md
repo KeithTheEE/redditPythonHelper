@@ -59,7 +59,7 @@ The bot is currently in a pre alpha stage. This means that the founding goals of
  - [X] Simply comment on redditors posts who look like they should post in r/learnpython
  - [X] Run on the raspberry pi
  - [X] Archive reddit posts for future classification evaluation
- - Build a reddit post classifier using the archive and LDA
+ - [X] Build a reddit post classifier using the archive and Naive Bayes
  - Build a local Stack Overflow Search Engine
  - Use Stack Overflow to gauge the simplicity of a redditors question
  - Use Stack Overflow to implement a naive Question and Answer system

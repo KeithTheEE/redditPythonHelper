@@ -18,9 +18,9 @@ Dates follow YYYY-MM-DD format
 
 
 
-## [A0.4.00] 2020-XX-XX
+## [A0.4.00] 2020-07-15
 
-In Progress
+Official.
 
 ### Contributors
 Keith Murray
@@ -45,41 +45,64 @@ Logging has been changed to reduce notes from modules outside of the bot (praw a
 
 Some tests have also been added, however it does not cover a majority of the bot yet. 
 
+A new classifier has been introduced and is being integrated into the bot. It's built off of a naive bayes classifier, but is aimed at classifying based on sentence structure. It's an ugly bodge but its proof of concept seems functional. Further information can be found below and in the header of the file, `nb_text_classifier.py` under utils.
+
+Off of the new classifier, a larger naive bayesian has been built which is generally more functional. It has a fairly low false negative rate, but far too  high of a false positive rate. Both classifiers have been added and commented out in this version. 
+
+
+
 
 #### Added
- - check_for_help_flair in main: a function that looks to see if the new flair is being used on the submission and if it's 'Help'. 
- - grab_set_of_submissions_flair in main: given a set of submissions, returns a dictionary with their id as the key, and their attached flair as the value
- - check_for_help_flair_update: as users can put flair on after they post, the bot needs to be able to compare the old flair with the new flair to see if a 'Help' flair has been added. This check currently runs for two hours after a post has been made. 
+ - `check_for_help_flair` in main: a function that looks to see if the new flair is being used on the submission and if it's 'Help'. 
+ - `grab_set_of_submissions_flair` in main: given a set of submissions, returns a dictionary with their id as the key, and their attached flair as the value
+ - `check_for_help_flair_update`: as users can put flair on after they post, the bot needs to be able to compare the old flair with the new flair to see if a 'Help' flair has been added. This check currently runs for two hours after a post has been made. 
  - The bot now should auto reply to help flair added within two hours of the original submission, using the previously listed tools to keep track 
- - In utils, startupLoggingCharacteristics now exists. It adjusts non-python helper bot logs to warning level, and sets up the structure of the logs thereafter, defining the log structure use to be covered in main.
- - Added logging info in archiveAndUpdateReddit's comment_duplication_by_ratelimit_check to make it more useful on review. It's still unclear if this patch solves the issue but this logging should make it easier to notice.
+ - In utils, `startupLoggingCharacteristics` now exists. It adjusts non-python helper bot logs to warning level, and sets up the structure of the logs thereafter, defining the log structure use to be covered in main.
+ - Added logging info in `archiveAndUpdateReddit`'s `comment_duplication_by_ratelimit_check` to make it more useful on review. It's still unclear if this patch solves the issue but this logging should make it easier to notice.
+ - Added `nb_text_classifier.py`: a classifier which uses naive bayes over word pairs to calculate whether or not the title of a post is probably learning. It will get torn apart and reworked going foward, but the proof of concept might be worth integrating into the bot right now. Future work will look at a much more expansive naive bayes classifier over all the post features, so when it achieves a specific confidence it'll auto comment, independent of the age of the post. 
+ - In `formatCode`: `astAndCodeopClassifications` uses modules `ast` and `codeop` to classify lines as code or not: requires their syntax to be valid. This may completely replace the classifier passed into `formatCode` as a whole. 
+ - in `formatCode`: `remove_code_blocks` is added which remaps the code into a string '' 
+
 #### Changed
  - Updated Year in License
  - Added Flair auto-reply explaination in README, de-emphasized bot summons to reflect the lack of active development, added a pre-alpha goal of a reddit post classifier, and adjusted the ethics section to acknowledge the newly allowed rule of commenting on a user multiple times under specific conditions.
  - Expanded on FAQ
- - Logging should now be more strongly defined by this bot, not sessions and connectionpool, hopefully that'll clean up bug hunts a bit.
- - Adjusted the format your code comment to make it more noticable 
- - In botHelperFunctions logPostFeatures: it now records flair
- - In learningSubmissionClassifiers, basicUserClassify now is allowed to comment on a post by a user who had a prior post the bot commented on IF that user uses the 'Help' flair.
- - In learningSubmissionClassifiers, basicUserClassify: Bot is now allowed to comment even if user has directed others to learnpython before in the past. 
- - In botHelperFunctions, added submission_flair_text to the logged post features
- - Reworded a lot of the bot's comments in buildComments to emphasize that answers aren't instantanious and added emphasis to the format your code link, since that's the most often ignored aspect of users to follow the bots direction. 
+ - Logging should now be more strongly defined by this bot, not `sessions` and `connectionpool`, hopefully that'll clean up bug hunts a bit.
+ - Adjusted the 'format your code comment' to make it more noticable 
+ - In `botHelperFunctions` `logPostFeatures`: it now records flair
+ - In `learningSubmissionClassifiers`, `basicUserClassify` now is allowed to comment on a post by a user who had a prior post the bot commented on IF that user uses the 'Help' flair.
+ - In `learningSubmissionClassifiers`, `basicUserClassify`: Bot is now allowed to comment even if user has directed others to learnpython before in the past. 
+ - In `botHelperFunctions`, added `submission_flair_text` to the logged post features
+ - Reworded a lot of the bot's comments in `buildComments` to emphasize that answers aren't instantanious and added emphasis to the format your code link, since that's the most often ignored aspect of users to follow the bots direction. 
  - Added a comment that r/learnpython is the place for questions regardless of how advanced the question is. 
+ - `classifyPostLines` in `formatCode.py` now also takes in `astAndCodeopClassifications`'s classification for each line and returns it.
+ - `alreadyCorrectlyFormatted` in `formatCode.py` takes in the astClassificaiton (it's really the pair of ast and codeop plus a hand written (artisanal?) dedent classification), and it classifies a line as code if the rwc, classifier, or astClassifier calls it code. (Given that the classifier--a simple naive bayes classifier is a bit overzelous--it might be adjusted or removed)
 
 #### Deprecated
  - Commented out the call to karmaPlot in botMetrics. It'll need to be more fully removed later on, but the bot no longer needs it.
+ - Not yet deprecated, but moving towards it: the classifier built by `buildTextCodeClassifier` in `formatCode.py` might be removed because it might be replaced by the `astAndCodeopClassifications` classifier. Use this as a chance to build an evaluation metric for this feature as a whole. 
 #### Removed
 #### Fixed
- - Under archiveAndUpdateReddit, when evaluating a submission, the bot checks the user of a post and grabs and rewraps it into the wrapper user class. On rare occasions, if a post would be deleted at just the right time, the bot would populate info for the post, the post would be deleted, then the bot would try to populate info for the user which is no longer tied to the now deleted/removed post. A try/except block has been added and now the submissionList waits until both the post and the user info has been successfully built out before it adds it to the list. 
+ - Under `archiveAndUpdateReddit`, when evaluating a submission, the bot checks the user of a post and grabs and rewraps it into the wrapper user class. On rare occasions, if a post would be deleted at just the right time, the bot would populate info for the post, the post would be deleted, then the bot would try to populate info for the user which is no longer tied to the now deleted/removed post. A try/except block has been added and now the submissionList waits until both the post and the user info has been successfully built out before it adds it to the list. 
 #### Security
+
+#### Tests 
+ - Adding comment tree tests: basically purpose different inputs into buildHelpfulComment under main, and ensure the string needed is present
+ - Added test to make sure test_check_for_help_tag() functions
+
 
 
 ### Main
- - The whole logging structure has been updated so that it's now defined in utils/startupLogginCharacteristics. This helps clean up the main and makes it easier to maintain a logging format through the program, preserve and transfer the format to other projects, and suppress uninformative logging messages by imported modules. 
- - check_for_help_flair, grab_set_of_submissions_flair, and check_for_help_flair_update have been added as have calls to these functions. This collection of functions helps track flair on posts as they've been added as it is not usually added by users right away. The most common reason the bot misses help flair is if the flair was added more than two hours after the initial submission time--reddit rewrites the post age to reflect the age it should be after subtracting the amount of time the submission was removed for. The bot assumes this doesn't happen and may need another change soon to address this issue as well. 
+ - The whole logging structure has been updated so that it's now defined in `utils`/`startupLogginCharacteristics`. This helps clean up the main and makes it easier to maintain a logging format through the program, preserve and transfer the format to other projects, and suppress uninformative logging messages by imported modules. 
+ - `check_for_help_flair`, `grab_set_of_submissions_flair`, and `check_for_help_flair_update` have been added as have calls to these functions. This collection of functions helps track flair on posts as they've been added as it is not usually added by users right away. The most common reason the bot misses help flair is if the flair was added more than two hours after the initial submission time--reddit rewrites the post age to reflect the age it should be after subtracting the amount of time the submission was removed for. The bot assumes this doesn't happen and may need another change soon to address this issue as well. 
  - It now checks flair for the full 24 hours it watches a submission. 
-### rpiManager.py
+ - `nb_text_classifier` and `nb_text_classifier_2` are imported in an experimental capacity
+ - `lookForKeyPhrasePosts` now takes the naive bayes classifier, `nb_submission_classifier` as an input variable. From here it classifies the post as boolean: `learning_title`, and adds that submission to the list `submissionsToCommentOn_KP
+ - `title_classifier` is the function which evalutes a submission on the naive bayes classifier side of things. Currently there's a lot of printing so I can see how it's working. 
+ - Startup loads the naive bayes classifiers, only the full submission classifier is actually returned (`nb_text_classifier_2`). Similarly run bot takes it as input, and `if __name__ == "__main__":` handles the return and function call.
 
+### rpiManager.py
+ - `botStuff` loads the naive bayes classifiers, only the full submission classifier is actually returned (`nb_text_classifier_2`). Similarly run bot takes it as input, and `if __name__ == "__main__":` handles the return and function call.
 
 ### Util Libraries
 
@@ -94,12 +117,54 @@ Some tests have also been added, however it does not cover a majority of the bot
  - commented_on_before has been added to acknowledge that users have interacted with it before. (This should only activate during help flair--we'll see)
  - followSubRules has been adjusted to remind users that people take time to answer questions, and they may not get a reply right away
  - formatCodeAndOS has been adjusted to emphasize the link to how to format your code
+#### fix_json_archive_bug.py
+ - Created to handle trailing comments in the archive which were mistakenly given a new file due to a bug in the file spliter of `saveClassJson`. This is not yet functional and will not be used by the bot, but by an archive manager.
 #### formatBagOfSentences.py
 #### formatCode.py
+ - Now imports `ast` and `codeop`
+ - `astAndCodeopClassifications` now exists. It takes in a line of text. This just checks whether or not a line has valid syntax for python code. 
+ - `astAndCodeopClassifications` is now called by the rewrapClassifications function.
+ - `alreadyCorrectlyFormatted` now declares code is present if any line is called code by any of the three code classifiers. 
+ - function `remove_code_blocks` has been added. If a line is called 'code' by either the rwc or astc, then it is replaced with a flag. Blocks of flags are stripped into a single replacement flag, `CODE` for text processing. 
 #### learningSubmissionClassifiers.py
  - As a result of this version's changes, basic user classify now only prevents comments on users if they've been commented on by the bot before AND are not using the 'Help' Flair. Given this trend, it's reasonable to assume the bot will soon move to comment on users regardless of it's past history with them, as byinlarge the bot is usually correct within a reasonable degree when it's other classifiers activate.
 #### locateDB.py
 #### lsalib2.py
+#### nb_text_classifier.py
+This module was added in full in this version. 
+
+It will be removed and replaced by `nb_text_classifier_2`. It was a proof of concept to see how well the naive bayesian classifier worked on titles of submissions. The prior experiment which failed, but built towards this was an LDA topic model, which never picked up on 
+
+The module explains in depth what it does, so we'll briefly address its shortfalls here.
+
+The model is pretty useful, getting a solid true positive rate, but always hitting false positive on anything that has a structure similar to "Data manipulation with Numpy":  titles which just state the subject. Half the time posts of that style are showcases of projects or explainations about that subject, and the other half of the time they're questions centered on the topic.  
+
+The model in `nb_text_classifier_2` has this same shortfall.
+
+Specific to `nb_text_classifier`, the code is written in a way that's difficult to extend to a full submission classifier, as well as difficult to tweak to test with different thresholds. It remains as a solid first shot which is why it is being committed, but it almost certainly wont be preserved past this. 
+
+
+#### nb_text_classifier_2.py
+The key change to this classifier is the ability to add various submission features to the classifier. Though it's large shortfall is the lack of using the LogSumExp trick to handle that addition. 
+
+Using Aziraphale (personal database manager) and `mod_judged_posts` to gather posts from the archive, it splits the archive into a train and test set, and 'successful' and 'learning' classes. 
+
+It is passed to the reddit submission classifier class (`reddit_submission_classifier`) which splits the 'judged' posts into two categories and an undefined collection, 'Learning', 'Successful', and 'unclassified'. Submission features are broken down to 
+
+Features it currently evaluates between the classes are: Title word pairs, selftext word pairs, and link type (selftext, outlink, image, video, crosspost). 
+
+The `reddit_submission_classifier` splits the submissions into the three groups, and passes the labeled classes ('successful' and 'learning') into `build_classifiers` one by one, which populates `reddit_submission_class_fields_naivebayes`. Titles and selftext are preprocessed by `text_preprocessor` and link types are preprocessed by `reddit_link_simplifications` then placed into `simple_feature`.  
+
+After the `reddit_submission_class_fields_naivebayes` object is built for each class, you can pass a submission to each one using the `get_p_of_submission_in_class` attribute to get the probability that some given submission alpha is generated by the distrobution in the model for that class (be it the learning or successful class). 
+
+The parent class, `get_p_of_submission_in_class` will classify a submission by getting the likelhood it belongs to both models, and classifying the submission according to which class has a greater negative log likelyhood. It then creates a hand wavey confidence score based on the difference between the two most likely classes normalized by the largest negative log likelyhood. This isn't valid science, but this was a proof of concept and I needed to get a number value which made some tactile sense that I could use as a threshold for letting the bot comment. 
+
+Under the current version, confidence is defined as `(np.log(np.abs(score_diff)))/(-s_score)` where `score_diff` is the difference between the two most likely classes (and since there's only two classes--successful or learning--it's the difference between those two), and `s_score` is the negative log likelyhood of the most likely class. From there the bot was 'allowed' (in a testing/quiet mode capacity) to comment if the confidence was greater than 0.004 and the s_score was greater than -1000. Again, these are hand wavy values only used to get a sense of whether or not the classifier needed more work. Which, in short it does.
+
+`get_p_of_submission_in_class`, an attribute of `reddit_submission_class_fields_naivebayes` needs to use the LogSumExp trick instead of a simple summation since the presence of selftext, and the content of that selftext is an attribute of the link type feature: so it can't simply be summed with the same weight as title text, or have the same impact as linking to a blog post. There was a hope that this statistical sin would still be functionally allowable, but that isn't the case. 
+
+In all, the code will remain, the logsumexp trick shouldn't be rough to add, and it was a useful improvement off of the `nb_text_classifier` file. 
+
 #### questionIdentifier.py
 #### rpiGPIOFunctions.py
 #### scriptedReply.py
@@ -110,9 +175,7 @@ Some tests have also been added, however it does not cover a majority of the bot
 #### updateLocalSubHistory.py
 #### user_agents.py
 
-### Tests 
- - Adding comment tree tests: basically purpose different inputs into buildHelpfulComment under main, and ensure the string needed is present
- - Added test to make sure test_check_for_help_tag() functions
+### Tests
 
 
 ## [A0.3.02] 2019-09-16

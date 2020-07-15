@@ -19,6 +19,8 @@ from utils import buildComment
 from utils import formatCode
 from utils import learningSubmissionClassifiers
 from utils import locateDB
+from utils import nb_text_classifier
+from utils import nb_text_classifier_2
 from utils import questionIdentifier
 from utils import searchStackOverflowWeb
 from utils import summarizeText
@@ -203,7 +205,7 @@ def check_for_key_phrase(submission, phrase_set):
     request_Made = learningSubmissionClassifiers.request_Key_Word_Classifier(submission, phrase_set)
     return request_Made
 
-def lookForKeyPhrasePosts(reddit, setOfPosts, phrase_set):
+def lookForKeyPhrasePosts(reddit, setOfPosts, phrase_set, nb_submission_classifier):
 
     oldPosts = setOfPosts.copy() # https://stackoverflow.com/questions/5861498/
     setOfPosts = archiveAndUpdateReddit.getNewPosts(reddit, submissionList=setOfPosts)
@@ -212,8 +214,9 @@ def lookForKeyPhrasePosts(reddit, setOfPosts, phrase_set):
         if key not in oldPosts:
             submission, user = setOfPosts[key]
             request_Made = check_for_key_phrase(submission, phrase_set)
+            learning_title = title_classifier(submission, nb_submission_classifier)
             help_tag = check_for_help_flair(submission)
-            if request_Made or help_tag:
+            if request_Made or help_tag or learning_title:
                 submissionsToCommentOn_KP.append(key)
 
     return setOfPosts, submissionsToCommentOn_KP
@@ -224,6 +227,30 @@ def basicQuestion_classifyPost(submission, classifier):
     botHelperFunctions.logPostFeatures(submission)
     question_Sents = learningSubmissionClassifiers.basicQuestionClassify(submission, classifier)
     return question_Sents
+
+def title_classifier(submission, nb_submission_classifier):
+    '''
+    In the current version, learning posts are class 0
+    successful posts are class 1
+    '''
+    c = nb_submission_classifier.classify_submission(submission)
+    className = 'successful' if c else 'learning'
+    logging.debug("Title classified as '"+className.capitalize()+\
+        "' With Confidence: "+str(nb_submission_classifier._confidence)+\
+        " and with NegLogLikelyhood: "+str(nb_submission_classifier._score))
+    print("* ",submission.title)
+    print("* ",submission.id)
+    print("* Title classified as '"+className.capitalize()+\
+        "' With Confidence: "+str(nb_submission_classifier._confidence)+\
+        " and with NegLogLikelyhood: "+str(nb_submission_classifier._score))
+    if c == 0 and nb_submission_classifier._confidence > 0.004 and nb_submission_classifier._score > -1000:
+        logging.debug("Title was strongly classified as learning")
+        print("* Title was strongly classified as learning")
+        print("*"*30)
+        return True
+    print("*"*30)
+
+    return False
 
 def handleSetOfSubmissions(reddit, setOfPosts, postHistory, classifier):
 
@@ -303,6 +330,10 @@ def startupBot():
     classifier = questionIdentifier.buildClassifier02NLTKChat()
     # Code vs Text classifier 
     codeVTextClassifier = formatCode.buildTextCodeClassifier(sourceDataPath=paths["codeText"])
+    # Naive Bayes Title Classifier
+    nb_title_classifier = nb_text_classifier.Naive_Bayes_Title_word_pair_classifier()
+    nb_submission_classifier = nb_text_classifier_2.build_reddit_submission_classifier()
+
 
     # Reddit API 
     keySet = getPythonHelperBotKeys.GETREDDIT()
@@ -319,11 +350,11 @@ def startupBot():
     
 
     logging.debug( "Loaded. Running...")
-    return reddit, classifier, codeVTextClassifier, tdm, userNames, postHistory, phbArcPaths
+    return reddit, classifier, codeVTextClassifier, nb_submission_classifier, tdm, userNames, postHistory, phbArcPaths
 
 
 
-def runBot(reddit, classifier, codeVTextClassifier, tdm, userNames, postHistory,  phbArcPaths={}, quietMode=False):
+def runBot(reddit, classifier, codeVTextClassifier, nb_submission_classifier, tdm, userNames, postHistory,  phbArcPaths={}, quietMode=False):
     
     phrase_set = botHelperFunctions.load_autoreply_key_phrases(fl_path='misc/autoreplyKeyPhrases.txt')
     
@@ -353,7 +384,7 @@ def runBot(reddit, classifier, codeVTextClassifier, tdm, userNames, postHistory,
             commentOnThese += submissionsToCommentOn_HF
 
             # Get new posts, respond to keywords
-            setOfPosts, submissionsToCommentOn = lookForKeyPhrasePosts(reddit, setOfPosts, phrase_set)
+            setOfPosts, submissionsToCommentOn = lookForKeyPhrasePosts(reddit, setOfPosts, phrase_set, nb_submission_classifier)
             commentOnThese += submissionsToCommentOn
 
             lastThreeMin = datetime.datetime.now()
@@ -430,9 +461,9 @@ if __name__ == "__main__":
     if quietMode:
         logging.debug("Running in Quiet Mode")
 
-    reddit, classifier, codeVTextClassifier, tdm, userNames, postHistory, phbArcPaths = startupBot()
+    reddit, classifier, codeVTextClassifier, nb_submission_classifier, tdm, userNames, postHistory, phbArcPaths = startupBot()
     try:
-        runBot(reddit, classifier, codeVTextClassifier, tdm, userNames, postHistory,  phbArcPaths=phbArcPaths, quietMode=quietMode)
+        runBot(reddit, classifier, codeVTextClassifier, nb_submission_classifier, tdm, userNames, postHistory,  phbArcPaths=phbArcPaths, quietMode=quietMode)
     except KeyboardInterrupt:
         print("Concluding Program")
         logging.debug("Keyboard Interrupt: Ending Program")

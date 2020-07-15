@@ -23,9 +23,9 @@ Dates follow YYYY-MM-DD format
 
 
 
-## [A0.4.00] 2020-XX-XX
+## [A0.4.00] 2020-07-15
 
-In Progress
+Official.
 
 ### Contributors
 Keith Murray
@@ -38,12 +38,22 @@ Unless otherwise noted, all changes by @kmurrayis
 
 ### Short Term Roadmap
 
-Address Flair and begin adding tests. When min_spanning_tree program is complete, as well as when 'fix reddit archive' is done, begin rolling out a new classifier using LDA
+[X] Address Flair and begin adding tests. 
+
+When min_spanning_tree program is complete, as well as when 'fix reddit archive' is done, begin rolling out a new classifier using LDA
+
+Strike the above--LDA was a nice effort, but it didn't classify on 'learning'v'showing off' classes as well as I had liked, even when coaxed to do so with a fairly heavy hand. Instead it grouped things like 'web dev' and 'questions about web dev' together in one class, and 'machine learning' and 'questions about machine learning' in another class, and so on. This is good to know and probably should have been expected but the deviation was worthwhile. 
+
+[X] Instead a new naive bayes classifier has been added and is being integrated into the bot. 
+
+Once the new classifiers are in place, the bot is going to be reworked again, much more completely this time. 
+Rather than passing individual classifiers around, there will be a classifier group/class that'll be passed, and it'll handle all individual classifiers. Reddit Submission classes will be incorporated into a larger class which holds the reddit features, as well as that submissions classifications. This may add some ram strain, but the group will make the code easier to follow, debug, and add to. It can be optimized later. 
+
+
 
 #### Add
- - With light archive, build a 'save state' and 'load state' function so records on new posts aren't lost during reboots.
+ - With light archive, build a 'save state' and 'load state' function so records on new posts aren't lost during reboots. This should help resolve 'posts it saw which didn't have help flair, the bot powered down, the flair was applied, and the bot powered up' order of opperation issue.
  - botHelperFunctions/botMetrics: Add ram usage check and log it in every 'awake' cycle of program, to try and tease out any possible MemeoryError's kicking up after long periods of time. Might as well save other diagnostics info, maybe call this from the hearbeat thread so it becomes a better representation of runtime
- Also a pull origin master from github state would be incredibly useful
  - [X] Verify reddit post logs by grabbing most recent bot comments. This should reduce risk of two computers commenting on the same post which could happen if databases are de-synced and one computer is not in quiet mode because I typed in the wrong command. Opperator Error Risk Reduction. Only the most recent x+buffer hours of interaction are needed. This does not protect from multiple posts by the same user but should prevent multiple comments on the same post even if the bot runs on different computers. 
  - Full Test Suite: PRIORITY (Ok it'll have to wait until posts have been archived, but it'll still be nice)
  - botMetrics.measureUserReaction(): 
@@ -61,13 +71,14 @@ Address Flair and begin adding tests. When min_spanning_tree program is complete
  - Move NLP functions from NLTK (used in many files) to a buffer module, allowing for simpler, universal changes to be made. For example, if there is a better POS tagger than nltk.pos_tag(sent) then we can easily switch to that. Right now NLTK is used over a fairly large filespace making adjustments of that sort difficult. 
  - Review all my logging notes. See what should be dropped, changed, etc. 
  - [X] Make sure the bot defaults to commenting about formatting even if there's no code present--It just thinks there's code a touch too often 
- - If it classifies a line as code, try to validate the expression in a basic form. This might improve the classifier and reduce isThereCode False Positives.
+ - [X]If it classifies a line as code, try to validate the expression in a basic form. This might improve the classifier and reduce isThereCode False Positives. Used ast and codeop for this. 
  - When errors occur, or a shutdown button is pressed, attempt to save current reddit info into a temp file. on startup, load that info in then connect with praw to expand the knowledge base. 
  - The archive and update reddit module has become unwieldy. It should be broken into two modules, one which handles the recasting of the praw classes, and one which deals with them as needed.--Ehh.. Maybe not. It does need to be together to a degree
  - Migrate away from usage of my personal libraries so it's easier for others to get the bot up and running. 
 
 
 #### Deprecate
+ - [X] karma scatter plot. It's no longer useful or very interesting.
 
 #### Remove
 
@@ -95,8 +106,6 @@ Address Flair and begin adding tests. When min_spanning_tree program is complete
  Build semi scripted replies to frequently asked questions (probably largely pulled from the sidebar, since that's how the side bar gets populated)
  This includes "How do I install python" and "Is learning python worth it?" (Aka "Why learn python?")--A quality version of this is a full research task. Build off of internal sentence ordering models + soft skills. Pull text from comments on these posts to build up scripted reply. Look into adapting this (or maybe starting with this) to classifying the posts so their types can be diplayed as tags. 
    - When LDA classifier comes into play, this might be a lot easier. Auto-segment posts into topics, ID topic of question, compare question to similar past question, map past answers to new question.
- 
- - local Flask website/dashboard to monitor the status and logs of the bot in realtime. Low priority. 
  
  - Log processing: a set of functions and visualizations to process the log files for various useful tidbits. Something nicer than grep
 
@@ -180,6 +189,7 @@ other areas
    - Previous code is stored in a tree like structure
    - Leverage sentence ordering ideology to say given the current line and the previous state of the code tree, which level of node in the tree should I be
  This should be an area of linguists where there's plenty of work already completed, look for it. I think Nevil-manning sequitor addresses it briefly, look at that+cited by for other work in the area.
+ - This might be done with the abstract syntax tree module
 
 
 ### learningSubmissionClassifiers.py
@@ -197,6 +207,26 @@ other areas
 
 ### lsalib2.py
 Migrate features back into lsalib 
+
+### nb_text_classifier.py
+Needs to be deprecated and removed
+
+It will need to be cleaned up and swapped out from this frankenstein code and moved to use a more legitimate library. It should also use the same format so the presence of selftext, a link to i.reddit, or a link to a third party site can be added to the calculation, as well as have all of those features added without having to completly rework the core code.
+
+For selftext posts, consider another weird classification:
+  break the text into blocks then sentences
+  As was considered with selftext prior, remap all code to CODE, and merge all neighboring instances of code into one block.
+  classify each sentence: maybe use LDA to generate m topics, and make a m space.
+  Final classification for the selftext will be the probility that a question post
+  built sentences which progressed in that way. This way a rhetorical question is
+  less likely to mess it up. 
+  
+   
+### nb_text_classifier_2.py
+`get_p_of_submission_in_class` needs to use logSumExp trick.
+
+
+
 
 ### questionIdentifier.py
 It'd be nice to use stack overflow's user submissions and r/learnpython's 
