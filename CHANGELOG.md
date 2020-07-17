@@ -1,6 +1,6 @@
 
 
-# CHANGELOG: Python Helper Bot Version pre Alpha A0.4.00
+# CHANGELOG: Python Helper Bot Version pre Alpha A0.4.01
 All notable changes to this project will be documented in this file.
 
 The format is loosely based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
@@ -16,6 +16,81 @@ Dates follow YYYY-MM-DD format
 
 -- Susan Calvin in "I, Robot" by Isaac Asimov
 
+
+
+## [A0.4.01] 2020-07-17
+
+Official.
+
+### Contributors
+Keith Murray
+
+email: kmurrayis@gmail.com |
+twitter: [@keithTheEE](https://twitter.com/keithTheEE) |
+github: [CrakeNotSnowman](https://github.com/CrakeNotSnowman)
+
+Unless otherwise noted, all changes by @kmurrayis
+
+This project is not currently looking for other contributors
+
+#### Big Picture: What happened, what was worked on
+The Naive Bayes classifier is still in the code, but it is currently turned off. 
+
+There are more pressing features, so the code for those functions is frozen until it can be addressed again in the near future. 
+
+#### Added
+#### Changed
+- `nb_submission_classifier` in main's startup bot function is now `None`.
+- `title_classifier` in main now returns false by default and the code which uses `nb_submission_classifier` is commented out. 
+- `archiveAndUpdatedReddit` now imports praw's `NotFound` exception, and catches it when grabbing a non existent user.
+- `phb_Reddit_User` has a attribute `_fake_account` which is set to false unless reddit throws a `NotFound` during lookup. At that point the user is remapped to a collection of fake values. 
+- `phb_Reddit_User.getUserPosts` now returns and empty list if `_fake_account`
+- `phb_Reddit_User.getUserComments` new returns an empty list if `_fake_account`
+- Old error listed below `phb_Reddit_user` in a comment has been removed, the above changes now cover it.
+- main `getReadyToComment` ignores submissions posted by `User._fake_account` by default as there's no real sense in commenting. 
+
+#### Deprecated
+#### Removed
+
+#### Fixed
+#### Security
+#### Tests 
+
+
+
+
+### Main
+To get this version ready to go, the new nb classifiers are commented out since they're not up to snuff. 
+
+### rpiManager.py
+
+### Util Libraries
+
+#### archiveAndUpdateReddit.py
+- To get around the issue of users who have an account page that does not exist, the bot populates the user fields with false values, and adds a flag to the user: `_fake_account`.
+- The fake account values are empty lists for comments and submissions, account creation time of `datetime.datetime.utcnow()`, an id of `0`, as well as 0 comment and link karma. 
+#### botHelperFunctions.py
+#### botMetrics.py
+#### botSummons.py
+#### buildComment.py
+#### fix_json_archive_bug.py
+#### formatBagOfSentences.py
+#### formatCode.py
+#### locateDB.py
+#### lsalib2.py
+#### nb_text_classifier.py
+#### nb_text_classifier_2.py
+#### questionIdentifier.py
+#### rpiGPIOFunctions.py
+#### scriptedReply.py
+#### searchStackOverflowWeb.py
+#### startupLoggingCharastics.py
+#### summarizeText.py
+#### textSupervision.py
+#### updateLocalSubHistory.py
+#### user_agents.py
+
+### Tests
 
 
 ## [A0.4.00] 2020-07-15

@@ -230,25 +230,27 @@ def basicQuestion_classifyPost(submission, classifier):
 
 def title_classifier(submission, nb_submission_classifier):
     '''
+    CURRENTLY ON PAUSE AND NOT USED
+    
     In the current version, learning posts are class 0
     successful posts are class 1
     '''
-    c = nb_submission_classifier.classify_submission(submission)
-    className = 'successful' if c else 'learning'
-    logging.debug("Title classified as '"+className.capitalize()+\
-        "' With Confidence: "+str(nb_submission_classifier._confidence)+\
-        " and with NegLogLikelyhood: "+str(nb_submission_classifier._score))
-    print("* ",submission.title)
-    print("* ",submission.id)
-    print("* Title classified as '"+className.capitalize()+\
-        "' With Confidence: "+str(nb_submission_classifier._confidence)+\
-        " and with NegLogLikelyhood: "+str(nb_submission_classifier._score))
-    if c == 0 and nb_submission_classifier._confidence > 0.004 and nb_submission_classifier._score > -1000:
-        logging.debug("Title was strongly classified as learning")
-        print("* Title was strongly classified as learning")
-        print("*"*30)
-        return True
-    print("*"*30)
+    # c = nb_submission_classifier.classify_submission(submission)
+    # className = 'successful' if c else 'learning'
+    # logging.debug("Title classified as '"+className.capitalize()+\
+    #     "' With Confidence: "+str(nb_submission_classifier._confidence)+\
+    #     " and with NegLogLikelyhood: "+str(nb_submission_classifier._score))
+    # print("* ",submission.title)
+    # print("* ",submission.id)
+    # print("* Title classified as '"+className.capitalize()+\
+    #     "' With Confidence: "+str(nb_submission_classifier._confidence)+\
+    #     " and with NegLogLikelyhood: "+str(nb_submission_classifier._score))
+    # if c == 0 and nb_submission_classifier._confidence > 0.004 and nb_submission_classifier._score > -1000:
+    #     logging.debug("Title was strongly classified as learning")
+    #     print("* Title was strongly classified as learning")
+    #     print("*"*30)
+    #     return True
+    # print("*"*30)
 
     return False
 
@@ -298,9 +300,12 @@ def getReadyToComment(reddit, setOfPosts, userNames, postHistory, commentOnThese
                         # Check if allowed to comment even if already commented
                         past_interaction = user.name in userNames
 
-                        buildHelpfulComment(submission, user, reddit, suggested, crossPosted, answered, codePresent, correctlyFormatted, past_interaction, quietMode, phbArcPaths=phbArcPaths) 
-                        userNames.append(str(user.name))
-                        postHistory.append(str(submission.id))
+                        if not user._fake_account:
+                            buildHelpfulComment(submission, user, reddit, suggested, crossPosted, answered, codePresent, correctlyFormatted, past_interaction, quietMode, phbArcPaths=phbArcPaths) 
+                            userNames.append(str(user.name))
+                            postHistory.append(str(submission.id))
+                        else:
+                            logging.debug(str(user.name) + " User is a fake deleted or banned account, no sense in commenting")
 
 
     return userNames, postHistory, antiSpamList
@@ -332,8 +337,8 @@ def startupBot():
     codeVTextClassifier = formatCode.buildTextCodeClassifier(sourceDataPath=paths["codeText"])
     # Naive Bayes Title Classifier
     nb_title_classifier = nb_text_classifier.Naive_Bayes_Title_word_pair_classifier()
-    nb_submission_classifier = nb_text_classifier_2.build_reddit_submission_classifier()
-
+    #nb_submission_classifier = nb_text_classifier_2.build_reddit_submission_classifier()
+    nb_submission_classifier = None # Freezing this module for more pressing focuses
 
     # Reddit API 
     keySet = getPythonHelperBotKeys.GETREDDIT()

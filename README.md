@@ -1,5 +1,5 @@
 
-# Reddit Helper Bot: Version Pre Alpha A0.4.00
+# Reddit Helper Bot: Version Pre Alpha A0.4.01
 pythonHelperBot is a reddit bot built to analyze r/python post and determine if 
 they're better suited for the r/learnpython sub. 
 If they are it suggests that the user post to that sub rather than to r/python.

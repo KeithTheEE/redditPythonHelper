@@ -3,7 +3,7 @@ import time
 import datetime
 import praw
 from praw.exceptions import APIException
-from prawcore import RequestException, ResponseException, ServerError
+from prawcore import RequestException, ResponseException, ServerError, NotFound
 from asecretplace import getPythonHelperBotKeys
 import sqlite3
 import json
@@ -581,57 +581,12 @@ class phb_Reddit_User(object):
     '''
 
 
-    '''
-Error Caused by User Account that was deleted while the bot was looking at/for it. 
-Rare, but should be handled 
-
-2019-02-28 08:08:49,848 - DEBUG - main.py:getReadyToComment():186 - Processing a valid post
-2019-02-28 08:08:49,848 - DEBUG - botHelperFunctions.py:logPostFeatures():54 - **************************************************
-2019-02-28 08:08:49,849 - DEBUG - botHelperFunctions.py:logPostFeatures():55 - [POST]   | what is python?
-2019-02-28 08:08:49,849 - DEBUG - botHelperFunctions.py:logPostFeatures():56 - [AUTHOR] | shiriyadav
-2019-02-28 08:08:49,849 - DEBUG - botHelperFunctions.py:logPostFeatures():57 - [ID]     | avnkh8
-2019-02-28 08:08:49,849 - DEBUG - botHelperFunctions.py:logPostFeatures():59 -  Post Age: 2:14:43.849659
-2019-02-28 08:08:49,849 - DEBUG - botHelperFunctions.py:logPostFeatures():60 -  Votes: 0
-2019-02-28 08:08:49,850 - DEBUG - botHelperFunctions.py:logPostFeatures():61 -  Upvote Ratio: 0.1
-2019-02-28 08:08:49,850 - DEBUG - sessions.py:_log_request():49 - Fetching: GET https://oauth.reddit.com/comments/avnkh8/
-2019-02-28 08:08:49,851 - DEBUG - sessions.py:_log_request():50 - Data: None
-2019-02-28 08:08:49,851 - DEBUG - sessions.py:_log_request():51 - Params: {'sort': 'best', 'raw_json': 1, 'limit': 2048}
-2019-02-28 08:08:50,014 - DEBUG - connectionpool.py:_make_request():393 - https://oauth.reddit.com:443 "GET /comments/avnkh8/?sort=best&raw_json=1&limit=2048 HTTP/1.1" 200 1526
-2019-02-28 08:08:50,018 - DEBUG - sessions.py:_make_request():100 - Response: 200 (1526 bytes)
-2019-02-28 08:08:50,024 - DEBUG - sessions.py:_log_request():49 - Fetching: GET https://oauth.reddit.com/user/shiriyadav/submitted
-2019-02-28 08:08:50,024 - DEBUG - sessions.py:_log_request():50 - Data: None
-2019-02-28 08:08:50,024 - DEBUG - sessions.py:_log_request():51 - Params: {'sort': 'new', 'raw_json': 1, 'limit': 25}
-2019-02-28 08:08:50,261 - DEBUG - connectionpool.py:_make_request():393 - https://oauth.reddit.com:443 "GET /user/shiriyadav/submitted?sort=new&raw_json=1&limit=25 HTTP/1.1" 404 38
-2019-02-28 08:08:50,265 - DEBUG - sessions.py:_make_request():100 - Response: 404 (38 bytes)
-2019-02-28 08:08:50,265 - ERROR - archiveAndUpdateReddit.py:getUserPosts():618 - Caught Server 500 Error | Specific Error:
-2019-02-28 08:08:50,277 - ERROR - archiveAndUpdateReddit.py:getUserPosts():619 -
-Traceback (most recent call last):
-  File "/home/pi/Documents/filesForProgramming/Reddit/pythonHelpBot2/utils/archiveAndUpdateReddit.py", line 593, in getUserPosts
-    for submission in praw_user.submissions.new(limit=limitCount):
-  File "/usr/local/lib/python2.7/dist-packages/praw/models/listing/generator.py", line 80, in next
-    return self.__next__()
-  File "/usr/local/lib/python2.7/dist-packages/praw/models/listing/generator.py", line 52, in __next__
-    self._next_batch()
-  File "/usr/local/lib/python2.7/dist-packages/praw/models/listing/generator.py", line 62, in _next_batch
-    self._listing = self._reddit.get(self.url, params=self.params)
-  File "/usr/local/lib/python2.7/dist-packages/praw/reddit.py", line 371, in get
-    data = self.request('GET', path, params=params)
-  File "/usr/local/lib/python2.7/dist-packages/praw/reddit.py", line 486, in request
-    params=params)
-  File "/usr/local/lib/python2.7/dist-packages/prawcore/sessions.py", line 182, in request
-    params=params, url=url)
-  File "/usr/local/lib/python2.7/dist-packages/prawcore/sessions.py", line 127, in _request_with_retries
-    raise self.STATUS_EXCEPTIONS[response.status_code](response)
-NotFound: received 404 HTTP response
-
-
-
-    '''
     def __init__(self, praw_user):
 
         vals_Assigned = False
         self.directed_to_learning_sub = False
         self.said_thanks_or_it_worked = False
+        self._fake_account = False
         
         # Prep for errors
         maxTotalWaitTime = 5*60*60
@@ -656,6 +611,20 @@ NotFound: received 404 HTTP response
                 self.comment_karma = praw_user.comment_karma
                 vals_Assigned = True
                 break
+            except NotFound:
+                '''
+                Username does not exist or isn't accessible
+                set fake account to true
+                populate fake values
+                '''
+                logging.warning("User " + self.name + " Does not exist. Populating with fake values")
+                self._fake_account = True
+                self.created_utc = now
+                self.id = 0
+                self.link_karma = 0
+                self.comment_karma = 0
+                vals_Assigned = True
+
             except RequestException as e:
                 logging.error("Caught Server Rate Limit Hit | Specific Error:")
                 logging.error("\n"+traceback.format_exc())
@@ -715,6 +684,10 @@ NotFound: received 404 HTTP response
         serverBackoffTime = 5 
         maxBackoffTime = 5*60
         startTime = time.time()
+
+        if self._fake_account:
+            submissionList = []
+            return submissionList
 
         while True:
             if vals_Assigned:
@@ -786,6 +759,10 @@ NotFound: received 404 HTTP response
         serverBackoffTime = 5 
         maxBackoffTime = 5*60
         startTime = time.time()
+        
+        if self._fake_account:
+            commentList = []
+            return commentList
 
         while True:
             if vals_Assigned:
@@ -1471,9 +1448,12 @@ def getMods(reddit, sub="python"):
         if vals_Assigned:
             break
         try:
+            self_name = reddit.user.me().name
             mods = []
             for mod in reddit.subreddit(sub).moderator():
-                mods.append(phb_Reddit_User(mod))
+                # Ignore bots actions
+                if mod != self_name:
+                    mods.append(phb_Reddit_User(mod))
             vals_Assigned = True
             break
         except RequestException as e:
