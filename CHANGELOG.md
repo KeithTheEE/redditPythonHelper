@@ -1,6 +1,6 @@
 
 
-# CHANGELOG: Python Helper Bot Version pre Alpha A0.4.01
+# CHANGELOG: Python Helper Bot Version pre Alpha A0.5.00
 All notable changes to this project will be documented in this file.
 
 The format is loosely based on [Keep a Changelog](http://keepachangelog.com/en/1.0.0/).
@@ -15,6 +15,67 @@ Dates follow YYYY-MM-DD format
 > the explanation known, and that’s why we can only guess -- and keep on guessing.”
 
 -- Susan Calvin in "I, Robot" by Isaac Asimov
+
+
+## [A0.5.00] 2020-07-XX
+
+Official.
+
+### Contributors
+Keith Murray
+
+email: kmurrayis@gmail.com |
+twitter: [@keithTheEE](https://twitter.com/keithTheEE) |
+github: [CrakeNotSnowman](https://github.com/CrakeNotSnowman)
+
+Unless otherwise noted, all changes by @kmurrayis
+
+This project is not currently looking for other contributors
+
+#### Big Picture: What happened, what was worked on
+
+Major redesign and beginning new roles
+
+#### Added
+#### Changed
+#### Deprecated
+#### Removed
+#### Fixed
+#### Security
+#### Tests 
+
+
+
+
+### Main
+
+### rpiManager.py
+
+### Util Libraries
+
+#### archiveAndUpdateReddit.py
+#### botHelperFunctions.py
+#### botMetrics.py
+#### botSummons.py
+#### buildComment.py
+#### fix_json_archive_bug.py
+#### formatBagOfSentences.py
+#### formatCode.py
+#### locateDB.py
+#### lsalib2.py
+#### nb_text_classifier.py
+#### nb_text_classifier_2.py
+#### questionIdentifier.py
+#### rpiGPIOFunctions.py
+#### scriptedReply.py
+#### searchStackOverflowWeb.py
+#### startupLoggingCharastics.py
+#### summarizeText.py
+#### textSupervision.py
+#### updateLocalSubHistory.py
+#### user_agents.py
+
+### Tests
 
 
 
