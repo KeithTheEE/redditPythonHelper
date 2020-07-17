@@ -23,7 +23,7 @@ Dates follow YYYY-MM-DD format
 
 ## [A0.5.00] 2020-07-XX
 
-Official.
+In Progress
 
 ### Contributors
 Keith Murray
